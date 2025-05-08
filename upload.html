@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="images/litiaina_icon.png" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Upload</title>
+  <link rel="preconnect" href="https://storage.litiaina.com" crossorigin />
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #000;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .top-banner {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .top-banner img {
+      max-width: 100px;
+      margin-bottom: 10px;
+    }
+    .top-banner h1 {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    .top-banner p {
+      color: #ccc;
+      font-size: 0.9rem;
+    }
+    .auth-box {
+      background-color: #111;
+      border-radius: 12px;
+      padding: 30px;
+      width: 100%;
+      max-width: 400px;
+      position: relative;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      background-color: #222;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    .auth-btn {
+      width: 100%;
+      padding: 14px;
+      background-color: #222;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 10px;
+    }
+    .auth-btn:hover:enabled {
+      background-color: #333;
+    }
+    .auth-btn:disabled {
+      background-color: #444;
+      cursor: not-allowed;
+    }
+    progress {
+      width: 100%;
+      height: 20px;
+      margin-top: 20px;
+      appearance: none;
+    }
+    progress::-webkit-progress-bar {
+      background-color: #333;
+      border-radius: 10px;
+    }
+    progress::-webkit-progress-value {
+      background-color: #28a745;
+      border-radius: 10px;
+    }
+    progress::-moz-progress-bar {
+      background-color: #28a745;
+      border-radius: 10px;
+    }
+    .status {
+      font-size: 0.85rem;
+      color: #ccc;
+      margin-top: 10px;
+    }
+    .spinner {
+      display: none;
+      align-items: center;
+      margin-top: 20px;
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+    .spinner .circle {
+      width: 16px;
+      height: 16px;
+      margin-right: 10px;
+      border: 3px solid #28a745;
+      border-top: 3px solid transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    .drop-zone {
+      border: 2px dashed #444;
+      background-color: #1a1a1a;
+      color: #aaa;
+      border-radius: 8px;
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 15px;
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+    .drop-zone.dragover {
+      background-color: #2a2a2a;
+      border-color: #28a745;
+      color: #fff;
+    }
+
+    /* Toast Styles */
+    #toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+    }
+
+    .toast {
+      background-color: #333;
+      color: white;
+      padding: 12px 20px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      cursor: pointer;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .toast.success {
+      background-color: #28a745;
+    }
+
+    .toast.error {
+      background-color: #dc3545;
+    }
+
+    .toast.info {
+      background-color: #007bff;
+    }
+
+    .history {
+      margin-top: 30px;
+      width: 100%;
+      max-width: 400px;
+      background-color: #111;
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .history h2 {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+    .history-item {
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+      padding: 6px 10px;
+      background-color: #1a1a1a;
+      border-radius: 6px;
+      border-left: 4px solid;
+    }
+    .history-item.success {
+      border-color: #28a745;
+      color: #a0e0a0;
+    }
+    .history-item.fail {
+      border-color: #dc3545;
+      color: #f2aaaa;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="top-banner">
+  <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" alt="User Icon" />
+  <h1>Upload Your File</h1>
+  <p>Parallel chunked upload with progress</p>
+</div>
+
+<div class="auth-box">
+  <div id="dropZone" class="drop-zone">
+    <p id="dropText">Click or drag a file here to upload</p>
+    <input type="file" id="fileInput" hidden />
+  </div>
+  <input type="text" id="pathInput" placeholder="Upload Path (e.g., user-files)" />
+  <button class="auth-btn" id="uploadBtn" onclick="uploadFile()">Upload</button>
+  <progress id="uploadProgress" value="0" max="100"></progress>
+  <div class="status">
+    <div>Speed: <span id="uploadSpeed">0 KB/s</span></div>
+    <div>Active Workers: <span id="workerCount">0</span></div>
+    <div>ETA: <span id="eta">--</span></div>
+    <div>Elapsed: <span id="elapsed">0s</span></div>
+  </div>
+  <div class="spinner" id="uploadSpinner">
+    <div class="circle"></div>
+    <div id="spinnerText">Initializing upload...</div>
+  </div>
+</div>
+<div class="history" id="uploadHistory" style="display: none;">
+  <h2>Upload History</h2>
+  <div id="uploadHistoryList"></div>
+</div>
+<div id="toast-container"></div>
+
+<script>
+  let elapsedInterval = null;
+
+  function startElapsedTimer() {
+    const elapsedDisplay = document.getElementById('elapsed');
+    const startTime = Date.now();
+    if (elapsedInterval) clearInterval(elapsedInterval);
+    elapsedDisplay.textContent = '0s';
+    elapsedInterval = setInterval(() => {
+      const seconds = Math.floor((Date.now() - startTime) / 1000);
+      elapsedDisplay.textContent = `${seconds}s`;
+    }, 1000);
+  }
+
+  function stopElapsedTimer() {
+    if (elapsedInterval) clearInterval(elapsedInterval);
+    elapsedInterval = null;
+  }
+
+  async function sha256Checksum(blob) {
+    const buffer = await blob.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+    return [...new Uint8Array(hashBuffer)].map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+
+  function showToast(message, type = 'info', duration = 3000) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+
+    toast.addEventListener('click', () => {
+      toast.classList.remove('show');
+      toast.addEventListener('transitionend', () => toast.remove());
+    });
+
+    container.appendChild(toast);
+
+    requestAnimationFrame(() => {
+      toast.classList.add('show');
+    });
+
+    setTimeout(() => {
+      toast.classList.remove('show');
+      toast.addEventListener('transitionend', () => toast.remove());
+    }, duration);
+  }
+
+  function addToHistory(filename, status, message = '') {
+    const historyContainer = document.getElementById('uploadHistory');
+    const historyList = document.getElementById('uploadHistoryList');
+
+    if (historyContainer.style.display === 'none') {
+      historyContainer.style.display = 'block';
+    }
+
+    const item = document.createElement('div');
+    item.className = `history-item ${status}`;
+    const timestamp = new Date().toLocaleTimeString();
+    item.textContent = `[${timestamp}] ${filename} — ${status.toUpperCase()} ${message ? `(${message})` : ''}`;
+    historyList.prepend(item);
+  }
+
+
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  const dropText = document.getElementById('dropText');
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+  });
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('dragover');
+  });
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+
+    if (files.length) {
+      fileInput.files = files;
+      dropText.textContent = `${files[0].name}`;
+    }
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length > 0) {
+      dropText.textContent = `${fileInput.files[0].name}`;
+    }
+  });
+
+  function resetUploadUI() {
+    document.getElementById('uploadProgress').value = 0;
+    document.getElementById('uploadSpeed').textContent = '0 KB/s';
+    document.getElementById('workerCount').textContent = '0';
+    document.getElementById('eta').textContent = '--';
+    document.getElementById('dropText').textContent = 'Click or drag a file here to upload';
+    document.getElementById('fileInput').value = '';
+  }
+
+  async function uploadFile() {
+    const serverLink = `https://storage.litiaina.com`;
+    const path = document.getElementById('pathInput').value.trim();
+    const apiKey = localStorage.getItem("current-api-key").trim() || "".trim();
+    const file = fileInput.files[0];
+    const progressBar = document.getElementById('uploadProgress');
+    const speedDisplay = document.getElementById('uploadSpeed');
+    const workerCountDisplay = document.getElementById('workerCount');
+    const etaDisplay = document.getElementById('eta');
+    const spinner = document.getElementById('uploadSpinner');
+    const spinnerText = document.getElementById('spinnerText');
+    const uploadButton = document.getElementById('uploadBtn');
+
+    if (!file) {
+      showToast('Please select a file.', 'error');
+      return;
+    }
+    if (!path && !apiKey) {
+      showToast('Upload rejected: both path and API key cannot be empty.', 'error');
+      return;
+    }
+
+    startElapsedTimer();
+    uploadButton.disabled = true;
+    spinner.style.display = 'flex';
+    spinnerText.textContent = 'Initializing upload...';
+
+    const fileSize = file.size;
+    const MIN_CHUNK_SIZE = 256 * 1024;
+    const TARGET_CHUNK_COUNT = 20;
+    const MAX_CHUNK_SIZE = 50 * 1024 * 1024;
+    const chunkSize = Math.min(
+            Math.max(MIN_CHUNK_SIZE, Math.floor(fileSize / TARGET_CHUNK_COUNT)),
+            MAX_CHUNK_SIZE
+    );
+    const maxParallel = 12;
+    const totalChunks = Math.ceil(fileSize / chunkSize);
+    const fileId = crypto.randomUUID();
+
+    let uploadedChunks = 0;
+    let currentWorkers = 0;
+    const speeds = [];
+
+    const formatTime = (seconds) => {
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = Math.floor(seconds % 60);
+      return `${h > 0 ? h + 'h ' : ''}${m > 0 ? m + 'm ' : ''}${s}s`;
+    };
+
+    const updateProgress = () => {
+      progressBar.value = Math.round((uploadedChunks / totalChunks) * 100);
+      const avgSpeed = speeds.length ? speeds.reduce((a, b) => a + b, 0) / speeds.length : 0;
+      const remainingChunks = totalChunks - uploadedChunks;
+      const estimatedTime = avgSpeed > 0 ? (chunkSize * remainingChunks) / avgSpeed : 0;
+      etaDisplay.textContent = formatTime(estimatedTime);
+    };
+
+    const uploadChunk = async (chunkIndex, retries = 3) => {
+      const start = chunkIndex * chunkSize;
+      const end = Math.min(start + chunkSize, file.size);
+      const blob = file.slice(start, end);
+
+      const checksum = await sha256Checksum(blob);
+
+      const formData = new FormData();
+      formData.append('chunk', blob);
+
+      const params = new URLSearchParams({
+        file_id: fileId,
+        chunk_index: chunkIndex,
+        total_chunks: totalChunks,
+        original_filename: file.name,
+        mime_type: file.type,
+        checksum: checksum
+      });
+
+      try {
+        const t0 = performance.now();
+        const response = await fetch(`${serverLink}/files/upload/v2/${encodeURIComponent(path)}?${params}`, {
+          method: 'POST',
+          headers: {
+            "x-api-key": apiKey
+          },
+          body: formData,
+        });
+        const t1 = performance.now();
+
+        if (!response.ok) throw new Error(`Chunk ${chunkIndex} failed`);
+
+        uploadedChunks++;
+        speeds.push((end - start) / ((t1 - t0) / 1000));
+        if (speeds.length > 5) speeds.shift();
+
+        updateProgress();
+        return true;
+      } catch (err) {
+        if (retries > 0) return uploadChunk(chunkIndex, retries - 1);
+        throw err;
+      }
+    };
+
+    try {
+      const queue = Array.from({ length: totalChunks }, (_, i) => i);
+      const allWorkers = [];
+
+      const monitor = () => {
+        const avgSpeed = speeds.length ? speeds.reduce((a, b) => a + b, 0) / speeds.length : 0;
+        speedDisplay.textContent = `${(avgSpeed / 1024).toFixed(1)} KB/s`;
+        workerCountDisplay.textContent = currentWorkers;
+        updateProgress();
+      };
+
+      spinnerText.textContent = 'Uploading...';
+
+      const spawnWorker = () => {
+        currentWorkers++;
+        const worker = (async () => {
+          while (queue.length > 0) {
+            const chunkIndex = queue.shift();
+            if (chunkIndex === undefined) break;
+            try {
+              await uploadChunk(chunkIndex);
+              monitor();
+            } catch (err) {
+              console.error(`Failed to upload chunk ${chunkIndex}`, err);
+              addToHistory(file.name, 'fail', `Failed to upload chunk ${chunkIndex} error: ${err}`)
+              throw err;
+            }
+          }
+          currentWorkers--;
+          monitor();
+        })();
+        allWorkers.push(worker);
+      };
+
+      for (let i = 0; i < Math.min(2, totalChunks); i++) spawnWorker();
+      await new Promise(res => setTimeout(res, 500));
+      for (let i = 2; i < Math.min(maxParallel, totalChunks); i++) spawnWorker();
+
+      await Promise.all(allWorkers);
+
+      spinner.style.display = 'none';
+      uploadButton.disabled = false;
+
+      stopElapsedTimer();
+      showToast('Upload complete!', 'success');
+      addToHistory(file.name, 'success')
+      resetUploadUI();
+
+    } catch (err) {
+      console.error('Upload failed:', err);
+      spinner.style.display = 'none';
+      uploadButton.disabled = false;
+      showToast('Upload failed: ' + err.message, 'error');
+      addToHistory(file.name, 'fail', err.message || 'Unknown error');
+      stopElapsedTimer();
+    }
+  }
+</script>
+</body>
+</html>

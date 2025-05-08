@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="images/litiaina_icon.png" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Service Status</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #000;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .auth-box {
+      background-color: #111;
+      border-radius: 12px;
+      padding: 30px;
+      width: 100%;
+      max-width: 600px;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    .top-banner {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .top-banner img {
+      max-width: 100px;
+      margin-bottom: 10px;
+    }
+    .top-banner h1 {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    .top-banner p {
+      color: #ccc;
+      font-size: 0.9rem;
+    }
+    .status-entry {
+      display: flex;
+      flex-direction: column;
+      padding: 12px 0;
+      border-bottom: 1px solid #222;
+    }
+    .status-entry span.label {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #ccc;
+    }
+    .status-entry span.status {
+      display: flex;
+      align-items: center;
+      margin-top: 6px;
+    }
+    .status-up {
+      color: #4caf50;
+      font-weight: bold;
+    }
+    .status-down {
+      color: #f44336;
+      font-weight: bold;
+    }
+    .response-time {
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-left: 10px;
+    }
+    .technical-details {
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 4px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-banner">
+  <img src="images/litiaina_icon.png" alt="Litiaina Icon" />
+  <h1>Service Status</h1>
+  <p>Live diagnostics for Litiaina infrastructure</p>
+</div>
+
+<div class="auth-box">
+  <h2>Technical Service Overview</h2>
+  <div id="statusList">
+    <div class="status-entry">
+      <span class="label">litiaina.com</span>
+      <span class="status"><span id="litiainaStatus">Checking...</span><span class="response-time" id="litiainaTime"></span></span>
+      <div class="technical-details" id="litiainaDetails"></div>
+    </div>
+    <div class="status-entry">
+      <span class="label">storage.litiaina.com</span>
+      <span class="status"><span id="storageStatus">Checking...</span><span class="response-time" id="storageTime"></span></span>
+      <div class="technical-details" id="storageDetails"></div>
+    </div>
+    <div class="status-entry">
+      <span class="label">fs.litiaina.com</span>
+      <span class="status"><span id="storagev1Status">Checking...</span><span class="response-time" id="storagev1Time"></span></span>
+      <div class="technical-details" id="storagev1Details"></div>
+    </div>
+    <div class="status-entry">
+      <span class="label">websocket.litiaina.com</span>
+      <span class="status"><span id="websocketStatus">Checking...</span><span class="response-time" id="websocketTime"></span></span>
+      <div class="technical-details" id="websocketDetails"></div>
+    </div>
+    <div class="status-entry">
+      <span class="label">ws.litiaina.com</span>
+      <span class="status"><span id="websocketv1Status">Checking...</span><span class="response-time" id="websocketv1Time"></span></span>
+      <div class="technical-details" id="websocketv1Details"></div>
+    </div>
+    <div class="status-entry">
+      <span class="label">api.litiaina.com</span>
+      <span class="status"><span id="apiStatus">Checking...</span><span class="response-time" id="apiTime"></span></span>
+      <div class="technical-details" id="apiDetails"></div>
+    </div>
+    <div class="status-entry">
+      <span class="label">db.litiaina.com</span>
+      <span class="status"><span id="apiv1Status">Checking...</span><span class="response-time" id="apiv1Time"></span></span>
+      <div class="technical-details" id="apiv1Details"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const validDomains = new Set([
+    'litiaina.com',
+    'storage.litiaina.com',
+    'fs.litiaina.com',
+    'websocket.litiaina.com',
+    'ws.litiaina.com',
+    'api.litiaina.com',
+    'db.litiaina.com',
+  ]);
+
+  async function checkServiceStatus(domain, statusId, timeId, detailsId) {
+    if (!validDomains.has(domain)) {
+      document.getElementById(statusId).textContent = "Invalid domain";
+      document.getElementById(statusId).className = "status-down";
+      document.getElementById(timeId).textContent = "";
+      document.getElementById(detailsId).textContent = `Error: InvalidDomain | Likely Cause: Domain not whitelisted`;
+      return;
+    }
+
+    const start = performance.now();
+    const url = `https://${domain}/ping`;
+    let detailsText = "";
+
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+
+      const response = await fetch(url, {
+        method: 'GET',
+        signal: controller.signal
+      });
+
+      clearTimeout(timeout);
+      const end = performance.now();
+      const duration = Math.round(end - start);
+
+      if (response.ok) {
+        const text = await response.text();
+        document.getElementById(statusId).textContent = "Online";
+        document.getElementById(statusId).className = "status-up";
+        document.getElementById(timeId).textContent = `(${duration} ms)`;
+        detailsText = `Method: GET | Status: ${response.status} | Timeout: 5000ms | Body: ${text}`;
+      } else {
+        document.getElementById(statusId).textContent = "Offline";
+        document.getElementById(statusId).className = "status-down";
+        document.getElementById(timeId).textContent = "";
+        detailsText = `Error: Status ${response.status} | Likely Cause: Non-200 response`;
+      }
+    } catch (e) {
+      document.getElementById(statusId).textContent = "Offline";
+      document.getElementById(statusId).className = "status-down";
+      document.getElementById(timeId).textContent = "";
+      detailsText = `Error: ${e.name} | Likely Cause: ${e.name === 'AbortError' ? 'Timeout' : 'Network issue or CORS restriction'}`;
+    }
+
+    document.getElementById(detailsId).textContent = detailsText;
+  }
+
+  function refreshAll() {
+    checkServiceStatus('litiaina.com', 'litiainaStatus', 'litiainaTime', 'litiainaDetails');
+    checkServiceStatus('storage.litiaina.com', 'storageStatus', 'storageTime', 'storageDetails');
+    checkServiceStatus('fs.litiaina.com', 'storagev1Status', 'storagev1Time', 'storagev1Details');
+    checkServiceStatus('websocket.litiaina.com', 'websocketStatus', 'websocketTime', 'websocketDetails');
+    checkServiceStatus('ws.litiaina.com', 'websocketv1Status', 'websocketv1Time', 'websocketv1Details');
+    checkServiceStatus('api.litiaina.com', 'apiStatus', 'apiTime', 'apiDetails');
+    checkServiceStatus('db.litiaina.com', 'apiv1Status', 'apiv1Time', 'apiv1Details');
+  }
+
+  refreshAll();
+  setInterval(refreshAll, 30000);
+</script>
+
+</body>
+</html>
