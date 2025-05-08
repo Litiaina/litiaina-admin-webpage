@@ -96,11 +96,6 @@
   <h2>Technical Service Overview</h2>
   <div id="statusList">
     <div class="status-entry">
-      <span class="label">litiaina.com</span>
-      <span class="status"><span id="litiainaStatus">Checking...</span><span class="response-time" id="litiainaTime"></span></span>
-      <div class="technical-details" id="litiainaDetails"></div>
-    </div>
-    <div class="status-entry">
       <span class="label">storage.litiaina.com</span>
       <span class="status"><span id="storageStatus">Checking...</span><span class="response-time" id="storageTime"></span></span>
       <div class="technical-details" id="storageDetails"></div>
@@ -135,7 +130,6 @@
 
 <script>
   const validDomains = new Set([
-    'litiaina.com',
     'storage.litiaina.com',
     'fs.litiaina.com',
     'websocket.litiaina.com',
@@ -193,7 +187,6 @@
   }
 
   function refreshAll() {
-    checkServiceStatus('litiaina.com', 'litiainaStatus', 'litiainaTime', 'litiainaDetails');
     checkServiceStatus('storage.litiaina.com', 'storageStatus', 'storageTime', 'storageDetails');
     checkServiceStatus('fs.litiaina.com', 'storagev1Status', 'storagev1Time', 'storagev1Details');
     checkServiceStatus('websocket.litiaina.com', 'websocketStatus', 'websocketTime', 'websocketDetails');
