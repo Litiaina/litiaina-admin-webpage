@@ -163,7 +163,7 @@
   </form>
 </div>
 <script>
-  const serverLink = `https://db.litiaina.com`;
+  const serverLink = `https://api.litiaina.com`;
   const loginForm = document.getElementById('loginForm');
   const error = document.getElementById('loginError');
 
@@ -202,11 +202,38 @@
       if (response.ok) {
         const loginResponse = await response.json();
         if (loginResponse.response === true) {
+
+          let api_key = loginResponse.api_key;
           localStorage.setItem("current-account-email", email);
           localStorage.setItem("current-account-password", password);
-          localStorage.setItem("current-api-key", loginResponse.api_key);
+          localStorage.setItem("current-api-key", api_key);
 
-          window.location.href = "upload.html";
+          let valid = {
+            api_key: "",
+            name: "",
+            email: "",
+            password: "",
+            profile_picture: "",
+            access_level: "",
+            uid: ""
+          }
+
+          const found = await fetch(`${serverLink}/users/account`, {
+            method: 'POST',
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": api_key
+            },
+            body: JSON.stringify(data)
+          });
+          if (found.ok) {
+            valid = await found.json();
+            localStorage.setItem("current-account-uid", valid.uid);
+            alert(valid.uid.toString());
+            window.location.href = "upload.html";
+          } else {
+            error.textContent = "Server is not responding or error occurred";
+          }
         } else {
           error.textContent = "Email or password incorrect";
         }

@@ -345,6 +345,7 @@
     const serverLink = `https://storage.litiaina.com`;
     const path = document.getElementById('pathInput').value.trim();
     const apiKey = localStorage.getItem("current-api-key").trim() || "".trim();
+    const uid = localStorage.getItem("current-account-uid").trim() || "".trim();
     const file = fileInput.files[0];
     const progressBar = document.getElementById('uploadProgress');
     const speedDisplay = document.getElementById('uploadSpeed');
@@ -420,10 +421,11 @@
 
       try {
         const t0 = performance.now();
-        const response = await fetch(`${serverLink}/files/upload/v2/${encodeURIComponent(path)}?${params}`, {
+        const response = await fetch(`${serverLink}/dir/file/upload/v2${path}?${params}`, {
           method: 'POST',
           headers: {
-            "x-api-key": apiKey
+            "x-api-key": apiKey,
+            "uid": uid
           },
           body: formData,
         });

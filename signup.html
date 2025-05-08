@@ -178,7 +178,7 @@
         </form>
     </div>
     <script>
-        const serverLink = "https://db.litiaina.com"
+        const serverLink = "https://api.litiaina.com"
         const signupForm = document.getElementById('signupForm');
         const error = document.getElementById('loginError');
 
@@ -216,11 +216,10 @@
                 email: email,
                 password: password,
                 profile_picture: "",
-                access_level: "1"
             };
 
             try {
-                const response = await fetch(`${serverLink}/users/create_user`, {
+                const response = await fetch(`${serverLink}/users/create`, {
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json",
