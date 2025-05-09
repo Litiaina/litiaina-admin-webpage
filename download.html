@@ -252,111 +252,124 @@
   <div class="circle"></div>
   <div id="downloadSpinnerText">Initializing download...</div>
 </div>
-
 <script>
-  let elapsedInterval;
-  let elapsedStartTime;
+    let elapsedInterval;
+    let elapsedStartTime;
 
-  function startElapsedTimer() {
-    elapsedStartTime = Date.now();
-    elapsedInterval = setInterval(() => {
-      const elapsed = (Date.now() - elapsedStartTime) / 1000;
-      const elapsedDisplay = document.getElementById("downloadElapsed");
-      elapsedDisplay.textContent = `${Math.floor(elapsed)}s`;
-    }, 1000);
-  }
-
-  function stopElapsedTimer() {
-    clearInterval(elapsedInterval);
-  }
-
-  async function downloadFile() {
-    const fileName = document.getElementById("downloadFileName").value.trim();
-    const path = document.getElementById("pathInput").value.trim()
-    const uid = localStorage.getItem("current-account-uid").trim() || "".trim();
-    if (!fileName || !uid) {
-      showToast("Missing file name or account UID", "error");
-      return;
+    function startElapsedTimer() {
+      elapsedStartTime = Date.now();
+      elapsedInterval = setInterval(() => {
+        const elapsed = (Date.now() - elapsedStartTime) / 1000;
+        document.getElementById("downloadElapsed").textContent = `${Math.floor(elapsed)}s`;
+      }, 1000);
     }
 
-    const progressBar = document.getElementById("downloadProgress");
-    const speedDisplay = document.getElementById("downloadSpeed");
-    const workerCountDisplay = document.getElementById("downloadWorkerCount");
-    const etaDisplay = document.getElementById("downloadEta");
-    const spinner = document.getElementById("downloadSpinner");
-    const spinnerText = document.getElementById("downloadSpinnerText");
-    const downloadBtn = document.getElementById("downloadBtn");
+    function stopElapsedTimer() {
+      clearInterval(elapsedInterval);
+    }
 
-    spinner.style.display = 'flex';
-    downloadBtn.disabled = true;
-    startElapsedTimer();
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      return `${m > 0 ? m + 'm ' : ''}${s}s`;
+    }
 
-    spinnerText.textContent = 'Fetching metadata...';
-    const metadataRes = await fetch(`https://storage.litiaina.com/dir/file/metadata/${path}?uid=${uid}&file_name=${fileName}`);
-    const metadata = await metadataRes.json();
-    const totalSize = metadata.file_size;
+    async function downloadFile() {
+      const fileName = document.getElementById("downloadFileName").value.trim();
+      const path = document.getElementById("pathInput").value.trim();
+      const uid = localStorage.getItem("current-account-uid")?.trim() || "";
 
-    const chunkSize = 1024 * 1024;
-    const numChunks = Math.ceil(totalSize / chunkSize);
-    const concurrency = 8;
-    const chunks = new Array(numChunks);
-    let completed = 0;
-    let downloadedBytes = 0;
-    const startTime = Date.now();
-    const queue = Array.from({ length: numChunks }, (_, i) => i);
-
-    const downloadChunk = async (index) => {
-      const offset = index * chunkSize;
-      const res = await fetch(`https://storage.litiaina.com/dir/file/download/${path}?uid=${uid}&file_name=${fileName}&offset=${offset}&chunk_size=${chunkSize}`);
-      const buffer = await res.arrayBuffer();
-      const chunk = new Uint8Array(buffer);
-      downloadedBytes += chunk.length;
-      chunks[index] = chunk;
-      completed++;
-      progressBar.value = Math.round((completed / numChunks) * 100);
-      const elapsed = (Date.now() - startTime) / 1000;
-      const speed = downloadedBytes / elapsed;
-      speedDisplay.textContent = `${(speed / 1024).toFixed(1)} KB/s`;
-      const remaining = totalSize - downloadedBytes;
-      const eta = speed > 0 ? remaining / speed : 0;
-      etaDisplay.textContent = formatTime(eta);
-      workerCountDisplay.textContent = concurrency;
-    };
-
-    const workers = Array.from({ length: concurrency }, async () => {
-      while (queue.length > 0) {
-        const index = queue.shift();
-        try {
-          await downloadChunk(index);
-        } catch (e) {
-          console.error("Failed to download chunk", index, e);
-          queue.push(index);
-        }
+      if (!fileName || !uid) {
+        showToast("Missing file name or account UID", "error");
+        return;
       }
-    });
 
-    await Promise.all(workers);
+      const progressBar = document.getElementById("downloadProgress");
+      const speedDisplay = document.getElementById("downloadSpeed");
+      const workerCountDisplay = document.getElementById("downloadWorkerCount");
+      const etaDisplay = document.getElementById("downloadEta");
+      const spinner = document.getElementById("downloadSpinner");
+      const spinnerText = document.getElementById("downloadSpinnerText");
+      const downloadBtn = document.getElementById("downloadBtn");
 
-    stopElapsedTimer();
-    spinner.style.display = 'none';
-    downloadBtn.disabled = false;
+      spinner.style.display = 'flex';
+      downloadBtn.disabled = true;
+      startElapsedTimer();
 
-    const blob = new Blob(chunks);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = fileName;
-    a.click();
-    URL.revokeObjectURL(url);
-    addToHistory(fileName, 'success', 'Download complete');
-  }
+      spinnerText.textContent = 'Fetching metadata...';
+      const metadataRes = await fetch(`https://storage.litiaina.com/dir/file/metadata/${path}?uid=${uid}&file_name=${fileName}`);
+      const metadata = await metadataRes.json();
+      const totalSize = metadata.file_size;
 
-  function formatTime(seconds) {
-    const m = Math.floor(seconds / 60);
-    const s = Math.floor(seconds % 60);
-    return `${m > 0 ? m + 'm ' : ''}${s}s`;
-  }
-</script>
+      const baseChunkSize = 1024 * 1024;
+      const concurrency = 8;
+      const chunks = [];
+      let completed = 0;
+      let downloadedBytes = 0;
+      const startTime = Date.now();
+
+      const queue = [];
+      for (let offset = 0; offset < totalSize; offset += baseChunkSize) {
+        queue.push({
+          offset,
+          size: Math.min(baseChunkSize, totalSize - offset),
+        });
+      }
+
+      const downloadChunk = async ({ offset, size }) => {
+        const res = await fetch(`https://storage.litiaina.com/dir/file/download/${path}?uid=${uid}&file_name=${fileName}&offset=${offset}&chunk_size=${size}`);
+        const buffer = await res.arrayBuffer();
+        const chunk = new Uint8Array(buffer);
+        chunks.push({ offset, chunk });
+        downloadedBytes += chunk.length;
+        completed++;
+
+        progressBar.value = Math.round((downloadedBytes / totalSize) * 100);
+        const elapsed = (Date.now() - startTime) / 1000;
+        const speed = downloadedBytes / elapsed;
+        speedDisplay.textContent = `${(speed / 1024).toFixed(1)} KB/s`;
+        const remaining = totalSize - downloadedBytes;
+        etaDisplay.textContent = formatTime(speed > 0 ? remaining / speed : 0);
+        workerCountDisplay.textContent = concurrency;
+      };
+
+      const workers = Array.from({ length: concurrency }, async () => {
+        while (queue.length > 0) {
+          const job = queue.shift();
+          try {
+            await downloadChunk(job);
+          } catch (err) {
+            console.error("Download error", job.offset, err);
+            queue.push(job);
+          }
+        }
+      });
+
+      await Promise.all(workers);
+
+      stopElapsedTimer();
+      spinner.style.display = 'none';
+      downloadBtn.disabled = false;
+
+      chunks.sort((a, b) => a.offset - b.offset);
+      const merged = new Uint8Array(totalSize);
+      let pos = 0;
+      for (const { chunk } of chunks) {
+        merged.set(chunk, pos);
+        pos += chunk.length;
+      }
+
+      const blob = new Blob([merged]);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      addToHistory(fileName, 'success', 'Download complete');
+    }
+  </script>
 </div>
 </body>
 </html>
