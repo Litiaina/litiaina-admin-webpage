@@ -273,7 +273,7 @@
   async function downloadFile() {
     const fileName = document.getElementById("downloadFileName").value.trim();
     const path = document.getElementById("pathInput").value.trim()
-    const uid = "9b820923-e15b-4970-8245-fda32c9616f0";
+    const uid = localStorage.getItem("current-account-uid").trim() || "".trim();
     if (!fileName || !uid) {
       showToast("Missing file name or account UID", "error");
       return;
