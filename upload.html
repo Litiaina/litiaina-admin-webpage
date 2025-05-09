@@ -446,7 +446,7 @@
           const response = await fetch(url, {
             method: 'POST',
             headers: {
-              "x-api-key": apiKey,
+              "authorization": `Bearer ${apiKey}`,
               "uid": uid
             },
             body: formData,
