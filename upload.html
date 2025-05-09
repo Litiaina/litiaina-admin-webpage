@@ -243,7 +243,7 @@
       <p id="dropText">Click or drag a file here to upload</p>
       <input type="file" id="fileInput" hidden />
     </div>
-    <input type="text" id="pathInput" placeholder="Upload Path (e.g., user-files)" />
+    <input type="text" id="pathInput" placeholder="Upload Path (e.g., myfiles/files/etc)" />
     <button class="auth-btn" id="uploadBtn" onclick="uploadFile()">Upload</button>
     <progress id="uploadProgress" value="0" max="100"></progress>
     <div class="status">
@@ -384,11 +384,7 @@
         showToast('Please select a file.', 'error');
         return;
       }
-      if (!path && !apiKey) {
-        showToast('Upload rejected: both path and API key cannot be empty.', 'error');
-        return;
-      }
-
+ 
       startElapsedTimer();
       uploadButton.disabled = true;
       spinner.style.display = 'flex';
@@ -446,10 +442,7 @@
 
         try {
           const t0 = performance.now();
-          const encodedPath = path
-            ? '/' + path.split('/').map(encodeURIComponent).join('/')
-            : '';
-          const url = `${serverLink}/dir/file/upload/v2${encodedPath}?${params}`;
+          const url = `${serverLink}/dir/file/upload/v2/${path}?${params}`;
           const response = await fetch(url, {
             method: 'POST',
             headers: {
