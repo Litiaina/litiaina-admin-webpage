@@ -222,7 +222,7 @@
             method: 'POST',
             headers: {
               "Content-Type": "application/json",
-              "x-api-key": api_key
+              "authorization": `Bearer ${api_key}`,
             },
             body: JSON.stringify(data)
           });
