@@ -190,11 +190,10 @@
         password: password
       };
 
-      const response = await fetch(`${serverLink}/users/login`, {
+      const response = await fetch(`${serverLink}/auth/login`, {
         method: 'POST',
         headers: {
           "Content-Type": "application/json",
-          "auth-key": authKey
         },
         body: JSON.stringify(data)
       });
@@ -203,10 +202,10 @@
         const loginResponse = await response.json();
         if (loginResponse.response === true) {
 
-          let api_key = loginResponse.api_key;
+          let token = loginResponse.token;
           localStorage.setItem("current-account-email", email);
           localStorage.setItem("current-account-password", password);
-          localStorage.setItem("current-api-key", api_key);
+          localStorage.setItem("current-token", token);
 
           let valid = {
             api_key: "",
@@ -218,11 +217,11 @@
             uid: ""
           }
 
-          const found = await fetch(`${serverLink}/users/account`, {
+          const found = await fetch(`${serverLink}/auth/account`, {
             method: 'POST',
             headers: {
               "Content-Type": "application/json",
-              "authorization": `Bearer ${api_key}`,
+              "authorization": `Bearer ${token}`,
             },
             body: JSON.stringify(data)
           });

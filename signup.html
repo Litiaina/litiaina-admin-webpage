@@ -219,11 +219,10 @@
             };
 
             try {
-                const response = await fetch(`${serverLink}/users/create`, {
+                const response = await fetch(`${serverLink}/auth/create`, {
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json",
-                        "auth-key": authKey
                     },
                     body: JSON.stringify(data)
                 });

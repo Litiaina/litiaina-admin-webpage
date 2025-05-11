@@ -369,7 +369,7 @@
     async function uploadFile() {
       const serverLink = `https://storage.litiaina.com`;
       const path = document.getElementById('pathInput').value.trim();
-      const apiKey = localStorage.getItem("current-api-key").trim() || "".trim();
+      const token = localStorage.getItem("current-token").trim() || "".trim();
       const uid = localStorage.getItem("current-account-uid").trim() || "".trim();
       const file = fileInput.files[0];
       const progressBar = document.getElementById('uploadProgress');
@@ -446,7 +446,7 @@
           const response = await fetch(url, {
             method: 'POST',
             headers: {
-              "authorization": `Bearer ${apiKey}`,
+              "authorization": `Bearer ${token}`,
               "uid": uid
             },
             body: formData,
