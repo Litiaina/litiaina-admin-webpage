@@ -166,6 +166,10 @@
                 <span class="icon">🔒</span>
                 <input type="password" id="signupConfirmPassword" placeholder="Confirm Password" required />
             </div>
+            <div class="input-group">
+                <span class="icon">🔑</span>
+                <input type="text" id="signupAuthKey" placeholder="Auth Key" required />
+            </div>
             <div class="error-message" id="signupError"></div>
             <button type="submit" class="auth-btn">SIGN UP</button>
             <div class="switch-text" id="login">
@@ -187,6 +191,7 @@
             const name = document.getElementById('signupName').value.trim();
             const email = document.getElementById('signupEmail').value.trim();
             const password = document.getElementById('signupPassword').value;
+            const token = document.getElementById('signupAuthKey').value.trim();
             const confirm = document.getElementById('signupConfirmPassword').value;
             const error = document.getElementById('signupError');
             error.textContent = "";
@@ -218,6 +223,7 @@
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json",
+                        "authorization": `Bearer ${token}`,
                     },
                     body: JSON.stringify(data)
                 });
