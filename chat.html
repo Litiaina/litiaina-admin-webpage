@@ -49,6 +49,23 @@
             background: #0a0a0a;
         }
 
+        /* New class for sender's name */
+        .sender-name {
+            font-weight: bold;
+            color: #d3d3d3;
+            /* Light color to ensure visibility */
+            margin-bottom: 4px;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        /* New class for message container */
+        .message-container {
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+
         .message {
             max-width: 75%;
             padding: 12px 16px;
@@ -151,15 +168,23 @@
         };
 
         ws.onmessage = (event) => {
-            const message = event.data.trim();
-
-            if (message.endsWith(": ping")) {
+            if (event.data.trim() === "ping") {
                 return;
             }
 
-            if (!message.includes(uid)) {
-                appendMessage(message, "other");
-                notificationSound.play();
+            try {
+                const parsedMessage = JSON.parse(event.data.trim());
+
+                if (parsedMessage.type === "chat") {
+                    if (parsedMessage.uid !== uid) {
+                        appendMessage(parsedMessage.content, "other", parsedMessage.uid);
+                        notificationSound.play();
+                    }
+                } else {
+                    console.log("Received message of type:", parsedMessage.type);
+                }
+            } catch (error) {
+                console.error("Error parsing message:", error);
             }
         };
 
@@ -170,17 +195,37 @@
         function sendMessage() {
             const message = messageInput.value.trim();
             if (message) {
-                ws.send(message);
+                const messageObject = {
+                    type: "chat",
+                    uid: uid,
+                    content: message,
+                    timestamp: new Date().toISOString()
+                };
+
+                ws.send(JSON.stringify(messageObject));
                 appendMessage(message, "self");
                 messageInput.value = "";
             }
         }
 
-        function appendMessage(message, type) {
+        function appendMessage(message, type, senderName = '') {
+            const messageContainer = document.createElement("div");
+            messageContainer.classList.add("message-container");
+
+            if (type === "other" && senderName) {
+                const nameTag = document.createElement("div");
+                nameTag.classList.add("sender-name");
+                nameTag.textContent = senderName;
+                messageContainer.appendChild(nameTag);
+            }
+
+            // Create the message blob
             const msg = document.createElement("div");
             msg.classList.add("message", type);
             msg.textContent = message;
-            chatMessages.appendChild(msg);
+            messageContainer.appendChild(msg);
+
+            chatMessages.appendChild(messageContainer);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
