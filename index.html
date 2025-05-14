@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <link rel="icon" type="image/png" href="images/litiaina_icon.png" />
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login</title>
   <style>
     * {
@@ -12,6 +13,7 @@
       margin: 0;
       padding: 0;
     }
+
     body {
       background-color: #000;
       color: #fff;
@@ -22,6 +24,7 @@
       min-height: 100vh;
       padding: 20px;
     }
+
     .auth-box {
       background-color: #111;
       border-radius: 12px;
@@ -31,30 +34,37 @@
       position: relative;
       transition: all 0.3s ease;
     }
+
     .top-banner {
       text-align: center;
       margin-bottom: 30px;
     }
+
     .top-banner img {
       max-width: 100px;
       margin-bottom: 10px;
     }
+
     .top-banner h1 {
       font-size: 1.5rem;
       font-weight: bold;
     }
+
     .top-banner p {
       color: #ccc;
       font-size: 0.9rem;
     }
+
     h2 {
       text-align: center;
       margin-bottom: 20px;
     }
+
     .input-group {
       position: relative;
       margin-bottom: 20px;
     }
+
     .input-group input {
       width: 100%;
       padding: 14px 14px 14px 44px;
@@ -64,9 +74,11 @@
       color: #fff;
       font-size: 1rem;
     }
+
     .input-group input::placeholder {
       color: #888;
     }
+
     .input-group .icon {
       position: absolute;
       top: 50%;
@@ -74,6 +86,7 @@
       transform: translateY(-50%);
       color: #ccc;
     }
+
     .error-message {
       color: red;
       font-size: 0.85rem;
@@ -82,6 +95,7 @@
       text-align: left;
       padding-left: 10px;
     }
+
     .auth-btn {
       width: 100%;
       padding: 14px;
@@ -93,19 +107,23 @@
       cursor: pointer;
       font-size: 1rem;
     }
+
     .auth-btn:hover {
       background-color: #333;
     }
+
     .switch-text {
       margin-top: 20px;
       text-align: center;
       font-size: 0.9rem;
     }
+
     .switch-text span {
       color: white;
       font-weight: bold;
       cursor: pointer;
     }
+
     .forgot-password {
       text-align: center;
       color: red;
@@ -114,130 +132,170 @@
       cursor: pointer;
     }
     .hidden {
-      display: none;
+      display: none !important;
     }
-    .extra-space {
-      margin-bottom: 40px;
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      color: white;
+      font-size: 1.2rem;
+      flex-direction: column;
+    }
+
+    .loader {
+      border: 6px solid #222;
+      border-top: 6px solid #888;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 10px;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
   </style>
 </head>
+
 <body>
 
-<div class="top-banner">
-  <img src="images/litiaina_icon.png" alt="User Icon" />
-  <h1 id="banner-title">Login to your Account</h1>
-  <p id="banner-desc">Login to access your account</p>
-</div>
+  <div class="top-banner">
+    <img src="images/litiaina_icon.png" alt="User Icon" />
+    <h1 id="banner-title">Login to your Account</h1>
+    <p id="banner-desc">Login to access your account</p>
+  </div>
 
-<div class="auth-box" id="authBox">
+  <div class="auth-box" id="authBox">
+    <h2 id="formTitle">Welcome Back!</h2>
+    <form id="loginForm">
+      <div class="input-group">
+        <span class="icon">📧</span>
+        <input type="email" id="loginEmail" placeholder="Email" required />
+      </div>
+      <div class="input-group">
+        <span class="icon">🔒</span>
+        <input type="password" id="loginPassword" placeholder="Password" required />
+      </div>
+      <div class="forgot-password">Forgot password?</div>
+      <div class="error-message" id="loginError"></div>
+      <button type="submit" class="auth-btn">LOGIN</button>
+      <div class="switch-text" id="signup">
+        <span>Don't have an account? SIGN UP</span>
+      </div>
+    </form>
+  </div>
 
-  <h2 id="formTitle">Welcome Back!</h2>
+  <div class="loading-overlay hidden" id="loadingOverlay">
+    <div class="loader"></div>
+    <div>Authenticating...</div>
+  </div>
 
-  <form id="loginForm">
+  <script>
+    const serverLink = `https://api.litiaina.com`;
+    const loginForm = document.getElementById('loginForm');
+    const error = document.getElementById('loginError');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    loadingOverlay.classList.add("hidden");
 
-    <div class="input-group">
-      <span class="icon">📧</span>
-      <input type="email" id="loginEmail" placeholder="Email" required />
-    </div>
+    document.getElementById("signup").onclick = () => {
+      window.location.href = "signup.html";
+    };
 
-    <div class="input-group">
-      <span class="icon">🔒</span>
-      <input type="password" id="loginPassword" placeholder="Password" required />
-    </div>
+    loginForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      error.textContent = "";
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      loadingOverlay.classList.remove("hidden");
 
-    <div class="forgot-password">Forgot password?</div>
 
-    <div class="error-message" id="loginError"></div>
-
-    <button type="submit" class="auth-btn">LOGIN</button>
-
-    <div class="switch-text" id="signup">
-      <span>Don't have an account? SIGN UP</span>
-    </div>
-
-  </form>
-</div>
-<script>
-  const serverLink = `https://api.litiaina.com`;
-  const loginForm = document.getElementById('loginForm');
-  const error = document.getElementById('loginError');
-
-  document.getElementById("signup").onclick = () => {
-    window.location.href = "signup.html";
-  };
-
-  loginForm.addEventListener('submit', async function (e) {
-    e.preventDefault();
-    error.textContent = "";
-
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
-
-    if (!email || !password) {
-      error.textContent = "Please fill in all fields.";
-      return;
-    }
-
-    try {
-      const data = {
-        email: email,
-        password: password
-      };
-
-      const response = await fetch(`${serverLink}/auth/login`, {
-        method: 'POST',
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data)
-      });
-
-      if (response.ok) {
-        const loginResponse = await response.json();
-        if (loginResponse.response === true) {
-
-          let token = loginResponse.token;
-          localStorage.setItem("current-account-email", email);
-          localStorage.setItem("current-account-password", password);
-          localStorage.setItem("current-token", token);
-
-          let valid = {
-            api_key: "",
-            name: "",
-            email: "",
-            password: "",
-            profile_picture: "",
-            access_level: "",
-            uid: ""
-          }
-
-          const found = await fetch(`${serverLink}/auth/account`, {
-            method: 'POST',
-            headers: {
-              "Content-Type": "application/json",
-              "authorization": `Bearer ${token}`,
-            },
-            body: JSON.stringify(data)
-          });
-          if (found.ok) {
-            valid = await found.json();
-            localStorage.setItem("current-account-uid", valid.uid);
-            alert(valid.uid.toString());
-            window.location.href = "upload.html";
-          } else {
-            error.textContent = "Server is not responding or error occurred";
-          }
-        } else {
-          error.textContent = "Email or password incorrect";
-        }
-      } else {
-        error.textContent = "Server is not responding or error occurred";
+      if (!email || !password) {
+        error.textContent = "Please fill in all fields.";
+        loadingOverlay.classList.add("hidden");
+        return;
       }
 
-    } catch (err) {
-      error.textContent = err.message || "Login failed. Please try again.";
-    }
-  });
-</script>
+      try {
+        const data = {
+          email: email,
+          password: password
+        };
+
+        const response = await fetch(`${serverLink}/auth/login`, {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+          const loginResponse = await response.json();
+          if (loginResponse.response === true) {
+
+            let token = loginResponse.token;
+            localStorage.setItem("current-account-email", email);
+            localStorage.setItem("current-account-password", password);
+            localStorage.setItem("current-token", token);
+
+            let valid = {
+              api_key: "",
+              name: "",
+              email: "",
+              password: "",
+              profile_picture: "",
+              access_level: "",
+              uid: ""
+            }
+
+            const found = await fetch(`${serverLink}/auth/account`, {
+              method: 'POST',
+              headers: {
+                "Content-Type": "application/json",
+                "authorization": `Bearer ${token}`,
+              },
+              body: JSON.stringify(data)
+            });
+            if (found.ok) {
+              valid = await found.json();
+              localStorage.setItem("current-account-uid", valid.uid);
+              loadingOverlay.classList.add("hidden");
+              window.location.href = "upload.html";
+            } else {
+              loadingOverlay.classList.add("hidden");
+              error.textContent = "Server is not responding or error occurred";
+            }
+          } else {
+            loadingOverlay.classList.add("hidden");
+            error.textContent = "Email or password incorrect";
+          }
+        } else {
+          loadingOverlay.classList.add("hidden");
+          error.textContent = "Server is not responding or error occurred";
+        }
+
+      } catch (err) {
+        error.textContent = err.message || "Login failed. Please try again.";
+      } finally {
+        loadingOverlay.classList.add("hidden");
+      }
+    });
+  </script>
 </body>
+
 </html>
