@@ -132,6 +132,7 @@
     </div>
 
     <audio id="notificationSound" src="sounds/notification.mp3" preload="auto"></audio>
+    <audio id="initialSound" src="sounds/initialize.mp3" preload="auto"></audio>
 
     <script>
         const token = localStorage.getItem("current-token").trim() || "".trim();
@@ -140,6 +141,7 @@
         const chatMessages = document.getElementById("chatMessages");
         const messageInput = document.getElementById("messageInput");
         const notificationSound = document.getElementById("notificationSound");
+        const initialSound = document.getElementById("notificationSound");
 
         ws.onopen = () => {
             console.log("WebSocket connected");
@@ -153,7 +155,7 @@
         ws.onmessage = (event) => {
             const message = event.data.trim();
 
-            if (message === "ping" || message.endsWith(': "ping"')) {
+            if (message.endsWith(": ping")) {
                 return;
             }
 
@@ -162,7 +164,6 @@
                 notificationSound.play();
             }
         };
-
 
         ws.onclose = () => {
             console.log("WebSocket disconnected");
