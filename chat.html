@@ -141,7 +141,9 @@
         const chatMessages = document.getElementById("chatMessages");
         const messageInput = document.getElementById("messageInput");
         const notificationSound = document.getElementById("notificationSound");
-        const initialSound = document.getElementById("notificationSound");
+        const initialSound = document.getElementById("initialSound");
+
+        initialSound.play();
 
         ws.onopen = () => {
             console.log("WebSocket connected");
