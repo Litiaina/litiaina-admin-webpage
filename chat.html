@@ -145,23 +145,24 @@
             console.log("WebSocket connected");
             ws.pingInterval = setInterval(() => {
                 if (ws.readyState === WebSocket.OPEN) {
-                    ws.send(JSON.stringify({ type: "ping" }));
+                    ws.send("ping");
                 }
             }, 30000);
         };
 
         ws.onmessage = (event) => {
             const message = event.data.trim();
-            try {
-                const data = JSON.parse(message);
-                if (data.type === "ping") return;
-            } catch (e) {}
+
+            if (message === "ping" || message.endsWith(': "ping"')) {
+                return;
+            }
 
             if (!message.includes(uid)) {
                 appendMessage(message, "other");
                 notificationSound.play();
             }
         };
+
 
         ws.onclose = () => {
             console.log("WebSocket disconnected");
