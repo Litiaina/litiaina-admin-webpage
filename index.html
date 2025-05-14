@@ -274,6 +274,7 @@
             if (found.ok) {
               valid = await found.json();
               localStorage.setItem("current-account-uid", valid.uid);
+              localStorage.setItem("current-account-name", valid.name);
               loadingOverlay.classList.add("hidden");
               window.location.href = "upload.html";
             } else {
