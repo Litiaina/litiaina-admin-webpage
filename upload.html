@@ -394,10 +394,7 @@
       const MIN_CHUNK_SIZE = 256 * 1024;
       const TARGET_CHUNK_COUNT = 20;
       const MAX_CHUNK_SIZE = 50 * 1024 * 1024;
-      const chunkSize = Math.min(
-        Math.max(MIN_CHUNK_SIZE, Math.floor(fileSize / TARGET_CHUNK_COUNT)),
-        MAX_CHUNK_SIZE
-      );
+      const chunkSize = 1024 * 1024;
       const maxParallel = 12;
       const totalChunks = Math.ceil(fileSize / chunkSize);
       const fileId = crypto.randomUUID();
