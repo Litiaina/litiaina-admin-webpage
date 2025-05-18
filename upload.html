@@ -369,8 +369,8 @@
     async function uploadFile() {
       const serverLink = `https://storage.litiaina.com`;
       const path = document.getElementById('pathInput').value.trim();
-      const token = localStorage.getItem("current-token").trim() || "".trim();
-      const uid = localStorage.getItem("current-account-uid").trim() || "".trim();
+      const token = localStorage.getItem("current-token")?.trim() || "";
+      const uid = localStorage.getItem("current-account-uid")?.trim() || "";
       const file = fileInput.files[0];
       const progressBar = document.getElementById('uploadProgress');
       const speedDisplay = document.getElementById('uploadSpeed');
@@ -384,27 +384,31 @@
         showToast('Please select a file.', 'error');
         return;
       }
- 
+
       startElapsedTimer();
       uploadButton.disabled = true;
       spinner.style.display = 'flex';
       spinnerText.textContent = 'Initializing upload...';
 
       const fileSize = file.size;
-      const MIN_CHUNK_SIZE = 256 * 1024;
-      const TARGET_CHUNK_COUNT = 20;
-      const MAX_CHUNK_SIZE = 16 * 1024 * 1024;
-      const chunkSize = Math.min(
-        Math.max(MIN_CHUNK_SIZE, Math.floor(fileSize / TARGET_CHUNK_COUNT)),
-        MAX_CHUNK_SIZE
-      );
-      const maxParallel = 12;
+      const MIN_CHUNK_SIZE = 512 * 1024;
+      const MAX_CHUNK_SIZE = 8 * 1024 * 1024;
+      const TARGET_CHUNK_COUNT = 24;
+      const chunkSize = Math.min(Math.max(MIN_CHUNK_SIZE, Math.ceil(fileSize / TARGET_CHUNK_COUNT)), MAX_CHUNK_SIZE);
       const totalChunks = Math.ceil(fileSize / chunkSize);
       const fileId = crypto.randomUUID();
 
       let uploadedChunks = 0;
       let currentWorkers = 0;
-      const speeds = [];
+      let avgSpeed = 0;
+      const speedAlpha = 0.2;
+
+      const updateProgress = () => {
+        progressBar.value = Math.round((uploadedChunks / totalChunks) * 100);
+        const remaining = totalChunks - uploadedChunks;
+        const estTime = avgSpeed > 0 ? (chunkSize * remaining) / avgSpeed : 0;
+        etaDisplay.textContent = formatTime(estTime);
+      };
 
       const formatTime = (seconds) => {
         const h = Math.floor(seconds / 3600);
@@ -413,19 +417,10 @@
         return `${h > 0 ? h + 'h ' : ''}${m > 0 ? m + 'm ' : ''}${s}s`;
       };
 
-      const updateProgress = () => {
-        progressBar.value = Math.round((uploadedChunks / totalChunks) * 100);
-        const avgSpeed = speeds.length ? speeds.reduce((a, b) => a + b, 0) / speeds.length : 0;
-        const remainingChunks = totalChunks - uploadedChunks;
-        const estimatedTime = avgSpeed > 0 ? (chunkSize * remainingChunks) / avgSpeed : 0;
-        etaDisplay.textContent = formatTime(estimatedTime);
-      };
-
-      const uploadChunk = async (chunkIndex, retries = 3) => {
+      const uploadChunk = async (chunkIndex, retries = 3, delay = 500) => {
         const start = chunkIndex * chunkSize;
         const end = Math.min(start + chunkSize, file.size);
         const blob = file.slice(start, end);
-
         const checksum = await sha256Checksum(blob);
 
         const formData = new FormData();
@@ -440,79 +435,69 @@
           checksum: checksum
         });
 
+        const url = `${serverLink}/dir/file/upload/v2/${path}?${params}`;
+        const t0 = performance.now();
         try {
-          const t0 = performance.now();
-          const url = `${serverLink}/dir/file/upload/v2/${path}?${params}`;
           const response = await fetch(url, {
             method: 'POST',
             headers: {
-              "authorization": `Bearer ${token}`,
-              "uid": uid
+              authorization: `Bearer ${token}`,
+              uid: uid
             },
-            body: formData,
+            body: formData
           });
           const t1 = performance.now();
 
           if (!response.ok) throw new Error(`Chunk ${chunkIndex} failed`);
 
-          uploadedChunks++;
-          speeds.push((end - start) / ((t1 - t0) / 1000));
-          if (speeds.length > 5) speeds.shift();
+          const chunkSpeed = (end - start) / ((t1 - t0) / 1000);
+          avgSpeed = avgSpeed === 0 ? chunkSpeed : (1 - speedAlpha) * avgSpeed + speedAlpha * chunkSpeed;
 
+          uploadedChunks++;
           updateProgress();
           return true;
         } catch (err) {
-          if (retries > 0) return uploadChunk(chunkIndex, retries - 1);
-          throw err;
+          if (retries > 0) {
+            await new Promise(r => setTimeout(r, delay));
+            return uploadChunk(chunkIndex, retries - 1, delay * 2);
+          } else {
+            throw err;
+          }
         }
       };
 
       try {
-        const queue = Array.from({ length: totalChunks }, (_, i) => i);
-        const allWorkers = [];
-
-        const monitor = () => {
-          const avgSpeed = speeds.length ? speeds.reduce((a, b) => a + b, 0) / speeds.length : 0;
-          speedDisplay.textContent = `${(avgSpeed / 1024).toFixed(1)} KB/s`;
-          workerCountDisplay.textContent = currentWorkers;
-          updateProgress();
-        };
-
         spinnerText.textContent = 'Uploading...';
+        let nextIndex = 0;
 
-        const spawnWorker = () => {
+        const worker = async () => {
           currentWorkers++;
-          const worker = (async () => {
-            while (queue.length > 0) {
-              const chunkIndex = queue.shift();
-              if (chunkIndex === undefined) break;
-              try {
-                await uploadChunk(chunkIndex);
-                monitor();
-              } catch (err) {
-                console.error(`Failed to upload chunk ${chunkIndex}`, err);
-                addToHistory(file.name, 'fail', `Failed to upload chunk ${chunkIndex} error: ${err}`)
-                throw err;
-              }
+          workerCountDisplay.textContent = currentWorkers;
+
+          while (nextIndex < totalChunks) {
+            const index = nextIndex++;
+            try {
+              await uploadChunk(index);
+              speedDisplay.textContent = `${(avgSpeed / 1024).toFixed(1)} KB/s`;
+            } catch (err) {
+              addToHistory(file.name, 'fail', `Chunk ${index} failed: ${err.message}`);
+              throw err;
             }
-            currentWorkers--;
-            monitor();
-          })();
-          allWorkers.push(worker);
+          }
+
+          currentWorkers--;
+          workerCountDisplay.textContent = currentWorkers;
         };
 
-        for (let i = 0; i < Math.min(2, totalChunks); i++) spawnWorker();
-        await new Promise(res => setTimeout(res, 500));
-        for (let i = 2; i < Math.min(maxParallel, totalChunks); i++) spawnWorker();
-
-        await Promise.all(allWorkers);
+        const workers = Array.from({ length: Math.min(12, totalChunks) }, () => worker());
+        await Promise.all(workers);
 
         spinner.style.display = 'none';
         uploadButton.disabled = false;
-
         stopElapsedTimer();
+
         showToast('Upload complete!', 'success');
-        addToHistory(file.name, 'success')
+        addToHistory(file.name, 'success');
         resetUploadUI();
 
       } catch (err) {
