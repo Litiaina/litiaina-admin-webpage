@@ -392,7 +392,7 @@
 
       const fileSize = file.size;
       const MIN_CHUNK_SIZE = 512 * 1024;
-      const MAX_CHUNK_SIZE = 8 * 1024 * 1024;
+      const MAX_CHUNK_SIZE = 50 * 1024 * 1024;
       const TARGET_CHUNK_COUNT = 24;
       const chunkSize = Math.min(Math.max(MIN_CHUNK_SIZE, Math.ceil(fileSize / TARGET_CHUNK_COUNT)), MAX_CHUNK_SIZE);
       const totalChunks = Math.ceil(fileSize / chunkSize);
