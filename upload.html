@@ -235,7 +235,7 @@
   <div class="top-banner">
     <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" alt="User Icon" />
     <h1>Upload Your File</h1>
-    <p>Parallel chunked upload with progress</p>
+    <p id="gb-used">USED: ---/TOTAL: ---</p>
   </div>
 
   <div class="auth-box">
@@ -265,6 +265,33 @@
 
   <script>
     let elapsedInterval = null;
+    const serverLink = `https://storage.litiaina.com`;
+    const token = localStorage.getItem("current-token")?.trim() || "";
+    const uid = localStorage.getItem("current-account-uid")?.trim() || "";
+    const storageCapacity = localStorage.getItem("current-capacity")?.trim() || "";
+
+    async function currentCapacity() {
+
+      let metaadata = {
+        file_name: "",
+        file_size: "",
+        last_modified: "",
+      };
+
+      const found = await fetch(`${serverLink}/dir/file/metadata/${uid}`, {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+          "authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (found.ok) {
+        metaadata = await found.json();
+        document.getElementById('gb-used').value = `USED: ${storageCapacity}/TOTAL: ${metaadata.file_size}`;
+      }
+    }
 
     function startElapsedTimer() {
       const elapsedDisplay = document.getElementById('elapsed');
@@ -367,19 +394,19 @@
     }
 
     async function uploadFile() {
-      const serverLink = `https://storage.litiaina.com`;
-      const path = document.getElementById('pathInput').value.trim();
-      const token = localStorage.getItem("current-token")?.trim() || "";
-      const uid = localStorage.getItem("current-account-uid")?.trim() || "";
       const file = fileInput.files[0];
+      const path = document.getElementById('pathInput').value.trim();
       const progressBar = document.getElementById('uploadProgress');
       const speedDisplay = document.getElementById('uploadSpeed');
       const workerCountDisplay = document.getElementById('workerCount');
       const etaDisplay = document.getElementById('eta');
+      const gbUsed = document.getElementById('gb-used')
       const spinner = document.getElementById('uploadSpinner');
       const spinnerText = document.getElementById('spinnerText');
       const uploadButton = document.getElementById('uploadBtn');
 
+      currentCapacity();
+      
       if (!file) {
         showToast('Please select a file.', 'error');
         return;

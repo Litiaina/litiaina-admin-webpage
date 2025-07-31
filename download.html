@@ -253,123 +253,111 @@
   <div id="downloadSpinnerText">Initializing download...</div>
 </div>
 <script>
-    let elapsedInterval;
-    let elapsedStartTime;
+  let elapsedInterval;
+  let elapsedStartTime;
+  const serverUrl = "https://storage.litiaina.com"
 
-    function startElapsedTimer() {
-      elapsedStartTime = Date.now();
-      elapsedInterval = setInterval(() => {
-        const elapsed = (Date.now() - elapsedStartTime) / 1000;
-        document.getElementById("downloadElapsed").textContent = `${Math.floor(elapsed)}s`;
-      }, 1000);
+  function startElapsedTimer() {
+    elapsedStartTime = Date.now();
+    elapsedInterval = setInterval(() => {
+      const elapsed = (Date.now() - elapsedStartTime) / 1000;
+      document.getElementById("downloadElapsed").textContent = `${Math.floor(elapsed)}s`;
+    }, 1000);
+  }
+
+  function stopElapsedTimer() {
+    clearInterval(elapsedInterval);
+  }
+
+  function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m > 0 ? m + 'm ' : ''}${s}s`;
+  }
+
+  async function downloadFile() {
+    const fileName = document.getElementById("downloadFileName").value.trim();
+    const path = document.getElementById("pathInput").value.trim();
+    const uid = localStorage.getItem("current-account-uid")?.trim() || "";
+
+    if (!fileName || !uid) {
+      alert("Missing file name or account UID");
+      return;
     }
 
-    function stopElapsedTimer() {
-      clearInterval(elapsedInterval);
-    }
+    const progressBar = document.getElementById("downloadProgress");
+    const speedDisplay = document.getElementById("downloadSpeed");
+    const workerCountDisplay = document.getElementById("downloadWorkerCount");
+    const etaDisplay = document.getElementById("downloadEta");
+    const spinner = document.getElementById("downloadSpinner");
+    const spinnerText = document.getElementById("downloadSpinnerText");
+    const downloadBtn = document.getElementById("downloadBtn");
 
-    function formatTime(seconds) {
-      const m = Math.floor(seconds / 60);
-      const s = Math.floor(seconds % 60);
-      return `${m > 0 ? m + 'm ' : ''}${s}s`;
-    }
+    spinner.style.display = 'flex';
+    downloadBtn.disabled = true;
+    startElapsedTimer();
 
-    async function downloadFile() {
-      const fileName = document.getElementById("downloadFileName").value.trim();
-      const path = document.getElementById("pathInput").value.trim();
-      const uid = localStorage.getItem("current-account-uid")?.trim() || "";
+    spinnerText.textContent = 'Fetching metadata...';
+    const metadataRes = await fetch(`${serverUrl}/dir/file/metadata/${path}?uid=${uid}&file_name=${fileName}`);
+    const metadata = await metadataRes.json();
+    const totalSize = metadata.file_size;
 
-      if (!fileName || !uid) {
-        showToast("Missing file name or account UID", "error");
-        return;
-      }
-
-      const progressBar = document.getElementById("downloadProgress");
-      const speedDisplay = document.getElementById("downloadSpeed");
-      const workerCountDisplay = document.getElementById("downloadWorkerCount");
-      const etaDisplay = document.getElementById("downloadEta");
-      const spinner = document.getElementById("downloadSpinner");
-      const spinnerText = document.getElementById("downloadSpinnerText");
-      const downloadBtn = document.getElementById("downloadBtn");
-
-      spinner.style.display = 'flex';
-      downloadBtn.disabled = true;
-      startElapsedTimer();
-
-      spinnerText.textContent = 'Fetching metadata...';
-      const metadataRes = await fetch(`https://storage.litiaina.com/dir/file/metadata/${path}?uid=${uid}&file_name=${fileName}`);
-      const metadata = await metadataRes.json();
-      const totalSize = metadata.file_size;
-
-      const baseChunkSize = 1024 * 1024;
-      const concurrency = 8;
-      const chunks = [];
-      let completed = 0;
-      let downloadedBytes = 0;
-      const startTime = Date.now();
-
-      const queue = [];
-      for (let offset = 0; offset < totalSize; offset += baseChunkSize) {
-        queue.push({
-          offset,
-          size: Math.min(baseChunkSize, totalSize - offset),
-        });
-      }
-
-      const downloadChunk = async ({ offset, size }) => {
-        const res = await fetch(`https://storage.litiaina.com/dir/file/download/${path}?uid=${uid}&file_name=${fileName}&offset=${offset}&chunk_size=${size}`);
-        const buffer = await res.arrayBuffer();
-        const chunk = new Uint8Array(buffer);
-        chunks.push({ offset, chunk });
-        downloadedBytes += chunk.length;
-        completed++;
-
-        progressBar.value = Math.round((downloadedBytes / totalSize) * 100);
-        const elapsed = (Date.now() - startTime) / 1000;
-        const speed = downloadedBytes / elapsed;
-        speedDisplay.textContent = `${(speed / 1024).toFixed(1)} KB/s`;
-        const remaining = totalSize - downloadedBytes;
-        etaDisplay.textContent = formatTime(speed > 0 ? remaining / speed : 0);
-        workerCountDisplay.textContent = concurrency;
-      };
-
-      const workers = Array.from({ length: concurrency }, async () => {
-        while (queue.length > 0) {
-          const job = queue.shift();
-          try {
-            await downloadChunk(job);
-          } catch (err) {
-            console.error("Download error", job.offset, err);
-            queue.push(job);
-          }
-        }
+    const chunkSize = 1024 * 1024;
+    const concurrency = 8;
+    const queue = [];
+    for (let offset = 0; offset < totalSize; offset += chunkSize) {
+      queue.push({
+        offset,
+        size: Math.min(chunkSize, totalSize - offset),
       });
-
-      await Promise.all(workers);
-
-      stopElapsedTimer();
-      spinner.style.display = 'none';
-      downloadBtn.disabled = false;
-
-      chunks.sort((a, b) => a.offset - b.offset);
-      const merged = new Uint8Array(totalSize);
-      let pos = 0;
-      for (const { chunk } of chunks) {
-        merged.set(chunk, pos);
-        pos += chunk.length;
-      }
-
-      const blob = new Blob([merged]);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      a.click();
-      URL.revokeObjectURL(url);
-
-      addToHistory(fileName, 'success', 'Download complete');
     }
-  </script>
+
+    const blobParts = new Array(queue.length);
+    let downloadedBytes = 0;
+    const startTime = Date.now();
+
+    const downloadChunk = async ({ offset, size }, index) => {
+      const res = await fetch(`${serverUrl}/dir/file/download/${path}?uid=${uid}&file_name=${fileName}&offset=${offset}&chunk_size=${size}`);
+      const buffer = await res.arrayBuffer();
+      blobParts[index] = new Uint8Array(buffer);
+      downloadedBytes += buffer.byteLength;
+
+      const elapsed = (Date.now() - startTime) / 1000;
+      const speed = downloadedBytes / elapsed;
+      progressBar.value = Math.round((downloadedBytes / totalSize) * 100);
+      speedDisplay.textContent = `${(speed / 1024).toFixed(1)} KB/s`;
+      etaDisplay.textContent = formatTime(speed > 0 ? (totalSize - downloadedBytes) / speed : 0);
+      workerCountDisplay.textContent = concurrency;
+    };
+
+    const workers = Array.from({ length: concurrency }).map(async (_, workerId) => {
+      while (queue.length > 0) {
+        const index = blobParts.length - queue.length;
+        const job = queue.shift();
+        try {
+          await downloadChunk(job, index);
+        } catch (err) {
+          console.error("Download error", job.offset, err);
+          queue.push(job);
+        }
+      }
+    });
+
+    await Promise.all(workers);
+
+    stopElapsedTimer();
+    spinner.style.display = 'none';
+    downloadBtn.disabled = false;
+
+    const finalBlob = new Blob(blobParts);
+    const blobURL = URL.createObjectURL(finalBlob);
+    const a = document.createElement("a");
+    a.href = blobURL;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(blobURL);
+  }
+</script>
 </div>
 </body>
 </html>

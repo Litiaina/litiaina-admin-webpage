@@ -131,9 +131,11 @@
       margin-bottom: 20px;
       cursor: pointer;
     }
+
     .hidden {
       display: none !important;
     }
+
     .loading-overlay {
       position: fixed;
       top: 0;
@@ -191,6 +193,10 @@
         <span class="icon">🔒</span>
         <input type="password" id="loginPassword" placeholder="Password" required />
       </div>
+      <div class="input-group hidden" id="otpGroup">
+        <span class="icon">🔑</span>
+        <input type="text" id="loginOtp" placeholder="Enter OTP" />
+      </div>
       <div class="forgot-password">Forgot password?</div>
       <div class="error-message" id="loginError"></div>
       <button type="submit" class="auth-btn">LOGIN</button>
@@ -210,6 +216,8 @@
     const loginForm = document.getElementById('loginForm');
     const error = document.getElementById('loginError');
     const loadingOverlay = document.getElementById('loadingOverlay');
+    const otpGroup = document.getElementById('otpGroup');
+    const otpInput = document.getElementById('loginOtp');
     loadingOverlay.classList.add("hidden");
 
     document.getElementById("signup").onclick = () => {
@@ -221,8 +229,8 @@
       error.textContent = "";
       const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value;
+      const otp = otpInput.value.trim();
       loadingOverlay.classList.remove("hidden");
-
 
       if (!email || !password) {
         error.textContent = "Please fill in all fields.";
@@ -231,9 +239,32 @@
       }
 
       try {
+        const twoFaCheck = await fetch(`${serverLink}/auth/account/2fa`, {
+          method: 'POST',
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+
+        let otpRequired = false;
+        if (twoFaCheck.ok) {
+          const result = await twoFaCheck.json();
+          otpRequired = result.enabled === true;
+        }
+
+        if (otpRequired) {
+          otpGroup.classList.remove('hidden');
+
+          if (!otp) {
+            error.textContent = "OTP required for 2FA-enabled account.";
+            loadingOverlay.classList.add("hidden");
+            return;
+          }
+        }
+
         const data = {
           email: email,
-          password: password
+          password: password,
+          otp: otp || ""
         };
 
         const response = await fetch(`${serverLink}/auth/login`, {
@@ -247,21 +278,10 @@
         if (response.ok) {
           const loginResponse = await response.json();
           if (loginResponse.response === true) {
-
             let token = loginResponse.token;
             localStorage.setItem("current-account-email", email);
             localStorage.setItem("current-account-password", password);
             localStorage.setItem("current-token", token);
-
-            let valid = {
-              api_key: "",
-              name: "",
-              email: "",
-              password: "",
-              profile_picture: "",
-              access_level: "",
-              uid: ""
-            }
 
             const found = await fetch(`${serverLink}/auth/account`, {
               method: 'POST',
@@ -271,10 +291,12 @@
               },
               body: JSON.stringify(data)
             });
+
             if (found.ok) {
-              valid = await found.json();
+              const valid = await found.json();
               localStorage.setItem("current-account-uid", valid.uid);
               localStorage.setItem("current-account-name", valid.name);
+              localStorage.setItem("current-capacity", valid.allocated_storage);
               loadingOverlay.classList.add("hidden");
               window.location.href = "upload.html";
             } else {
