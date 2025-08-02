@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Litiaina AI Chatbot</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
   <style>
     :root {
       --bg-color: #1e1e1e;
@@ -26,7 +27,8 @@
       height: 100vh;
     }
 
-    #new-chat-btn {
+    #new-chat-btn,
+    #cancel-btn {
       position: absolute;
       top: 1rem;
       right: 1rem;
@@ -37,6 +39,11 @@
       color: white;
       border-radius: 8px;
       cursor: pointer;
+      margin-left: 0.5rem;
+    }
+
+    #cancel-btn {
+      right: 7rem;
     }
 
     #chat {
@@ -130,7 +137,9 @@
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     pre {
@@ -156,24 +165,27 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 </head>
+
 <body>
-  <div style="position:fixed; inset:0; background:url('images/line_chat_background.jpg') center center / cover no-repeat fixed; z-index:-2;"></div>
+  <div
+    style="position:fixed; inset:0; background:url('images/line_chat_background.jpg') center center / cover no-repeat fixed; z-index:-2;">
+  </div>
   <div style="position:fixed; inset:0; background:rgba(0, 0, 0, 0.6); z-index:-1;"></div>
 
-  <button id="new-chat-btn">🧹 New Chat</button>
+  <button id="new-chat-btn">New Chat</button>
   <div id="chat"></div>
   <div id="input-area">
     <textarea id="user-input" placeholder="Type your message..."></textarea>
     <button id="send-btn">Send</button>
   </div>
-
   <script>
     const chat = document.getElementById("chat");
     const input = document.getElementById("user-input");
     const sendBtn = document.getElementById("send-btn");
     const token = localStorage.getItem("current-token")?.trim() || "";
-
     let messages = [];
+    let controller = new AbortController();
+    let isStreaming = false;
 
     function appendMessage(role, content) {
       const div = document.createElement("div");
@@ -196,7 +208,12 @@
 
     async function sendMessage() {
       const userMsg = input.value.trim();
-      if (!userMsg) return;
+      if (!userMsg || isStreaming) return;
+
+      isStreaming = true;
+      controller = new AbortController();
+      input.disabled = true;
+      sendBtn.textContent = "Cancel";
 
       appendMessage("user", userMsg);
       messages.push({ role: "user", content: userMsg });
@@ -224,7 +241,8 @@
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`
           },
-          body: JSON.stringify({ messages: [...messages] })
+          body: JSON.stringify({ messages: [...messages] }),
+          signal: controller.signal
         });
 
         if (!response.ok) throw new Error("Bad response");
@@ -234,7 +252,6 @@
         let assistantBuffer = "";
         let displayBuffer = "";
         let insideThinking = false;
-
         const finalDiv = document.createElement("div");
         finalDiv.className = "message assistant";
 
@@ -246,7 +263,17 @@
           for (const line of chunk.split("\n")) {
             if (!line.startsWith("data:")) continue;
             const jsonText = line.slice(5).trim();
-            if (!jsonText || jsonText === '{"v":"[DONE]"}') continue;
+            if (!jsonText) continue;
+
+            if (jsonText.includes('[DONE]')) {
+              clearInterval(interval);
+              thinkingContainer.remove();
+              if (!chat.contains(finalDiv)) {
+                chat.appendChild(finalDiv);
+              }
+              chat.scrollTop = chat.scrollHeight;
+              break;
+            }
 
             let json;
             try {
@@ -256,7 +283,6 @@
             }
 
             const delta = json.v;
-
             if (delta.includes("<think>")) {
               insideThinking = true;
               continue;
@@ -286,26 +312,58 @@
         messages.push({ role: "assistant", content: assistantBuffer });
       } catch (err) {
         clearInterval(interval);
-        thinkingText.textContent = "[Error receiving response]";
+        thinkingContainer.remove();
+        const errorDiv = document.createElement("div");
+        errorDiv.className = "message assistant";
+        errorDiv.style.fontStyle = "italic";
+        errorDiv.style.opacity = "0.7";
+
+        if (err.name === "AbortError") {
+          errorDiv.textContent = "[Cancelled]";
+        } else {
+          errorDiv.textContent = "[Error receiving response]";
+        }
+
+        chat.appendChild(errorDiv);
+        chat.scrollTop = chat.scrollHeight;
+      } finally {
+        isStreaming = false;
+        controller = null;
+        sendBtn.textContent = "Send";
+        input.disabled = false;
+        input.focus();
       }
+
     }
 
-    sendBtn.addEventListener("click", sendMessage);
-    input.addEventListener("keydown", e => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
+    sendBtn.addEventListener("click", () => {
+      if (isStreaming) {
+        controller.abort();
+      } else {
         sendMessage();
       }
     });
 
-    appendSystemNotice("Start a new conversation with L.I.N.E 💬");
+    input.addEventListener("keydown", (e) => {
+      if (input.disabled) {
+        e.preventDefault();
+        return;
+      }
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendBtn.click();
+      }
+    });
 
     document.getElementById("new-chat-btn").addEventListener("click", () => {
       if (!confirm("Start a new chat? This will clear the conversation.")) return;
       messages = [];
       chat.innerHTML = "";
-      appendSystemNotice("🌟 Start a new conversation with L.I.N.E 💬");
+      appendSystemNotice("Start a new conversation with L.I.N.E");
     });
+
+    appendSystemNotice("Start a new conversation with L.I.N.E");
   </script>
 </body>
+
 </html>
