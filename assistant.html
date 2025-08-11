@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Line AI Chatbot</title>
+    <title>Litiaina Assistant</title>
 
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -52,24 +52,28 @@
 
         /* --- Sleek Scrollbar for Textarea and Thinking Box --- */
         #user-input::-webkit-scrollbar,
-        .thinking-details pre::-webkit-scrollbar {
+        .thinking-details pre::-webkit-scrollbar,
+        .table-responsive-wrapper::-webkit-scrollbar {
             width: 5px;
             height: 5px;
         }
 
         #user-input::-webkit-scrollbar-track,
-        .thinking-details pre::-webkit-scrollbar-track {
+        .thinking-details pre::-webkit-scrollbar-track,
+        .table-responsive-wrapper::-webkit-scrollbar-track {
             background: transparent;
         }
 
         #user-input::-webkit-scrollbar-thumb,
-        .thinking-details pre::-webkit-scrollbar-thumb {
+        .thinking-details pre::-webkit-scrollbar-thumb,
+        .table-responsive-wrapper::-webkit-scrollbar-thumb {
             background: #555;
             border-radius: 10px;
         }
 
         #user-input::-webkit-scrollbar-thumb:hover,
-        .thinking-details pre::-webkit-scrollbar-thumb:hover {
+        .thinking-details pre::-webkit-scrollbar-thumb:hover,
+        .table-responsive-wrapper::-webkit-scrollbar-thumb:hover {
             background: #777;
         }
 
@@ -86,10 +90,8 @@
             padding: 1rem;
             border-radius: 10px;
             overflow: auto;
-            /* Use auto for scrollbars only when needed */
             font-size: 0.9rem;
             white-space: pre;
-            margin-top: 0.75rem;
             line-height: 1.5;
             border: 1px solid #3a3a3a;
         }
@@ -116,12 +118,18 @@
         }
 
         /* --- Improved Styles for Markdown Content --- */
+        .bubble-content {
+            line-height: 1.6;
+        }
+
+        /* Universal selector for consistent spacing between elements */
+        .bubble-content > * + * {
+            margin-top: 1rem;
+        }
+
         .bubble-content ul,
         .bubble-content ol {
             padding-left: 1.5rem;
-            /* Indentation for the whole list */
-            margin-top: 0.75rem;
-            margin-bottom: 0.75rem;
         }
 
         .bubble-content ul {
@@ -136,17 +144,15 @@
             color: #9CA3AF;
         }
 
+
         .bubble-content li {
             margin-bottom: 0.5rem;
-            /* Space between list items */
             padding-left: 0.5rem;
-            /* Space between marker and text */
         }
 
         .bubble-content blockquote {
             border-left: 4px solid #B91C1C;
             padding-left: 1rem;
-            margin: 0.75rem 0;
             color: #a0aec0;
         }
 
@@ -161,15 +167,41 @@
 
         .bubble-content strong {
             color: #F3F4F6;
-            /* Make bold text stand out more */
         }
 
-        /* --- Style for Horizontal Rules (--- in Markdown) --- */
         .bubble-content hr {
             border: none;
             height: 1px;
             background-color: #3a3a3a;
-            margin: 1.5rem 0;
+        }
+        
+        /* --- Responsive Table Wrapper --- */
+        .table-responsive-wrapper {
+            overflow-x: auto;
+        }
+
+        /* --- Table Styling --- */
+        .bubble-content table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #3a3a3a;
+        }
+
+        .bubble-content th,
+        .bubble-content td {
+            border: 1px solid #3a3a3a;
+            padding: 0.75rem 1rem;
+            text-align: left;
+        }
+
+        .bubble-content th {
+            background-color: #2a2b2e;
+            color: #F3F4F6;
+            font-weight: 600;
+        }
+        
+        .bubble-content tr:nth-child(even) {
+            background-color: #161616;
         }
 
         /* --- Dropdown Menu --- */
@@ -229,18 +261,18 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                 </svg></button>
             <div class="relative">
-                <button id="version-dropdown-btn" class="flex items-center gap-2 text-lg font-semibold">
-                    <span>L.I.N.E</span>
+                <button id="model-dropdown-btn" class="flex items-center gap-2 text-lg font-semibold">
+                    <span id="selected-model-name">Light</span>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
                         class="text-gray-500 transition-transform">
                         <path d="m6 9 6 6 6-6"></path>
                     </svg>
                 </button>
-                <div id="version-dropdown-content"
+                <div id="model-dropdown-content"
                     class="dropdown-content absolute top-full left-0 mt-2 w-48 bg-[#1A1A1A] border border-gray-700 rounded-lg shadow-xl z-10">
-                    <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50">Line 1.0 (Latest)</a>
-                    <a href="#" class="block px-4 py-2 text-sm text-gray-400 hover:bg-gray-700/50">Legacy Model</a>
+                    <a href="#" class="model-option block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50" data-model="Light" data-url="https://ai.litiaina.com/v2/api/stream/chat">Light (Default)</a>
+                    <a href="#" class="model-option block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50" data-model="Line" data-url="https://ai.litiaina.com/v1/api/stream/chat">Line</a>
                 </div>
             </div>
             <div id="cancel-btn-container" class="h-10"></div>
@@ -250,7 +282,7 @@
             <div id="welcome-screen" class="h-full flex flex-col items-center justify-center text-center">
                 <div class="relative w-20 h-20 mb-4">
                     <div class="absolute inset-0 bg-red-600 rounded-3xl blur-lg opacity-30"></div>
-                    <img src="./images/litiaina_image.png" alt="Line AI Logo" class="relative w-20 h-20 rounded-3xl"
+                    <img src="https://placehold.co/100x100/B91C1C/ffffff?text=AI" alt="Line AI Logo" class="relative w-20 h-20 rounded-3xl"
                         onerror="this.onerror=null;this.src='https://placehold.co/100x100/B91C1C/ffffff?text=AI';">
                 </div>
                 <h2 class="text-2xl font-bold text-gray-200">How can I help you today?</h2>
@@ -300,22 +332,20 @@
                 newChatBtn = document.getElementById("new-chat-btn"),
                 cancelBtnContainer = document.getElementById('cancel-btn-container'),
                 welcomeScreen = document.getElementById('welcome-screen'),
-                versionDropdownBtn = document.getElementById('version-dropdown-btn'),
-                versionDropdownContent = document.getElementById('version-dropdown-content');
+                modelDropdownBtn = document.getElementById('model-dropdown-btn'),
+                modelDropdownContent = document.getElementById('model-dropdown-content'),
+                selectedModelName = document.getElementById('selected-model-name');
 
             // --- State and API variables ---
             const token = localStorage.getItem("current-token")?.trim() || "";
-            const userName = localStorage.getItem("current-account-name")?.trim() || "";
-            const initials = userName
-                .split(" ")
-                .map(word => word[0]?.toUpperCase())
-                .join("")
-                .slice(0, 2) || "U";
+            const userName = localStorage.getItem("current-account-name")?.trim() || "User";
             const nameSpan = document.getElementById("user-name");
             nameSpan.textContent = userName;
+
             let messages = [],
                 controller = null,
-                isStreaming = false;
+                isStreaming = false,
+                selectedModelUrl = "https://ai.litiaina.com/v2/api/stream/chat"; // Default to Light
 
             // --- Mobile Sidebar Toggle ---
             const toggleSidebar = () => {
@@ -326,16 +356,29 @@
             menuButton.addEventListener('click', toggleSidebar);
             overlay.addEventListener('click', toggleSidebar);
 
-            // --- Version Dropdown Toggle ---
-            versionDropdownBtn.addEventListener('click', (e) => {
+            // --- Model Dropdown Toggle ---
+            modelDropdownBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const isHidden = versionDropdownContent.style.display === 'none' || versionDropdownContent.style.display === '';
-                versionDropdownContent.style.display = isHidden ? 'block' : 'none';
-                versionDropdownBtn.querySelector('svg').style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+                const isHidden = modelDropdownContent.style.display === 'none' || modelDropdownContent.style.display === '';
+                modelDropdownContent.style.display = isHidden ? 'block' : 'none';
+                modelDropdownBtn.querySelector('svg').style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
             });
+
             document.addEventListener('click', () => {
-                versionDropdownContent.style.display = 'none';
-                versionDropdownBtn.querySelector('svg').style.transform = 'rotate(0deg)';
+                modelDropdownContent.style.display = 'none';
+                modelDropdownBtn.querySelector('svg').style.transform = 'rotate(0deg)';
+            });
+            
+            // --- Model Selection ---
+            modelDropdownContent.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = e.target.closest('.model-option');
+                if (target) {
+                    selectedModelUrl = target.dataset.url;
+                    selectedModelName.textContent = target.dataset.model;
+                    modelDropdownContent.style.display = 'none';
+                    modelDropdownBtn.querySelector('svg').style.transform = 'rotate(0deg)';
+                }
             });
 
             // --- Textarea Auto-Resize ---
@@ -344,7 +387,8 @@
                 userInput.style.height = `${Math.min(userInput.scrollHeight, 200)}px`;
             });
 
-            const enhanceCodeBlocks = (container) => {
+            const enhanceMarkup = (container) => {
+                // Enhance Code Blocks
                 container.querySelectorAll('pre').forEach(pre => {
                     if (pre.parentNode.classList.contains('code-block-wrapper')) return;
 
@@ -353,7 +397,7 @@
 
                     const language = [...code.classList].find(cls => cls.startsWith('language-'))?.replace('language-', '') || 'text';
                     const wrapper = document.createElement('div');
-                    wrapper.className = 'code-block-wrapper mt-3';
+                    wrapper.className = 'code-block-wrapper';
                     const header = document.createElement('div');
                     header.className = 'flex items-center justify-between bg-[#2a2b2e] text-gray-400 text-xs px-4 py-2 rounded-t-lg border-b border-[#3a3a3a]';
                     const langSpan = document.createElement('span');
@@ -365,19 +409,27 @@
                     copyButton.addEventListener('click', (e) => {
                         e.stopPropagation();
                         const textToCopy = code.textContent;
-                        const textArea = document.createElement("textarea");
-                        textArea.value = textToCopy;
-                        textArea.style.position = "fixed";
-                        document.body.appendChild(textArea);
-                        textArea.focus();
-                        textArea.select();
                         try {
-                            document.execCommand('copy');
-                            copyButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Copied!</span>`;
+                            navigator.clipboard.writeText(textToCopy).then(() => {
+                                copyButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Copied!</span>`;
+                            }).catch(err => {
+                                 copyButton.querySelector('span').textContent = 'Error';
+                            });
                         } catch (err) {
-                            copyButton.querySelector('span').textContent = 'Error';
+                            const textArea = document.createElement("textarea");
+                            textArea.value = textToCopy;
+                            document.body.appendChild(textArea);
+                            textArea.focus();
+                            textArea.select();
+                            try {
+                                document.execCommand('copy');
+                                copyButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Copied!</span>`;
+                            } catch (copyErr) {
+                                copyButton.querySelector('span').textContent = 'Error';
+                            }
+                            document.body.removeChild(textArea);
                         }
-                        document.body.removeChild(textArea);
+                        
                         setTimeout(() => {
                             copyButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg><span>Copy</span>`;
                         }, 2000);
@@ -389,8 +441,18 @@
                     wrapper.appendChild(header);
                     wrapper.appendChild(pre);
                 });
+
+                // Wrap Tables for horizontal scrolling
+                container.querySelectorAll('table').forEach(table => {
+                    if (table.parentNode.classList.contains('table-responsive-wrapper')) return;
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'table-responsive-wrapper';
+                    table.parentNode.insertBefore(wrapper, table);
+                    wrapper.appendChild(table);
+                });
             };
 
+            // --- Message Handling ---
             const appendMessage = (role, content) => {
                 const messageWrapper = document.createElement('div');
                 messageWrapper.className = `flex items-start gap-4 message-in ${role === 'user' ? 'justify-end' : ''}`;
@@ -398,10 +460,10 @@
                 const avatar = document.createElement('img');
                 avatar.className = 'w-8 h-8 rounded-full object-cover mt-1 shrink-0';
                 if (role === 'user') {
-                    avatar.src = 'https://placehold.co/100x100/DC2626/ffffff?text=U';
+                    avatar.src = `https://placehold.co/100x100/DC2626/ffffff?text=${userName.charAt(0).toUpperCase()}`;
                     avatar.onerror = function () { this.src = 'https://placehold.co/100x100/cccccc/333333?text=U'; this.onerror = null; };
                 } else {
-                    avatar.src = './images/litiaina_image.png';
+                    avatar.src = 'https://placehold.co/100x100/B91C1C/ffffff?text=AI';
                     avatar.onerror = function () { this.src = 'https://placehold.co/100x100/B91C1C/ffffff?text=AI'; this.onerror = null; };
                 }
 
@@ -410,10 +472,11 @@
 
                 const bubbleContent = document.createElement('div');
                 bubbleContent.className = `bubble-content p-4 rounded-xl ${role === 'user' ? 'bg-[#262626] text-white rounded-br-none' : 'bg-[#1C1C1C] text-gray-200 rounded-bl-none'}`;
-
+                
                 bubbleContent.innerHTML = marked.parse(content);
+                
                 bubbleContent.querySelectorAll("pre code").forEach(el => hljs.highlightElement(el));
-                enhanceCodeBlocks(bubbleContent);
+                enhanceMarkup(bubbleContent);
 
                 messageBubble.appendChild(bubbleContent);
 
@@ -430,51 +493,69 @@
                 return bubbleContent;
             };
 
-            const createThinkingIndicator = () => {
+            const createProgressIndicator = () => {
                 const wrapper = document.createElement("div");
                 wrapper.className = 'flex items-start gap-4 message-in';
 
                 const avatar = document.createElement('img');
                 avatar.className = 'w-8 h-8 rounded-full object-cover mt-1 shrink-0';
-                avatar.src = './images/litiaina_image.png';
+                avatar.src = 'https://placehold.co/100x100/B91C1C/ffffff?text=AI';
                 avatar.onerror = function () { this.src = 'https://placehold.co/100x100/B91C1C/ffffff?text=AI'; this.onerror = null; };
 
                 const container = document.createElement("div");
-                container.className = 'thinking-container flex-1 min-w-0 p-4 bg-[#1C1C1C] rounded-xl space-y-3 shadow-lg';
+                container.className = 'progress-indicator-container flex-1 min-w-0 p-4 bg-[#1C1C1C] rounded-xl shadow-lg';
 
-                const header = document.createElement('div');
-                header.className = 'flex items-center justify-between text-gray-400';
+                // Initial "Analyzing" state
+                container.innerHTML = `<div class="flex items-center gap-2 text-sm text-gray-400"><span>Analyzing...</span></div>`;
 
-                header.innerHTML = `
-                <div class="flex items-center gap-2 text-sm">
-                    <div class="w-4 h-4 border-2 border-gray-600 border-t-red-500 rounded-full animate-spin"></div>
-                    <span>Thinking...</span>
-                </div>
-                <button class="toggle-work-btn text-xs text-gray-400 hover:text-white transition-colors p-1 flex items-center gap-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> 
-                    <span>Show work</span>
-                </button>`;
-
-                const detailsContent = document.createElement('div');
-                detailsContent.className = 'thinking-details hidden bg-[#0D0D0D] p-3 rounded-md border border-gray-700';
-                detailsContent.innerHTML = '<pre class="!p-0 !bg-transparent !border-none max-h-32 custom-scrollbar" style="white-space: pre-wrap; overflow-wrap: break-word;"><code class="language-text"></code></pre>';
-
-                container.appendChild(header);
-                container.appendChild(detailsContent);
                 wrapper.appendChild(avatar);
                 wrapper.appendChild(container);
                 chat.appendChild(wrapper);
                 chatScrollArea.scrollTop = chatScrollArea.scrollHeight;
 
-                const toggleBtn = header.querySelector('.toggle-work-btn');
-                let isDetailsVisible = false;
-                toggleBtn.addEventListener('click', () => {
-                    isDetailsVisible = !isDetailsVisible;
-                    detailsContent.classList.toggle('hidden', !isDetailsVisible);
-                    toggleBtn.querySelector('span').textContent = isDetailsVisible ? 'Hide work' : 'Show work';
-                });
+                let detailsContent = null;
+                
+                const switchToThinkingState = () => {
+                    if (container.querySelector('.thinking-header')) return; // Already switched
 
-                return { container: wrapper, detailsContent };
+                    container.innerHTML = `
+                        <div class="thinking-header flex items-center justify-between text-gray-400">
+                            <div class="flex items-center gap-2 text-sm">
+                                <div class="w-4 h-4 border-2 border-gray-600 border-t-red-500 rounded-full animate-spin"></div>
+                                <span>Thinking...</span>
+                            </div>
+                            <button class="toggle-work-btn text-xs text-gray-400 hover:text-white transition-colors p-1 flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> 
+                                <span>Show work</span>
+                            </button>
+                        </div>`;
+                    
+                    detailsContent = document.createElement('div');
+                    detailsContent.className = 'thinking-details hidden bg-[#0D0D0D] p-3 rounded-md border border-gray-700 mt-3';
+                    detailsContent.innerHTML = '<pre class="!p-0 !bg-transparent !border-none max-h-32 custom-scrollbar" style="white-space: pre-wrap; overflow-wrap: break-word;"><code class="language-text"></code></pre>';
+                    container.appendChild(detailsContent);
+
+                    const toggleBtn = container.querySelector('.toggle-work-btn');
+                    let isDetailsVisible = false;
+                    toggleBtn.addEventListener('click', () => {
+                        isDetailsVisible = !isDetailsVisible;
+                        detailsContent.classList.toggle('hidden', !isDetailsVisible);
+                        toggleBtn.querySelector('span').textContent = isDetailsVisible ? 'Hide work' : 'Show work';
+                    });
+                };
+
+                const updateThinkingDetails = (text) => {
+                    if (!detailsContent) return;
+                    const codeEl = detailsContent.querySelector('code');
+                    codeEl.textContent += text;
+                    detailsContent.querySelector('pre').scrollTop = detailsContent.querySelector('pre').scrollHeight;
+                };
+
+                return {
+                    element: wrapper,
+                    switchToThinkingState,
+                    updateThinkingDetails
+                };
             };
 
             const manageCancelButton = (show) => {
@@ -502,15 +583,16 @@
 
                 appendMessage("user", userMsg);
                 messages.push({ role: "user", content: userMsg });
+                
                 userInput.value = "";
                 userInput.style.height = 'auto';
                 chatScrollArea.scrollTop = chatScrollArea.scrollHeight;
 
-                const { container: thinkingContainer, detailsContent } = createThinkingIndicator();
+                const progressIndicator = createProgressIndicator();
                 let finalMessageBubble = null;
 
                 try {
-                    const response = await fetch("https://ai.litiaina.com/v1/api/stream/chat", {
+                    const response = await fetch(selectedModelUrl, {
                         method: "POST",
                         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
                         body: JSON.stringify({ messages }),
@@ -521,7 +603,7 @@
 
                     const reader = response.body.getReader();
                     const decoder = new TextDecoder("utf-8");
-                    let assistantBuffer = "", displayBuffer = "", thinkingBuffer = "", isInsideThinkingTag = false, finalMessageStarted = false;
+                    let assistantBuffer = "", displayBuffer = "", isInsideThinkingTag = false, finalMessageStarted = false, hasSwitchedToThinking = false;
 
                     while (true) {
                         const { done, value } = await reader.read();
@@ -543,34 +625,37 @@
                             assistantBuffer += delta;
 
                             if (isInsideThinkingTag) {
-                                thinkingBuffer += delta;
-                                detailsContent.querySelector('code').textContent = thinkingBuffer;
-                                detailsContent.querySelector('pre').scrollTop = detailsContent.querySelector('pre').scrollHeight;
+                                if (!hasSwitchedToThinking) {
+                                    progressIndicator.switchToThinkingState();
+                                    hasSwitchedToThinking = true;
+                                }
+                                progressIndicator.updateThinkingDetails(delta);
                             } else {
                                 if (!finalMessageStarted) {
                                     finalMessageStarted = true;
-                                    thinkingContainer.remove();
+                                    progressIndicator.element.remove();
                                     finalMessageBubble = appendMessage("assistant", "");
                                 }
                                 displayBuffer += delta;
                                 finalMessageBubble.innerHTML = marked.parse(displayBuffer + ' ▌');
-                                finalMessageBubble.querySelectorAll("pre code").forEach(el => hljs.highlightElement(el));
-                                enhanceCodeBlocks(finalMessageBubble);
+                                enhanceMarkup(finalMessageBubble);
                             }
-                            chatScrollArea.scrollTop = chatScrollArea.scrollHeight;
                         }
                     }
 
                     if (finalMessageBubble) {
                         finalMessageBubble.innerHTML = marked.parse(displayBuffer);
-                        finalMessageBubble.querySelectorAll("pre code").forEach(el => hljs.highlightElement(el));
-                        enhanceCodeBlocks(finalMessageBubble);
+                        enhanceMarkup(finalMessageBubble);
+                    } else if (hasSwitchedToThinking) {
+                        // If the stream ends while still in "thinking" mode without a final answer.
+                        progressIndicator.element.remove();
                     }
+
                     messages.push({ role: "assistant", content: assistantBuffer.replace(/<\/?think>/g, '') });
                 } catch (err) {
-                    thinkingContainer.remove();
+                    progressIndicator.element.remove();
                     if (err.name !== "AbortError") {
-                        appendMessage("assistant", `**Error:** Could not get a response. Please check your API token and network connection.`);
+                        appendMessage("assistant", `**Error:** Could not get a response. Please check your API token, model selection, and network connection.`);
                     }
                 } finally {
                     isStreaming = false;
@@ -614,5 +699,4 @@
         });
     </script>
 </body>
-
 </html>

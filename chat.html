@@ -2,239 +2,444 @@
 <html lang="en">
 
 <head>
-    <link rel="icon" type="image/png" href="images/litiaina_icon.png" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Live Chat</title>
+    <link rel="icon" type="image/png" href="https://www.google.com/images/branding/product/2x/drive_48dp.png" />
+    <title>Cloud Drive</title>
+    <link rel="preconnect" href="https://storage.litiaina.com" crossorigin />
     <style>
-        /* Existing styles */
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #0a0a0a;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        :root {
+            --background-color: #f6f8fc;
+            --surface-color: #ffffff;
+            --text-color: #1f1f1f;
+            --text-muted-color: #5f6368;
+            --primary-color: #0b57d0;
+            --border-color: #e0e0e0;
+            --hover-color: #f1f3f4;
+            --selected-color: #e8f0fe;
+            --success-color: #1e8e3e;
+            --danger-color: #d93025;
         }
 
-        .chat-wrapper {
-            width: 100%;
-            max-width: 600px;
-            height: 90vh;
-            background: #111;
+        * {
+            box-sizing: border-box;
+            font-family: 'Google Sans', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-size: 14px;
             display: flex;
-            flex-direction: column;
-            border-radius: 16px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+            height: 100vh;
             overflow: hidden;
         }
 
-        .chat-header {
-            background: #1c1c1c;
-            color: #fff;
-            text-align: center;
-            padding: 18px;
-            font-size: 1.4rem;
-            border-bottom: 1px solid #333;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
+        .sidebar {
+            width: 256px;
+            height: 100%;
+            padding: 16px 8px;
             display: flex;
             flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .new-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             gap: 12px;
-            background: #0a0a0a;
+            background-color: var(--surface-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 16px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+            transition: box-shadow 0.2s;
+            margin: 0 8px 16px;
         }
 
-        /* New class for sender's name */
-        .sender-name {
-            font-weight: bold;
-            color: #d3d3d3;
-            /* Light color to ensure visibility */
-            margin-bottom: 4px;
-            text-align: left;
-            font-size: 0.9rem;
+        .new-btn:hover {
+            box-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
         }
 
-        /* New class for message container */
-        .message-container {
-            margin-bottom: 12px;
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 8px 24px;
+            border-radius: 0 16px 16px 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .nav-item:hover { background-color: var(--hover-color); }
+        .nav-item.active {
+            background-color: var(--selected-color);
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+        .nav-item svg { fill: var(--text-muted-color); }
+        .nav-item.active svg { fill: var(--primary-color); }
+
+        .main-container {
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
+            height: 100vh;
+            background-color: var(--surface-color);
+            border-radius: 24px 0 0 0;
+            padding: 16px 24px;
         }
 
-        .message {
-            max-width: 75%;
-            padding: 12px 16px;
-            border-radius: 20px;
-            font-size: 0.95rem;
-            word-break: break-word;
-            line-height: 1.4;
-            display: inline-block;
-        }
-
-        .message.self {
-            background: #4caf50;
-            color: #fff;
-            align-self: flex-end;
-            border-bottom-right-radius: 0;
-        }
-
-        .message.other {
-            background: #1e1e1e;
-            color: #1da1f2;
-            align-self: flex-start;
-            border-bottom-left-radius: 0;
-        }
-
-        .chat-input {
+        .main-header {
             display: flex;
-            padding: 16px;
-            background-color: #1c1c1c;
-            border-top: 1px solid #333;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 16px;
         }
 
-        .chat-input input {
-            flex: 1;
-            background-color: #2a2a2a;
-            border: none;
-            padding: 12px 16px;
-            font-size: 1rem;
-            color: #fff;
-            border-radius: 12px;
-            margin-right: 10px;
+        .breadcrumb { font-size: 22px; font-weight: 400; }
+        .breadcrumb a { color: var(--primary-color); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .breadcrumb span { margin: 0 8px; color: var(--text-muted-color); }
+
+        .file-browser {
+            flex-grow: 1;
+            overflow-y: auto;
         }
 
-        .chat-input input:focus {
-            outline: none;
+        .file-list-header, .file-item {
+            display: grid;
+            grid-template-columns: 4fr 2fr 2fr;
+            gap: 15px;
+            align-items: center;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border-color);
         }
 
-        .chat-input button {
-            background-color: #1da1f2;
-            border: none;
-            color: #fff;
-            padding: 12px 20px;
-            font-size: 1rem;
-            font-weight: bold;
-            border-radius: 12px;
-            cursor: pointer;
+        .file-list-header {
+            font-weight: 500;
+            color: var(--text-muted-color);
+            position: sticky;
+            top: 0;
+            background-color: var(--surface-color);
         }
 
-        .chat-input button:hover {
-            background-color: #0d8ddb;
-        }
-
-        .chat-messages::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb {
-            background-color: #333;
+        .file-item {
             border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-muted-color);
         }
+        .file-item:hover { background-color: var(--hover-color); }
+        .file-name {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+        .file-icon { width: 20px; height: 20px; }
+
+        #fileListMessage {
+            text-align: center;
+            padding: 60px;
+            color: var(--text-muted-color);
+            font-size: 16px;
+        }
+        
+        #upload-toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background-color: #323232;
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            display: none;
+            width: 350px;
+        }
+        #upload-toast .progress-bar {
+            width: 100%;
+            height: 4px;
+            background-color: #5f6368;
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        #upload-toast .progress-fill {
+            width: 0%;
+            height: 100%;
+            background-color: #8ab4f8;
+            transition: width 0.2s;
+        }
+
     </style>
 </head>
 
 <body>
-    <div class="chat-wrapper">
-        <div class="chat-header">Live Chat</div>
-        <div class="chat-messages" id="chatMessages"></div>
-        <div class="chat-input">
-            <input type="text" id="messageInput" placeholder="Type a message..." />
-            <button onclick="sendMessage()">Send</button>
+    <aside class="sidebar">
+        <div id="newUploadBtn" class="new-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            <span>New</span>
+        </div>
+        <nav>
+            <div class="nav-item active">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"><path d="M0 0h24v24H0z" fill="none"/><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                <span>My Drive</span>
+            </div>
+            <!-- Add other nav items as needed -->
+        </nav>
+    </aside>
+
+    <main class="main-container" id="dropZone">
+        <header class="main-header">
+            <div id="breadcrumb" class="breadcrumb"></div>
+            <!-- Search bar and other controls can be added here -->
+        </header>
+
+        <div class="file-browser">
+            <div class="file-list-header">
+                <div>Name</div>
+                <div>Size</div>
+                <div>Date Modified</div>
+            </div>
+            <div id="fileListContainer">
+                <!-- Files will be injected here -->
+            </div>
+        </div>
+    </main>
+
+    <div id="upload-toast">
+        <div id="upload-toast-text">Uploading...</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="upload-toast-progress"></div>
         </div>
     </div>
 
-    <audio id="notificationSound" src="sounds/notification.mp3" preload="auto"></audio>
+    <input type="file" id="fileInput" hidden multiple/>
 
     <script>
-        const token = localStorage.getItem("current-token").trim() || "".trim();
-        const uid = localStorage.getItem("current-account-name").trim() || "".trim();
-        const ws = new WebSocket(`wss://websocket.litiaina.com?token=${token}&uid=${uid}&channel=public`);
-        const chatMessages = document.getElementById("chatMessages");
-        const messageInput = document.getElementById("messageInput");
-        const notificationSound = document.getElementById("notificationSound");
+    // --- GLOBAL STATE & CONSTANTS ---
+    let currentPath = '';
+    const serverLink = `https://storage.litiaina.com`;
+    const token = localStorage.getItem("current-token")?.trim() || "";
+    const uid = localStorage.getItem("current-account-uid")?.trim() || "";
+    
+    // --- UTILITY FUNCTIONS ---
+    function formatBytes(bytes, decimals = 2) {
+        if (!bytes || bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
 
-        ws.onopen = () => {
-            console.log("WebSocket connected");
-            ws.pingInterval = setInterval(() => {
-                if (ws.readyState === WebSocket.OPEN) {
-                    ws.send("ping");
+    function formatDate(unixTimestamp) {
+        if (!unixTimestamp) return '---';
+        const date = new Date(unixTimestamp * 1000);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function getFileIcon(mimeType) {
+        const iconBasePath = 'https://cdn.jsdelivr.net/gh/PKief/vscode-material-icon-theme@main/icons/';
+        if (mimeType === 'directory') return `${iconBasePath}folder.svg`;
+        if (mimeType.startsWith('image/')) return `${iconBasePath}image.svg`;
+        if (mimeType.startsWith('video/')) return `${iconBasePath}video.svg`;
+        if (mimeType.startsWith('audio/')) return `${iconBasePath}audio.svg`;
+        if (mimeType.includes('pdf')) return `${iconBasePath}pdf.svg`;
+        if (mimeType.includes('zip') || mimeType.includes('archive')) return `${iconBasePath}zip.svg`;
+        if (mimeType.includes('document') || mimeType.includes('msword')) return `${iconBasePath}word.svg`;
+        return `${iconBasePath}file.svg`;
+    }
+
+    // --- UI MANAGEMENT ---
+
+    function updateBreadcrumb() {
+        const breadcrumbContainer = document.getElementById('breadcrumb');
+        breadcrumbContainer.innerHTML = '';
+        const parts = currentPath.split('/').filter(p => p);
+        
+        let text = 'My Drive';
+        if (parts.length > 0) {
+            text = parts[parts.length - 1];
+        }
+        breadcrumbContainer.textContent = text;
+    }
+
+    function showUploadToast(message) {
+        const toast = document.getElementById('upload-toast');
+        const text = document.getElementById('upload-toast-text');
+        const progress = document.getElementById('upload-toast-progress');
+        text.textContent = message;
+        progress.style.width = '0%';
+        toast.style.display = 'block';
+    }
+
+    function updateUploadToast(percent, fileName) {
+        const text = document.getElementById('upload-toast-text');
+        const progress = document.getElementById('upload-toast-progress');
+        text.textContent = `Uploading ${fileName}...`;
+        progress.style.width = `${percent}%`;
+    }
+
+    function hideUploadToast() {
+        setTimeout(() => {
+            document.getElementById('upload-toast').style.display = 'none';
+        }, 3000);
+    }
+
+    // --- CORE LOGIC ---
+
+    async function fetchAndDisplayFiles(path) {
+        currentPath = path;
+        const fileListContainer = document.getElementById('fileListContainer');
+        fileListContainer.innerHTML = '<div id="fileListMessage">Loading...</div>';
+        updateBreadcrumb();
+
+        if (!token || !uid) {
+            fileListContainer.innerHTML = '<div id="fileListMessage">Authentication error. Please log in.</div>';
+            return;
+        }
+
+        try {
+            const url = `${serverLink}/dir/my-files`;
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: { 
+                    "uid": `${uid}`,
+                    "authorization": `Bearer ${token}` 
                 }
-            }, 30000);
-        };
+            });
 
-        ws.onmessage = (event) => {
-            if (event.data.trim() === "ping") {
+            if (!response.ok) throw new Error(`Failed to fetch files: ${response.status}`);
+            
+            const data = await response.json();
+            fileListContainer.innerHTML = '';
+
+            if (!data.files || data.files.length === 0) {
+                fileListContainer.innerHTML = '<div id="fileListMessage">This folder is empty. Drag files here to upload.</div>';
                 return;
             }
+            
+            data.files.sort((a, b) => {
+                if (a.file_type === 'directory' && b.file_type !== 'directory') return -1;
+                if (a.file_type !== 'directory' && b.file_type === 'directory') return 1;
+                return a.name.localeCompare(b.name);
+            });
+
+            data.files.forEach(file => {
+                const item = document.createElement('div');
+                item.className = 'file-item';
+                item.innerHTML = `
+                    <div class="file-name">
+                        <img src="${getFileIcon(file.file_type)}" class="file-icon" alt="icon">
+                        <span>${file.name}</span>
+                    </div>
+                    <div>${file.file_type !== 'directory' ? formatBytes(file.size) : '—'}</div>
+                    <div>${formatDate(file.created)}</div>
+                `;
+                if (file.file_type === 'directory') {
+                    item.onclick = () => fetchAndDisplayFiles(`${currentPath ? currentPath + '/' : ''}${file.name}`);
+                }
+                fileListContainer.appendChild(item);
+            });
+
+        } catch (error) {
+            console.error("Error fetching files:", error);
+            fileListContainer.innerHTML = `<div id="fileListMessage">Error loading files. Please try again.</div>`;
+        }
+    }
+
+    async function uploadFile(file) {
+        const chunkSize = 5 * 1024 * 1024; // 5MB chunks
+        const totalChunks = Math.ceil(file.size / chunkSize);
+        const fileId = crypto.randomUUID();
+        let uploadedBytes = 0;
+
+        showUploadToast(`Starting upload for ${file.name}...`);
+
+        for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+            const start = chunkIndex * chunkSize;
+            const end = Math.min(start + chunkSize, file.size);
+            const chunk = file.slice(start, end);
+            
+            const formData = new FormData();
+            formData.append('chunk', chunk);
+
+            const params = new URLSearchParams({
+                file_id: fileId,
+                chunk_index: chunkIndex,
+                total_chunks: totalChunks,
+                original_filename: file.name,
+                mime_type: file.type || 'application/octet-stream',
+            });
+
+            const url = `${serverLink}/dir/file/upload/v2/${currentPath}?${params}`;
 
             try {
-                const parsedMessage = JSON.parse(event.data.trim());
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { authorization: `Bearer ${token}`, uid: uid },
+                    body: formData,
+                });
 
-                if (parsedMessage.type === "chat") {
-                    if (parsedMessage.uid !== uid) {
-                        appendMessage(parsedMessage.content, "other", parsedMessage.uid);
-                        notificationSound.play();
-                    }
-                } else {
-                    console.log("Received message of type:", parsedMessage.type);
+                if (!response.ok) {
+                    throw new Error(`Upload failed for chunk ${chunkIndex}`);
                 }
+                
+                uploadedBytes += chunk.size;
+                const percent = Math.round((uploadedBytes / file.size) * 100);
+                updateUploadToast(percent, file.name);
+
             } catch (error) {
-                console.error("Error parsing message:", error);
-            }
-        };
-
-        ws.onclose = () => {
-            console.log("WebSocket disconnected");
-        };
-
-        function sendMessage() {
-            const message = messageInput.value.trim();
-            if (message) {
-                const messageObject = {
-                    type: "chat",
-                    uid: uid,
-                    content: message,
-                    timestamp: new Date().toISOString()
-                };
-
-                ws.send(JSON.stringify(messageObject));
-                appendMessage(message, "self");
-                messageInput.value = "";
+                document.getElementById('upload-toast-text').textContent = `Upload failed for ${file.name}.`;
+                document.getElementById('upload-toast-progress').style.backgroundColor = 'var(--danger-color)';
+                hideUploadToast();
+                return; // Stop this upload
             }
         }
+        document.getElementById('upload-toast-text').textContent = `Successfully uploaded ${file.name}`;
+        document.getElementById('upload-toast-progress').style.backgroundColor = 'var(--success-color)';
+    }
 
-        function appendMessage(message, type, senderName = '') {
-            const messageContainer = document.createElement("div");
-            messageContainer.classList.add("message-container");
-
-            if (type === "other" && senderName) {
-                const nameTag = document.createElement("div");
-                nameTag.classList.add("sender-name");
-                nameTag.textContent = senderName;
-                messageContainer.appendChild(nameTag);
-            }
-
-            // Create the message blob
-            const msg = document.createElement("div");
-            msg.classList.add("message", type);
-            msg.textContent = message;
-            messageContainer.appendChild(msg);
-
-            chatMessages.appendChild(messageContainer);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+    async function handleFileUploads(files) {
+        for (const file of files) {
+            await uploadFile(file);
         }
+        hideUploadToast();
+        fetchAndDisplayFiles(currentPath); // Refresh list when all uploads are done
+    }
 
-        messageInput.addEventListener("keydown", function (e) {
-            if (e.key === "Enter") {
-                sendMessage();
+    // --- EVENT LISTENERS ---
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchAndDisplayFiles('');
+
+        const newUploadBtn = document.getElementById('newUploadBtn');
+        const fileInput = document.getElementById('fileInput');
+        const dropZone = document.getElementById('dropZone');
+
+        newUploadBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                handleFileUploads(fileInput.files);
             }
         });
+
+        dropZone.addEventListener('dragover', (e) => e.preventDefault());
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files.length > 0) {
+                handleFileUploads(e.dataTransfer.files);
+            }
+        });
+    });
     </script>
 </body>
-
 </html>
