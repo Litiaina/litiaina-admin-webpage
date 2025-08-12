@@ -350,7 +350,7 @@
             color: #ccc;
         }
 
-        /* --- Settings Menu (Restored Original Design) --- */
+        /* --- Settings Menu --- */
         .settings-container {
             position: relative;
         }
@@ -358,92 +358,23 @@
             position: absolute;
             bottom: 50px;
             right: 0;
-            transform: translateX(25%);
             background-color: var(--menu-bg);
             border-radius: 8px;
-            padding: 5px;
+            padding: 8px;
             display: none;
             flex-direction: column;
-            width: 220px;
+            width: 180px;
             box-shadow: 0 0 20px rgba(0,0,0,0.3);
-            overflow: hidden;
+            backdrop-filter: blur(8px);
         }
         
         .settings-menu.active {
             display: flex;
         }
         
-        .settings-view {
-            width: 100%;
-            transition: transform 0.2s ease-in-out;
-        }
-        
-        .settings-menu-item {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            background-color: transparent;
-            color: var(--text-primary);
-            text-align: left;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 0.9em;
-            transition: background-color 0.2s ease;
-        }
-
-        .settings-menu-item:hover {
-            background-color: var(--menu-item-hover-bg);
-        }
-
-        .settings-menu-item > span:first-child {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .settings-menu-item > span:last-child {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .current-quality-indicator {
-            color: #aaa;
-            font-size: 0.9em;
-        }
-
-        .settings-menu-item .right-arrow-icon {
-            width: 20px;
-            height: 20px;
-            fill: #aaa;
-        }
-        
-        .settings-menu-header {
-            display: flex;
-            align-items: center;
-            padding: 0 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 5px;
-        }
-        
-        .settings-menu-header h4 {
-            margin: 0;
-            padding: 10px 0;
-            font-size: 1em;
-            font-weight: 500;
-        }
-
-        .quality-list-container {
-            display: flex;
-            flex-direction: column;
-        }
-
         .quality-button {
             width: 100%;
-            padding: 10px 10px 10px 42px;
+            padding: 10px 12px;
             border: none;
             background-color: transparent;
             color: var(--text-primary);
@@ -452,43 +383,32 @@
             cursor: pointer;
             display: flex;
             align-items: center;
-            font-size: 0.9em;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 500;
             transition: background-color 0.2s ease;
-            position: relative;
         }
 
         .quality-button .check-icon {
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
             width: 20px;
             height: 20px;
-            fill: white;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-
-        .quality-button.active .check-icon {
-            opacity: 1;
+            stroke: white;
+            stroke-width: 2;
+            visibility: hidden;
         }
         
         .quality-button:hover {
             background-color: var(--menu-item-hover-bg);
         }
-        
-        .quality-info-tag {
-            color: #aaa;
-            font-size: 0.85em;
-            margin-left: 6px;
-            text-transform: uppercase;
-            font-weight: 500;
+
+        .quality-button.active {
+             background-color: rgba(255, 255, 255, 0.15);
         }
         
-        .auto-quality-button {
-            border-top: 1px solid rgba(255,255,255,0.1);
-            margin-top: 5px;
+        .quality-button.active .check-icon {
+            visibility: visible;
         }
+
 
         /* --- Media Queries for Mobile --- */
         @media (max-width: 600px) {
@@ -511,7 +431,6 @@
             }
              .settings-menu {
                 right: 5px;
-                transform: translateX(0);
              }
         }
     </style>
@@ -570,36 +489,10 @@
                         </button>
                         <div class="settings-container">
                             <button class="icon-button" id="settingsBtn" title="Settings">
-                                <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
+                                <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
                             </button>
-                            <div class="settings-menu" id="settingsMenu">
-                                <div class="settings-view" id="mainSettingsView">
-                                    <button class="settings-menu-item" id="qualityMenuItem">
-                                        <span>
-                                            <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 6.5c-3.03 0-5.5 2.47-5.5 5.5s2.47 5.5 5.5 5.5 5.5-2.47 5.5-5.5-2.47-5.5-5.5-5.5zm0 9c-1.93 0-3.5-1.57-3.5-3.5S10.07 8.5 12 8.5s3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
-                                            Quality
-                                        </span>
-                                        <span>
-                                            <span class="current-quality-indicator">Auto</span>
-                                            <svg class="right-arrow-icon" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"></path></svg>
-                                        </span>
-                                    </button>
-                                </div>
-                                <div class="settings-view" id="qualitySettingsView" style="display: none;">
-                                    <div class="settings-menu-header">
-                                        <button class="icon-button" id="qualityBackBtn" style="padding: 8px;">
-                                            <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"></path></svg>
-                                        </button>
-                                        <h4>Quality</h4>
-                                    </div>
-                                    <div class="quality-list-container">
-                                        <div id="qualityList"></div>
-                                        <button class="quality-button auto-quality-button" id="autoQualityBtn">
-                                            <svg class="check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg>
-                                            <span>Auto</span>
-                                        </button>
-                                    </div>
-                                </div>
+                            <div class="settings-menu" id="qualityMenu">
+                                <!-- Quality options will be populated here by JavaScript -->
                             </div>
                         </div>
                         <button class="icon-button" id="pipBtn" title="Picture-in-Picture (i)">
@@ -639,17 +532,8 @@
             const bufferedProgressBar = document.querySelector('.progress-bar-buffered');
             const timeIndicator = document.querySelector('.time-indicator');
             const seekTooltip = document.getElementById('seekTooltip');
+            const qualityMenu = document.getElementById('qualityMenu');
             
-            const settingsMenu = document.getElementById('settingsMenu');
-            const mainSettingsView = document.getElementById('mainSettingsView');
-            const qualitySettingsView = document.getElementById('qualitySettingsView');
-            const qualityMenuItem = document.getElementById('qualityMenuItem');
-            const qualityBackBtn = document.getElementById('qualityBackBtn');
-            const qualityList = document.getElementById('qualityList');
-            const autoQualityBtn = document.getElementById('autoQualityBtn');
-            const currentQualityIndicator = document.querySelector('.current-quality-indicator');
-
-
             // --- State Variables ---
             let hls = null;
             let controlsTimeout;
@@ -672,6 +556,7 @@
                 
                 if (Hls.isSupported()) {
                     if (hls) hls.destroy();
+                    // Use a custom loader to append the UID to every request
                     hls = new Hls({
                         loader: class CustomLoader extends Hls.DefaultConfig.loader {
                             constructor(config) {
@@ -689,7 +574,7 @@
                     hls.loadSource(hlsUrl);
                     hls.attachMedia(video);
                     hls.on(Hls.Events.MANIFEST_PARSED, (e, data) => populateQualityMenu(data.levels));
-                    hls.on(Hls.Events.LEVEL_SWITCHED, (e, data) => {
+                    hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
                         isAutoMode = hls.autoLevelEnabled;
                         updateActiveQualityButton();
                     });
@@ -728,7 +613,7 @@
             
             const handleKeyboardShortcuts = (e) => {
                 const tagName = document.activeElement.tagName.toLowerCase();
-                if (tagName === 'input' || settingsMenu.classList.contains('active')) return;
+                if (tagName === 'input' || qualityMenu.classList.contains('active')) return;
                 if (document.activeElement !== document.body && !videoWrapper.contains(document.activeElement)) return;
                 
                 switch (e.key.toLowerCase()) {
@@ -787,7 +672,7 @@
             };
 
             const hideControls = () => {
-                if (video.paused || settingsMenu.classList.contains('active') || isScrubbing) return;
+                if (video.paused || qualityMenu.classList.contains('active') || isScrubbing) return;
                 videoWrapper.classList.remove('active');
             };
 
@@ -807,54 +692,40 @@
 
             // --- Quality Menu Logic ---
             const populateQualityMenu = (levels) => {
-                qualityList.innerHTML = ''; 
-                if (!levels || levels.length === 0) {
-                    qualityList.innerHTML = '<span style="padding: 10px; display: block; color: #aaa;">No quality options.</span>';
-                    return;
-                }
-                
-                const sortedLevels = levels
-                    .map((level, index) => ({ ...level, originalIndex: index }))
-                    .sort((a, b) => b.height - a.height);
+                qualityMenu.innerHTML = '';
+                if (!levels || levels.length === 0) return;
 
-                sortedLevels.forEach((level) => {
+                const createBtn = (level, text) => {
                     const button = document.createElement('button');
                     button.className = 'quality-button';
-                    button.dataset.level = level.originalIndex;
-                    button.innerHTML = `<svg class="check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg><span>${level.height}p</span>`;
-
+                    button.dataset.level = level;
+                    button.innerHTML = `<svg class="check-icon" viewBox="0 0 24 24"><path fill="none" d="M20 6L9 17l-5-5"/></svg><span>${text}</span>`;
                     button.onclick = () => {
                         if (hls) {
-                            isAutoMode = false;
-                            hls.currentLevel = level.originalIndex;
+                            isAutoMode = (level === -1);
+                            hls.currentLevel = level;
                             updateActiveQualityButton();
-                            setTimeout(() => {
-                                qualitySettingsView.style.display = 'none';
-                                mainSettingsView.style.display = 'block';
-                            }, 150);
+                            setTimeout(() => qualityMenu.classList.remove('active'), 100);
                         }
                     };
-                    qualityList.appendChild(button);
+                    return button;
+                };
+
+                qualityMenu.appendChild(createBtn(-1, 'Auto'));
+                
+                [...levels].sort((a, b) => b.height - a.height).forEach((level) => {
+                    qualityMenu.appendChild(createBtn(levels.indexOf(level), `${level.height}p`));
                 });
+
                 updateActiveQualityButton();
             };
 
             const updateActiveQualityButton = () => {
-                if (!hls || !hls.levels || hls.levels.length === 0) return;
-
-                const currentLevelData = hls.levels[hls.currentLevel];
-                if (!currentLevelData) return;
-
-                if (isAutoMode) {
-                    currentQualityIndicator.textContent = `Auto (${currentLevelData.height}p)`;
-                } else {
-                    currentQualityIndicator.textContent = `${currentLevelData.height}p`;
-                }
-                
-                autoQualityBtn.classList.toggle('active', isAutoMode);
-                qualityList.querySelectorAll('.quality-button').forEach(btn => {
+                if (!hls) return;
+                const currentLevel = hls.currentLevel;
+                qualityMenu.querySelectorAll('.quality-button').forEach(btn => {
                     const btnLevel = parseInt(btn.dataset.level);
-                    btn.classList.toggle('active', !isAutoMode && btnLevel === hls.currentLevel);
+                    btn.classList.toggle('active', isAutoMode ? btnLevel === -1 : btnLevel === currentLevel);
                 });
             };
 
@@ -899,37 +770,13 @@
             
             settingsBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                settingsMenu.classList.toggle('active');
-                qualitySettingsView.style.display = 'none';
-                mainSettingsView.style.display = 'block';
+                qualityMenu.classList.toggle('active');
                 showControls();
             });
 
-            qualityMenuItem.addEventListener('click', () => {
-                mainSettingsView.style.display = 'none';
-                qualitySettingsView.style.display = 'block';
-            });
-
-            qualityBackBtn.addEventListener('click', () => {
-                qualitySettingsView.style.display = 'none';
-                mainSettingsView.style.display = 'block';
-            });
-
-            autoQualityBtn.addEventListener('click', () => {
-                if (hls) {
-                    isAutoMode = true;
-                    hls.currentLevel = -1; 
-                    updateActiveQualityButton();
-                    setTimeout(() => {
-                        qualitySettingsView.style.display = 'none';
-                        mainSettingsView.style.display = 'block';
-                    }, 150);
-                }
-            });
-
             document.addEventListener('click', (e) => {
-                if (!settingsBtn.contains(e.target) && !settingsMenu.contains(e.target)) {
-                    settingsMenu.classList.remove('active');
+                if (!settingsBtn.contains(e.target) && !qualityMenu.contains(e.target)) {
+                    qualityMenu.classList.remove('active');
                 }
             });
 
