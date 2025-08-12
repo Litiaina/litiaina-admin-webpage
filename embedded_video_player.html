@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -528,8 +527,8 @@
         <div class="controls-overlay">
             <div class="top-controls">
                 <div class="video-info">
-                    <h1 id="videoTitle">Video Title</h1>
-                    <p id="videoSubtitle">Episode 1 Season 1</p>
+                    <h1 id="videoHeader">Video Title</h1>
+                    <p id="videoDescription">Episode 1 Season 1</p>
                 </div>
                 <div class="top-right-controls">
                     <button class="icon-button" id="googleCastBtn" title="Google Cast">
@@ -649,7 +648,6 @@
             const autoQualityBtn = document.getElementById('autoQualityBtn');
             const currentQualityIndicator = document.querySelector('.current-quality-indicator');
 
-
             // --- State Variables ---
             let hls = null;
             let controlsTimeout;
@@ -662,11 +660,16 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const uid = urlParams.get('uid');
                 const videoPath = urlParams.get('path');
+                const videoHeader = urlParams.get('header');
+                const videoDescription = urlParams.get('description')
 
-                if (!uid || !videoPath) {
+                if (!uid || !videoPath || !videoHeader || !videoDescription) {
                     videoWrapper.innerHTML = `<div style="color: white; text-align: center; padding: 20px; font-size: 1.2em;">Player Error: Missing video information.</div>`;
                     return;
                 }
+
+                document.getElementById('videoHeader').textContent = videoHeader
+                document.getElementById('videoDescription').textContent = videoDescription
 
                 const hlsUrl = `https://storage.litiaina.com/dir/file/transcode/stream/hls/${videoPath}_HLS/master.m3u8`;
                 
@@ -1017,5 +1020,4 @@
         });
     </script>
 </body>
-
 </html>
