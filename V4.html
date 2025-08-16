@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/107/107192.png" />
-    <title>Optimized File Uploader</title>
+    <title>Litiaina V4 Uploader</title>
     <link rel="preconnect" href="https://storage.litiaina.com" crossorigin />
     <style>
         :root {
@@ -268,7 +268,7 @@
 <body>
     <div class="top-banner">
         <img src="https://cdn-icons-png.flaticon.com/512/107/107192.png" alt="Upload Icon" />
-        <h1>Optimized File Uploader</h1>
+        <h1>Litiaina V4 Uploader</h1>
         <p id="gb-used">USED: --- / TOTAL: ---</p>
     </div>
 
@@ -277,7 +277,7 @@
             <p id="dropText">Click or drag a file here to upload</p>
             <input type="file" id="fileInput" hidden />
         </div>
-        <input type="text" id="pathInput" placeholder="Upload Path (e.g., myfiles/images)" />
+        <input type="text" id="fragmentInput" placeholder="Fragment (e.g., images, documents)" />
         <button class="upload-btn" id="uploadBtn">Upload</button>
         <progress id="uploadProgress" value="0" max="100" style="display: none;"></progress>
         <div class="status-grid" id="statusGrid" style="display: none;">
@@ -303,20 +303,16 @@
     <script>
     // --- GLOBAL STATE & CONSTANTS ---
     let elapsedInterval = null;
-    let uploadController = null; // To allow cancellation
+    let uploadController = null;
     const serverLink = `https://storage.litiaina.com`;
     const token = localStorage.getItem("current-token")?.trim() || "";
     const uid = localStorage.getItem("current-account-uid")?.trim() || "";
     const totalCapacity = localStorage.getItem("current-capacity")?.trim() || "0";
 
-    // --- OPTIMIZED UPLOAD PARAMETERS ---
     const KB = 1024;
     const MB = 1024 * KB;
     const GB = 1024 * MB;
     
-    // Threshold to switch from single file upload to chunked upload
-    const CHUNK_UPLOAD_THRESHOLD = 5 * MB;
-
     // --- UTILITY FUNCTIONS ---
 
     function showToast(message, type = 'info', duration = 4000) {
@@ -395,22 +391,15 @@
         uploadController = null;
     }
 
-    function prepareUploadUI(isChunked = false) {
+    function prepareUploadUI() {
         const uploadButton = document.getElementById('uploadBtn');
-        uploadButton.disabled = false; // Enable to act as cancel button
+        uploadButton.disabled = false;
         uploadButton.textContent = 'Cancel';
-
         document.getElementById('uploadSpinner').style.display = 'flex';
         document.getElementById('spinnerText').textContent = 'Initializing...';
         document.getElementById('uploadProgress').style.display = 'block';
         document.getElementById('uploadProgress').value = 0;
-        
-        const statusGrid = document.getElementById('statusGrid');
-        statusGrid.style.display = 'grid';
-        
-        // Only show worker/chunk info for chunked uploads
-        document.getElementById('workerCount').closest('div').style.display = isChunked ? 'block' : 'none';
-        document.getElementById('chunkSize').closest('div').style.display = isChunked ? 'block' : 'none';
+        document.getElementById('statusGrid').style.display = 'grid';
     }
 
     function startElapsedTimer() {
@@ -438,79 +427,103 @@
             return;
         }
         try {
-            const url = `${serverLink}/dir/file/metadata/${uid}?uid=${uid}`;
+            const url = `${serverLink}/dir/capacity`;
             const response = await fetch(url, {
                 method: 'GET',
-                headers: { "authorization": `Bearer ${token}` }
+                headers: { "authorization": `Bearer ${token}`, "uid": uid }
             });
-
             if (response.ok) {
-                const metadata = await response.json();
-                const usedSpace = Number(metadata.file_size) || 0;
+                const capacity = await response.json();
+                const usedSpace = Number(capacity.used_space_bytes) || 0;
                 gbUsedElement.textContent = `USED: ${formatBytes(usedSpace)} / TOTAL: ${formatBytes(totalCapacity)}`;
             } else {
-                console.error("Could not fetch capacity:", response.status, response.statusText);
                 gbUsedElement.textContent = `USED: Error / TOTAL: ${formatBytes(totalCapacity)}`;
             }
         } catch (error) {
-            console.error("Error fetching capacity:", error);
             gbUsedElement.textContent = `USED: Network Error / TOTAL: ${formatBytes(totalCapacity)}`;
-            showToast('Could not get storage info. Is the server running?', 'error');
         }
     }
     
-    /**
-     * Determines the optimal chunk size based on the total file size.
-     * Larger files benefit from larger chunks to reduce request overhead.
-     */
     function getOptimalChunkSize(fileSize) {
-        if (fileSize < 100 * MB) return 1 * MB;   // For files under 100MB, use 1MB chunks
-        if (fileSize < 500 * MB) return 5 * MB;   // For files under 500MB, use 5MB chunks
-        if (fileSize < 1 * GB)   return 8 * MB;   // For files under 1GB, use 8MB chunks
-        return 16 * MB;                          // For very large files, use 16MB chunks
+        if (fileSize < 100 * MB) return 2 * MB;
+        if (fileSize < 500 * MB) return 5 * MB;
+        if (fileSize < 1 * GB)   return 8 * MB;
+        return 16 * MB;
     }
 
-    /**
-     * Main function to handle the upload process.
-     * It decides whether to use a single file upload or a chunked upload.
-     */
+    async function calculateChecksum(blob) {
+        const buffer = await blob.arrayBuffer();
+        const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // --- Session Management for Resumability ---
+    function getSessionKey(file) {
+        return `upload-session-${file.name}-${file.size}-${file.lastModified}`;
+    }
+
+    function saveSession(key, data) {
+        localStorage.setItem(key, JSON.stringify(data));
+    }
+
+    function getSession(key) {
+        const session = localStorage.getItem(key);
+        return session ? JSON.parse(session) : null;
+    }
+
+    function clearSession(key) {
+        localStorage.removeItem(key);
+    }
+
     async function handleUpload() {
-        if (uploadController) { // If an upload is in progress, cancel it
+        if (uploadController) {
             uploadController.abort();
             stopElapsedTimer();
+            const file = document.getElementById('fileInput').files[0];
+            if (file) {
+                clearSession(getSessionKey(file));
+                addToHistory(file.name, 'fail', 'Cancelled by user');
+            }
             resetUploadUI();
             showToast('Upload cancelled.', 'info');
-            addToHistory(uploadController.fileName, 'fail', 'Cancelled by user');
             return;
         }
 
         const fileInput = document.getElementById('fileInput');
         const file = fileInput.files[0];
-        const path = document.getElementById('pathInput').value.trim();
+        const fragment = document.getElementById('fragmentInput').value.trim();
 
         if (!file) {
             showToast('Please select a file to upload.', 'error');
             return;
         }
+        if (!fragment) {
+            showToast('Please enter a fragment name.', 'error');
+            return;
+        }
         if (!token || !uid) {
-            showToast('Authentication details are missing. Please log in again.', 'error');
+            showToast('Authentication details are missing.', 'error');
             return;
         }
 
         uploadController = new AbortController();
         uploadController.fileName = file.name;
+        const sessionKey = getSessionKey(file);
 
         try {
-            // STRATEGY: Choose upload method based on file size
-            if (file.size < CHUNK_UPLOAD_THRESHOLD) {
-                await uploadSingleFile(file, path);
+            const existingSession = getSession(sessionKey);
+            if (existingSession && existingSession.file_id) {
+                showToast('Incomplete upload found. Attempting to resume.', 'info');
+                await resumeChunkedFile(file, fragment, existingSession.file_id, sessionKey);
             } else {
-                await uploadChunkedFile(file, path);
+                await uploadChunkedFile(file, fragment, sessionKey);
             }
             
             stopElapsedTimer();
             showToast('Upload complete!', 'success');
             addToHistory(file.name, 'success');
+            clearSession(sessionKey);
             await updateCapacityDisplay();
 
         } catch (err) {
@@ -519,93 +532,118 @@
                 stopElapsedTimer();
                 showToast(`Upload failed: ${err.message}`, 'error', 5000);
                 addToHistory(file.name, 'fail', err.message || 'Unknown error');
+                clearSession(sessionKey);
             }
         } finally {
             resetUploadUI();
         }
     }
 
-    /**
-     * Uploads a file in a single request. Ideal for small files.
-     */
-    async function uploadSingleFile(file, path) {
-        prepareUploadUI(false); // UI for single upload
+    async function uploadChunkedFile(file, fragment, sessionKey) {
+        prepareUploadUI();
         startElapsedTimer();
 
         const spinnerText = document.getElementById('spinnerText');
-        spinnerText.textContent = 'Uploading...';
-
-        const formData = new FormData();
-        formData.append('file', file); // Server should be configured to handle 'file' key
-
-        const params = new URLSearchParams({
-            original_filename: file.name,
-            mime_type: file.type || 'application/octet-stream',
-        });
-        
-        // NOTE: This endpoint assumes a different server route for single uploads.
-        // You might need to adjust this URL or use the same one with different parameters.
-        const url = `${serverLink}/dir/file/upload/single/${path}?${params}`;
-        
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { authorization: `Bearer ${token}`, uid: uid },
-            body: formData,
-            signal: uploadController.signal
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Upload failed: ${response.status} ${errorText}`);
-        }
-        
-        document.getElementById('uploadProgress').value = 100;
-    }
-
-    /**
-     * Uploads a file in parallel chunks. Ideal for large files.
-     */
-    async function uploadChunkedFile(file, path) {
-        prepareUploadUI(true); // UI for chunked upload
-        startElapsedTimer();
-
-        const progressBar = document.getElementById('uploadProgress');
-        const speedDisplay = document.getElementById('uploadSpeed');
-        const workerCountDisplay = document.getElementById('workerCount');
-        const chunkSizeDisplay = document.getElementById('chunkSize');
-        const etaDisplay = document.getElementById('eta');
-        const spinnerText = document.getElementById('spinnerText');
-
         const fileSize = file.size;
         const chunkSize = getOptimalChunkSize(fileSize);
         const totalChunks = Math.ceil(fileSize / chunkSize);
-        const fileId = crypto.randomUUID();
         
-        // Start with a sensible number of workers, capping at a reasonable max.
+        document.getElementById('chunkSize').textContent = formatBytes(chunkSize);
+        spinnerText.textContent = 'Initiating session...';
+
+        const objectKey = file.name;
+        const initiateResponse = await fetch(`${serverLink}/v4/fragment/object/upload/init/${fragment}/${objectKey}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                authorization: `Bearer ${token}`,
+                uid: uid
+            },
+            body: JSON.stringify({
+                content_type: file.type || 'application/octet-stream',
+                total_size_bytes: fileSize,
+                total_chunks: totalChunks,
+            }),
+            signal: uploadController.signal
+        });
+
+        if (!initiateResponse.ok) {
+            throw new Error('Failed to initiate upload session.');
+        }
+        const { file_id } = await initiateResponse.json();
+
+        saveSession(sessionKey, { file_id, name: file.name, size: file.size });
+
+        const allChunks = Array.from({ length: totalChunks }, (_, i) => i);
+        
+        await processAndFinalizeChunks(file, file_id, allChunks, 0, sessionKey);
+    }
+
+    async function resumeChunkedFile(file, fragment, file_id, sessionKey) {
+        prepareUploadUI();
+        startElapsedTimer();
+        const spinnerText = document.getElementById('spinnerText');
+        spinnerText.textContent = 'Checking status...';
+
+        const statusResponse = await fetch(`${serverLink}/v4/fragment/object/upload/status/${file_id}`, {
+            headers: { authorization: `Bearer ${token}`, uid: uid },
+            signal: uploadController.signal
+        });
+
+        if (!statusResponse.ok) {
+            showToast('Could not resume. Starting a new upload.', 'warning');
+            clearSession(sessionKey);
+            await uploadChunkedFile(file, fragment, sessionKey);
+            return;
+        }
+
+        const status = await statusResponse.json();
+
+        spinnerText.textContent = 'Resuming upload...';
+        const chunkSize = getOptimalChunkSize(file.size);
+        document.getElementById('chunkSize').textContent = formatBytes(chunkSize);
+
+        const uploadedChunks = new Set(status.uploaded_chunks);
+        const allChunks = Array.from({ length: status.total_chunks }, (_, i) => i);
+        const chunksToUpload = allChunks.filter(i => !uploadedChunks.has(i));
+        
+        const alreadyUploadedBytes = uploadedChunks.size * chunkSize;
+
+        await processAndFinalizeChunks(file, file_id, chunksToUpload, alreadyUploadedBytes, sessionKey);
+    }
+
+    async function processAndFinalizeChunks(file, file_id, chunkQueue, initialUploadedBytes, sessionKey) {
+        const progressBar = document.getElementById('uploadProgress');
+        const speedDisplay = document.getElementById('uploadSpeed');
+        const workerCountDisplay = document.getElementById('workerCount');
+        const etaDisplay = document.getElementById('eta');
+        const spinnerText = document.getElementById('spinnerText');
+        
+        const fileSize = file.size;
+        const chunkSize = getOptimalChunkSize(fileSize);
+
+        let uploadedBytes = initialUploadedBytes;
+        let lastUploadedBytes = initialUploadedBytes;
+        let lastTime = performance.now();
+        let speeds = [];
         let maxWorkers = Math.min(navigator.hardwareConcurrency || 4, 8);
         const MAX_WORKERS_CAP = 16;
+        
+        updateProgress(); // Initial progress update
 
-        chunkSizeDisplay.textContent = formatBytes(chunkSize);
-        spinnerText.textContent = 'Uploading...';
-
-        let uploadedBytes = 0;
-        let lastUploadedBytes = 0;
-        let lastTime = performance.now();
-        let speeds = []; // Store recent speeds for averaging
-
-        const updateProgress = () => {
+        function updateProgress() {
             const progress = Math.round((uploadedBytes / fileSize) * 100);
             progressBar.value = progress;
             
             const now = performance.now();
             const timeDiff = (now - lastTime) / 1000;
 
-            if (timeDiff > 0.5) { // Update stats every 0.5s
+            if (timeDiff > 0.5) {
                 const bytesDiff = uploadedBytes - lastUploadedBytes;
                 const currentSpeed = bytesDiff / timeDiff;
                 if (currentSpeed > 0) {
                     speeds.push(currentSpeed);
-                    if (speeds.length > 10) speeds.shift(); // Keep last 10 speed samples
+                    if (speeds.length > 10) speeds.shift();
                 }
                 
                 const avgSpeed = speeds.length > 0 ? speeds.reduce((a, b) => a + b, 0) / speeds.length : 0;
@@ -618,7 +656,6 @@
                 lastTime = now;
                 lastUploadedBytes = uploadedBytes;
 
-                // DYNAMIC CONCURRENCY ADJUSTMENT
                 if (avgSpeed > 2 * MB && maxWorkers < MAX_WORKERS_CAP) {
                     maxWorkers = Math.min(maxWorkers + 1, MAX_WORKERS_CAP);
                 }
@@ -631,24 +668,18 @@
             const end = Math.min(start + chunkSize, fileSize);
             const blob = file.slice(start, end);
             
+            const checksum = await calculateChecksum(blob);
+            
             const formData = new FormData();
             formData.append('chunk', blob);
 
-            const params = new URLSearchParams({
-                file_id: fileId,
-                chunk_index: chunkIndex,
-                total_chunks: totalChunks,
-                original_filename: file.name,
-                mime_type: file.type || 'application/octet-stream',
-            });
-
-            const url = `${serverLink}/dir/file/upload/v2/${path}?${params}`;
+            const url = `${serverLink}/v4/fragment/object/upload/chunk/${file_id}/${chunkIndex}?checksum=${checksum}`;
             
             for (let retries = 3; retries > 0; retries--) {
                 if (uploadController.signal.aborted) throw new Error('Upload cancelled');
                 try {
                     const response = await fetch(url, {
-                        method: 'POST',
+                        method: 'PUT',
                         headers: { authorization: `Bearer ${token}`, uid: uid },
                         body: formData,
                         signal: uploadController.signal
@@ -662,14 +693,13 @@
                     return; // Success
                 } catch (err) {
                     if (err.name === 'AbortError') throw err;
-                    if (retries === 1) throw err; // Last retry failed
-                    maxWorkers = Math.max(2, maxWorkers - 1); // Reduce concurrency on error
-                    await new Promise(r => setTimeout(r, 2000)); // Wait before retrying
+                    if (retries === 1) throw err;
+                    maxWorkers = Math.max(2, maxWorkers - 1);
+                    await new Promise(r => setTimeout(r, 2000));
                 }
             }
         };
 
-        const chunkQueue = Array.from({ length: totalChunks }, (_, i) => i);
         let activeWorkers = 0;
         let uploadFailedError = null;
 
@@ -713,7 +743,7 @@
                 while (activeWorkers < maxWorkers && chunkQueue.length > 0) {
                     processQueue();
                 }
-            }, 100); // Check to start new workers every 100ms
+            }, 100);
 
             const initialWorkers = Math.min(maxWorkers, chunkQueue.length);
             for (let i = 0; i < initialWorkers; i++) {
@@ -721,6 +751,17 @@
             }
         });
         
+        spinnerText.textContent = 'Finalizing...';
+        const finalizeResponse = await fetch(`${serverLink}/v4/fragment/object/upload/finalize/${file_id}`, {
+            method: 'POST',
+            headers: { authorization: `Bearer ${token}`, uid: uid },
+            signal: uploadController.signal
+        });
+
+        if (!finalizeResponse.ok) {
+            throw new Error('Failed to finalize upload.');
+        }
+
         progressBar.value = 100;
     }
 

@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/107/107192.png" />
+    <title>Litiaina V3 Uploader</title>
+    <link rel="preconnect" href="https://storage.litiaina.com" crossorigin />
+    <style>
+        :root {
+            --background-color: #0a0a0a;
+            --surface-color: #1a1a1a;
+            --surface-alt-color: #2a2a2a;
+            --text-color: #f0f0f0;
+            --text-muted-color: #a0a0a0;
+            --primary-color: #007bff;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --border-color: #333;
+            --input-bg-color: #222;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .top-banner {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .top-banner img {
+            max-width: 70px;
+            margin-bottom: 15px;
+        }
+
+        .top-banner h1 {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .top-banner p {
+            color: var(--text-muted-color);
+            font-size: 0.9rem;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        .upload-box {
+            background-color: var(--surface-color);
+            border-radius: 12px;
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--input-bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+        }
+
+        .upload-btn {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 10px;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        .upload-btn:hover:enabled {
+            background-color: #0069d9;
+        }
+        
+        .upload-btn:active:enabled {
+            transform: scale(0.98);
+        }
+
+        .upload-btn:disabled {
+            background-color: #444;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        progress {
+            width: 100%;
+            height: 12px;
+            margin-top: 20px;
+            appearance: none;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        progress::-webkit-progress-bar {
+            background-color: #333;
+        }
+
+        progress::-webkit-progress-value {
+            background-color: var(--success-color);
+            transition: width 0.3s ease;
+        }
+
+        progress::-moz-progress-bar {
+            background-color: var(--success-color);
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 8px 15px;
+            font-size: 0.85rem;
+            color: var(--text-muted-color);
+            margin-top: 15px;
+            text-align: center;
+        }
+        
+        .status-grid div span {
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .spinner {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: var(--text-muted-color);
+        }
+
+        .spinner .circle {
+            width: 16px;
+            height: 16px;
+            border: 3px solid var(--success-color);
+            border-top: 3px solid transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            background-color: var(--surface-alt-color);
+            color: #aaa;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .drop-zone.dragover {
+            background-color: #333;
+            border-color: var(--success-color);
+            color: var(--text-color);
+        }
+
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background-color: #333;
+            color: white;
+            padding: 12px 20px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.4s cubic-bezier(0.215, 0.610, 0.355, 1);
+            cursor: pointer;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .toast.success { background-color: var(--success-color); }
+        .toast.error { background-color: var(--danger-color); }
+        .toast.info { background-color: var(--primary-color); }
+
+        .history {
+            margin-top: 30px;
+            width: 100%;
+            max-width: 500px;
+            background-color: var(--surface-color);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .history h2 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .history-item {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            padding: 10px 15px;
+            background-color: var(--surface-alt-color);
+            border-radius: 6px;
+            border-left: 4px solid;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+        
+        .history-item:hover {
+            background-color: #3a3a3a;
+        }
+        
+        .history-item span { opacity: 0.8; }
+        .history-item.success { border-color: var(--success-color); color: #a0e0a0; }
+        .history-item.fail { border-color: var(--danger-color); color: #f2aaaa; }
+    </style>
+</head>
+
+<body>
+    <div class="top-banner">
+        <img src="https://cdn-icons-png.flaticon.com/512/107/107192.png" alt="Upload Icon" />
+        <h1>Optimized File Uploader</h1>
+        <p id="gb-used">USED: --- / TOTAL: ---</p>
+    </div>
+
+    <div class="upload-box">
+        <div id="dropZone" class="drop-zone">
+            <p id="dropText">Click or drag a file here to upload</p>
+            <input type="file" id="fileInput" hidden />
+        </div>
+        <input type="text" id="pathInput" placeholder="Upload Path (e.g., myfiles/images)" />
+        <button class="upload-btn" id="uploadBtn">Upload</button>
+        <progress id="uploadProgress" value="0" max="100" style="display: none;"></progress>
+        <div class="status-grid" id="statusGrid" style="display: none;">
+            <div>Speed: <span id="uploadSpeed">0 KB/s</span></div>
+            <div>Workers: <span id="workerCount">0</span></div>
+            <div>Chunk Size: <span id="chunkSize">0 KB</span></div>
+            <div>ETA: <span id="eta">--</span></div>
+            <div>Elapsed: <span id="elapsed">0s</span></div>
+        </div>
+        <div class="spinner" id="uploadSpinner">
+            <div class="circle"></div>
+            <div id="spinnerText">Initializing...</div>
+        </div>
+    </div>
+
+    <div class="history" id="uploadHistory" style="display: none;">
+        <h2>Upload History</h2>
+        <div id="uploadHistoryList"></div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script>
+    // --- GLOBAL STATE & CONSTANTS ---
+    let elapsedInterval = null;
+    let uploadController = null;
+    const serverLink = `https://storage.litiaina.com`;
+    const token = localStorage.getItem("current-token")?.trim() || "";
+    const uid = localStorage.getItem("current-account-uid")?.trim() || "";
+    const totalCapacity = localStorage.getItem("current-capacity")?.trim() || "0";
+
+    const KB = 1024;
+    const MB = 1024 * KB;
+    const GB = 1024 * MB;
+    
+    const CHUNK_UPLOAD_THRESHOLD = 5 * MB;
+
+    // --- UTILITY FUNCTIONS ---
+
+    function showToast(message, type = 'info', duration = 4000) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        toast.onclick = () => {
+            toast.classList.remove('show');
+            toast.addEventListener('transitionend', () => toast.remove());
+        };
+        container.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('show'));
+        setTimeout(() => {
+            if (document.body.contains(toast)) {
+                toast.classList.remove('show');
+                toast.addEventListener('transitionend', () => toast.remove());
+            }
+        }, duration);
+    }
+
+    function addToHistory(filename, status, message = '') {
+        const historyContainer = document.getElementById('uploadHistory');
+        const historyList = document.getElementById('uploadHistoryList');
+        if (historyContainer.style.display === 'none') {
+            historyContainer.style.display = 'block';
+        }
+        const item = document.createElement('div');
+        item.className = `history-item ${status}`;
+        const timestamp = new Date().toLocaleTimeString();
+        const statusText = status === 'success' ? 'SUCCESS' : 'FAILED';
+        item.innerHTML = `
+            <div>
+                <strong>${filename}</strong> - <span style="font-weight: bold;">${statusText}</span>
+                ${message ? `<br><small style="opacity: 0.7;">${message}</small>` : ''}
+            </div>
+            <span>${timestamp}</span>`;
+        historyList.prepend(item);
+    }
+
+    function formatBytes(bytes, decimals = 2) {
+        bytes = Number(bytes);
+        if (!bytes || bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+
+    function formatTime(seconds) {
+        if (isNaN(seconds) || seconds === Infinity || seconds < 0) return '--';
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = Math.floor(seconds % 60);
+        return `${h > 0 ? h + 'h ' : ''}${m > 0 ? m + 'm ' : ''}${s}s`;
+    }
+
+    // --- UI MANAGEMENT ---
+
+    function resetUploadUI() {
+        document.getElementById('uploadProgress').value = 0;
+        document.getElementById('uploadProgress').style.display = 'none';
+        document.getElementById('statusGrid').style.display = 'none';
+        document.getElementById('uploadSpeed').textContent = '0 KB/s';
+        document.getElementById('workerCount').textContent = '0';
+        document.getElementById('chunkSize').textContent = '0 KB';
+        document.getElementById('eta').textContent = '--';
+        document.getElementById('elapsed').textContent = '0s';
+        document.getElementById('dropText').textContent = 'Click or drag a file here to upload';
+        document.getElementById('fileInput').value = '';
+        const uploadButton = document.getElementById('uploadBtn');
+        uploadButton.disabled = false;
+        uploadButton.textContent = 'Upload';
+        document.getElementById('uploadSpinner').style.display = 'none';
+        uploadController = null;
+    }
+
+    function prepareUploadUI(isChunked = false) {
+        const uploadButton = document.getElementById('uploadBtn');
+        uploadButton.disabled = false;
+        uploadButton.textContent = 'Cancel';
+        document.getElementById('uploadSpinner').style.display = 'flex';
+        document.getElementById('spinnerText').textContent = 'Initializing...';
+        document.getElementById('uploadProgress').style.display = 'block';
+        document.getElementById('uploadProgress').value = 0;
+        const statusGrid = document.getElementById('statusGrid');
+        statusGrid.style.display = 'grid';
+        document.getElementById('workerCount').closest('div').style.display = isChunked ? 'block' : 'none';
+        document.getElementById('chunkSize').closest('div').style.display = isChunked ? 'block' : 'none';
+    }
+
+    function startElapsedTimer() {
+        const elapsedDisplay = document.getElementById('elapsed');
+        const startTime = Date.now();
+        if (elapsedInterval) clearInterval(elapsedInterval);
+        elapsedDisplay.textContent = '0s';
+        elapsedInterval = setInterval(() => {
+            const seconds = Math.floor((Date.now() - startTime) / 1000);
+            elapsedDisplay.textContent = `${seconds}s`;
+        }, 1000);
+    }
+
+    function stopElapsedTimer() {
+        if (elapsedInterval) clearInterval(elapsedInterval);
+        elapsedInterval = null;
+    }
+
+    // --- CORE LOGIC ---
+
+    async function updateCapacityDisplay() {
+        const gbUsedElement = document.getElementById('gb-used');
+        if (!token || !uid) {
+            gbUsedElement.textContent = `USED: -- / TOTAL: ${formatBytes(totalCapacity)}`;
+            return;
+        }
+        try {
+            const url = `${serverLink}/dir/capacity`;
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: { "authorization": `Bearer ${token}`, "uid": uid }
+            });
+            if (response.ok) {
+                const capacity = await response.json();
+                const usedSpace = Number(capacity.used_space_bytes) || 0;
+                gbUsedElement.textContent = `USED: ${formatBytes(usedSpace)} / TOTAL: ${formatBytes(totalCapacity)}`;
+            } else {
+                gbUsedElement.textContent = `USED: Error / TOTAL: ${formatBytes(totalCapacity)}`;
+            }
+        } catch (error) {
+            gbUsedElement.textContent = `USED: Network Error / TOTAL: ${formatBytes(totalCapacity)}`;
+        }
+    }
+    
+    function getOptimalChunkSize(fileSize) {
+        if (fileSize < 100 * MB) return 2 * MB;
+        if (fileSize < 500 * MB) return 5 * MB;
+        if (fileSize < 1 * GB)   return 8 * MB;
+        return 16 * MB;
+    }
+
+    async function calculateChecksum(blob) {
+        const buffer = await blob.arrayBuffer();
+        const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // --- NEW: Session Management for Resumability ---
+    function getSessionKey(file) {
+        return `upload-session-${file.name}-${file.size}-${file.lastModified}`;
+    }
+
+    function saveSession(key, data) {
+        localStorage.setItem(key, JSON.stringify(data));
+    }
+
+    function getSession(key) {
+        const session = localStorage.getItem(key);
+        return session ? JSON.parse(session) : null;
+    }
+
+    function clearSession(key) {
+        localStorage.removeItem(key);
+    }
+
+    async function handleUpload() {
+        if (uploadController) {
+            uploadController.abort();
+            stopElapsedTimer();
+            const file = document.getElementById('fileInput').files[0];
+            if (file) {
+                clearSession(getSessionKey(file));
+                addToHistory(file.name, 'fail', 'Cancelled by user');
+            }
+            resetUploadUI();
+            showToast('Upload cancelled.', 'info');
+            return;
+        }
+
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+        const path = document.getElementById('pathInput').value.trim();
+
+        if (!file) {
+            showToast('Please select a file to upload.', 'error');
+            return;
+        }
+        if (!token || !uid) {
+            showToast('Authentication details are missing.', 'error');
+            return;
+        }
+
+        uploadController = new AbortController();
+        uploadController.fileName = file.name;
+        const sessionKey = getSessionKey(file);
+
+        try {
+            if (file.size < CHUNK_UPLOAD_THRESHOLD) {
+                await uploadSingleFile(file, path);
+            } else {
+                const existingSession = getSession(sessionKey);
+                if (existingSession && existingSession.file_id) {
+                    showToast('Incomplete upload found. Attempting to resume.', 'info');
+                    await resumeChunkedFile(file, path, existingSession.file_id, sessionKey);
+                } else {
+                    await uploadChunkedFile(file, path, sessionKey);
+                }
+            }
+            
+            stopElapsedTimer();
+            showToast('Upload complete!', 'success');
+            addToHistory(file.name, 'success');
+            clearSession(sessionKey);
+            await updateCapacityDisplay();
+
+        } catch (err) {
+            if (err.name !== 'AbortError') {
+                console.error('Upload failed:', err);
+                stopElapsedTimer();
+                showToast(`Upload failed: ${err.message}`, 'error', 5000);
+                addToHistory(file.name, 'fail', err.message || 'Unknown error');
+                clearSession(sessionKey);
+            }
+        } finally {
+            resetUploadUI();
+        }
+    }
+
+    async function uploadSingleFile(file, path) {
+        prepareUploadUI(false);
+        startElapsedTimer();
+        document.getElementById('spinnerText').textContent = 'Uploading...';
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const url = `${serverLink}/dir/file/upload/${path}`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { authorization: `Bearer ${token}`, uid: uid },
+            body: formData,
+            signal: uploadController.signal
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Upload failed: ${response.status} ${errorText}`);
+        }
+        
+        document.getElementById('uploadProgress').value = 100;
+    }
+
+    async function uploadChunkedFile(file, path, sessionKey) {
+        prepareUploadUI(true);
+        startElapsedTimer();
+
+        const spinnerText = document.getElementById('spinnerText');
+        const fileSize = file.size;
+        const chunkSize = getOptimalChunkSize(fileSize);
+        const totalChunks = Math.ceil(fileSize / chunkSize);
+        
+        document.getElementById('chunkSize').textContent = formatBytes(chunkSize);
+        spinnerText.textContent = 'Initiating session...';
+
+        const initiateResponse = await fetch(`${serverLink}/dir/file/upload/v3/initiate/${path}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                authorization: `Bearer ${token}`,
+                uid: uid
+            },
+            body: JSON.stringify({
+                original_filename: file.name,
+                total_size_bytes: fileSize,
+                total_chunks: totalChunks,
+                mime_type: file.type || 'application/octet-stream'
+            }),
+            signal: uploadController.signal
+        });
+
+        if (!initiateResponse.ok) {
+            throw new Error('Failed to initiate upload session.');
+        }
+        const { file_id } = await initiateResponse.json();
+
+        saveSession(sessionKey, { file_id, name: file.name, size: file.size });
+
+        const allChunks = Array.from({ length: totalChunks }, (_, i) => i);
+        
+        await processAndFinalizeChunks(file, file_id, allChunks, 0, sessionKey);
+    }
+
+    async function resumeChunkedFile(file, path, file_id, sessionKey) {
+        prepareUploadUI(true);
+        startElapsedTimer();
+        const spinnerText = document.getElementById('spinnerText');
+        spinnerText.textContent = 'Checking status...';
+
+        const statusResponse = await fetch(`${serverLink}/dir/file/upload/v3/${file_id}/status`, {
+            headers: { authorization: `Bearer ${token}`, uid: uid },
+            signal: uploadController.signal
+        });
+
+        if (!statusResponse.ok) {
+            showToast('Could not resume. Starting a new upload.', 'warning');
+            clearSession(sessionKey);
+            await uploadChunkedFile(file, path, sessionKey);
+            return;
+        }
+
+        const status = await statusResponse.json();
+
+        if (status.original_filename !== file.name || status.total_size_bytes !== file.size) {
+            showToast('File mismatch. This is not the same file. Starting a new upload.', 'error');
+            clearSession(sessionKey);
+            await uploadChunkedFile(file, path, sessionKey);
+            return;
+        }
+
+        spinnerText.textContent = 'Resuming upload...';
+        const chunkSize = getOptimalChunkSize(file.size);
+        document.getElementById('chunkSize').textContent = formatBytes(chunkSize);
+
+        const uploadedChunks = new Set(status.uploaded_chunks);
+        const allChunks = Array.from({ length: status.total_chunks }, (_, i) => i);
+        const chunksToUpload = allChunks.filter(i => !uploadedChunks.has(i));
+        
+        const alreadyUploadedBytes = uploadedChunks.size * chunkSize;
+
+        await processAndFinalizeChunks(file, file_id, chunksToUpload, alreadyUploadedBytes, sessionKey);
+    }
+
+    async function processAndFinalizeChunks(file, file_id, chunkQueue, initialUploadedBytes, sessionKey) {
+        const progressBar = document.getElementById('uploadProgress');
+        const speedDisplay = document.getElementById('uploadSpeed');
+        const workerCountDisplay = document.getElementById('workerCount');
+        const etaDisplay = document.getElementById('eta');
+        const spinnerText = document.getElementById('spinnerText');
+        
+        const fileSize = file.size;
+        const chunkSize = getOptimalChunkSize(fileSize);
+
+        let uploadedBytes = initialUploadedBytes;
+        let lastUploadedBytes = initialUploadedBytes;
+        let lastTime = performance.now();
+        let speeds = [];
+        let maxWorkers = Math.min(navigator.hardwareConcurrency || 4, 8);
+        const MAX_WORKERS_CAP = 16;
+        
+        updateProgress(); // Initial progress update
+
+        function updateProgress() {
+            const progress = Math.round((uploadedBytes / fileSize) * 100);
+            progressBar.value = progress;
+            
+            const now = performance.now();
+            const timeDiff = (now - lastTime) / 1000;
+
+            if (timeDiff > 0.5) {
+                const bytesDiff = uploadedBytes - lastUploadedBytes;
+                const currentSpeed = bytesDiff / timeDiff;
+                if (currentSpeed > 0) {
+                    speeds.push(currentSpeed);
+                    if (speeds.length > 10) speeds.shift();
+                }
+                
+                const avgSpeed = speeds.length > 0 ? speeds.reduce((a, b) => a + b, 0) / speeds.length : 0;
+                speedDisplay.textContent = `${formatBytes(avgSpeed)}/s`;
+                
+                const remainingBytes = fileSize - uploadedBytes;
+                const estTime = avgSpeed > 0 ? remainingBytes / avgSpeed : 0;
+                etaDisplay.textContent = formatTime(estTime);
+
+                lastTime = now;
+                lastUploadedBytes = uploadedBytes;
+
+                if (avgSpeed > 2 * MB && maxWorkers < MAX_WORKERS_CAP) {
+                    maxWorkers = Math.min(maxWorkers + 1, MAX_WORKERS_CAP);
+                }
+            }
+        };
+
+        const uploadChunk = async (chunkIndex) => {
+            const start = chunkIndex * chunkSize;
+            if (start >= fileSize) return;
+            const end = Math.min(start + chunkSize, fileSize);
+            const blob = file.slice(start, end);
+            
+            const checksum = await calculateChecksum(blob);
+            
+            const formData = new FormData();
+            formData.append('chunk', blob);
+
+            const url = `${serverLink}/dir/file/upload/v3/${file_id}/${chunkIndex}?checksum=${checksum}`;
+            
+            for (let retries = 3; retries > 0; retries--) {
+                if (uploadController.signal.aborted) throw new Error('Upload cancelled');
+                try {
+                    const response = await fetch(url, {
+                        method: 'PUT',
+                        headers: { authorization: `Bearer ${token}`, uid: uid },
+                        body: formData,
+                        signal: uploadController.signal
+                    });
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`Chunk ${chunkIndex} failed: ${response.status} ${errorText}`);
+                    }
+                    uploadedBytes += blob.size;
+                    updateProgress();
+                    return; // Success
+                } catch (err) {
+                    if (err.name === 'AbortError') throw err;
+                    if (retries === 1) throw err;
+                    maxWorkers = Math.max(2, maxWorkers - 1);
+                    await new Promise(r => setTimeout(r, 2000));
+                }
+            }
+        };
+
+        let activeWorkers = 0;
+        let uploadFailedError = null;
+
+        await new Promise((resolve, reject) => {
+            const processQueue = async () => {
+                if (uploadFailedError) return;
+                activeWorkers++;
+                workerCountDisplay.textContent = activeWorkers;
+
+                while (chunkQueue.length > 0) {
+                    if (uploadFailedError) break;
+                    const chunkIndex = chunkQueue.shift();
+                    if (chunkIndex === undefined) break;
+
+                    try {
+                        await uploadChunk(chunkIndex);
+                    } catch (err) {
+                        uploadFailedError = err;
+                        reject(err);
+                        break;
+                    }
+                }
+
+                activeWorkers--;
+                workerCountDisplay.textContent = activeWorkers;
+                
+                if (activeWorkers === 0 && chunkQueue.length === 0) {
+                    if (uploadFailedError) {
+                        reject(uploadFailedError);
+                    } else {
+                        resolve();
+                    }
+                }
+            };
+            
+            const workerManager = setInterval(() => {
+                if (chunkQueue.length === 0 || uploadFailedError) {
+                    clearInterval(workerManager);
+                    return;
+                }
+                while (activeWorkers < maxWorkers && chunkQueue.length > 0) {
+                    processQueue();
+                }
+            }, 100);
+
+            const initialWorkers = Math.min(maxWorkers, chunkQueue.length);
+            for (let i = 0; i < initialWorkers; i++) {
+                processQueue();
+            }
+        });
+        
+        spinnerText.textContent = 'Finalizing...';
+        const finalizeResponse = await fetch(`${serverLink}/dir/file/upload/v3/${file_id}/finalize`, {
+            method: 'POST',
+            headers: { authorization: `Bearer ${token}`, uid: uid },
+            signal: uploadController.signal
+        });
+
+        if (!finalizeResponse.ok) {
+            throw new Error('Failed to finalize upload.');
+        }
+
+        progressBar.value = 100;
+    }
+
+    // --- EVENT LISTENERS ---
+    document.addEventListener('DOMContentLoaded', () => {
+        updateCapacityDisplay();
+
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const dropText = document.getElementById('dropText');
+        const uploadButton = document.getElementById('uploadBtn');
+
+        uploadButton.addEventListener('click', handleUpload);
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length) {
+                fileInput.files = files;
+                dropText.textContent = `${files[0].name} (${formatBytes(files[0].size)})`;
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                dropText.textContent = `${file.name} (${formatBytes(file.size)})`;
+            }
+        });
+    });
+    </script>
+</body>
+</html>
