@@ -4,21 +4,28 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cloud Storage Manager</title>
+    <title>Litiaina V4 Drive</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- HLS.js for advanced streaming -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         :root {
-            --background: #0D0D0D;
-            --surface-1: #1A1A1A;
-            --surface-2: #2C2C2C;
-            --surface-3: #383838;
-            /* New color for progress bar track */
+            --background: #000000;
+            --surface-1: #121212;
+            --surface-2: #242424;
+            --primary: #E50914;
             --text-primary: #FFFFFF;
             --text-secondary: #A0A0A0;
-            --primary: #E60023;
-            --border: #2a2a2a;
+            --border: #2A2A2A;
+            --accent-color: #FFFFFF;
+            --controls-bg: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.7) 50%, transparent 100%);
+            --top-controls-bg: linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.7) 50%, transparent 100%);
+            --menu-bg: rgba(26, 26, 26, 0.95);
+            --progress-bg: rgba(255, 255, 255, 0.3);
+            --buffered-bg: rgba(255, 255, 255, 0.5);
+            --menu-item-hover-bg: rgba(255, 255, 255, 0.1);
         }
 
         body {
@@ -27,18 +34,28 @@
             color: var(--text-primary);
         }
 
-        /* Custom class definitions for Tailwind */
+        .bg-surface-1 {
+            background-color: var(--surface-1);
+        }
+
         .bg-surface-2 {
             background-color: var(--surface-2);
         }
 
-        .bg-surface-3 {
-            background-color: var(--surface-3);
+        .bg-primary {
+            background-color: var(--primary);
         }
 
-        /* New class for progress bar track */
+        .text-primary {
+            color: var(--primary);
+        }
+
         .text-text-primary {
             color: var(--text-primary);
+        }
+
+        .text-text-secondary {
+            color: var(--text-secondary);
         }
 
         .border-border {
@@ -46,7 +63,7 @@
         }
 
         .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
+            width: 6px;
         }
 
         .custom-scrollbar::-webkit-scrollbar-track {
@@ -55,20 +72,11 @@
 
         .custom-scrollbar::-webkit-scrollbar-thumb {
             background: var(--surface-2);
-            border-radius: 4px;
+            border-radius: 3px;
         }
 
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #444;
-        }
-
-        .btn-primary {
-            background-color: var(--primary);
-            transition: background-color 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            background-color: #c0001d;
         }
 
         .modal-backdrop {
@@ -78,19 +86,14 @@
 
         .drop-zone.dragover {
             border-color: var(--primary);
-            background-color: rgba(230, 0, 35, 0.1);
+            background-color: rgba(229, 9, 20, 0.1);
         }
 
-        .file-item:hover .file-actions,
-        .grid-item:hover .grid-actions {
-            opacity: 1;
+        #browser.dragover {
+            box-shadow: inset 0 0 0 2px var(--primary);
+            background-color: rgba(229, 9, 20, 0.05);
         }
 
-        .grid-item .file-thumbnail {
-            background-color: var(--surface-2);
-        }
-
-        /* Fix for invisible text in browser autofill */
         input:-webkit-autofill,
         input:-webkit-autofill:hover,
         input:-webkit-autofill:focus,
@@ -100,12 +103,10 @@
             caret-color: var(--text-primary) !important;
         }
 
-        /* Upload Progress Panel Styles */
         #upload-progress-panel {
             transition: all 0.3s ease-in-out;
         }
 
-        /* Custom styling for the select dropdown */
         .select-custom {
             -webkit-appearance: none;
             -moz-appearance: none;
@@ -115,7 +116,509 @@
             background-position: right 0.75rem center;
             background-size: 1em;
             padding-right: 2.5rem;
-            /* Add space for the icon */
+        }
+
+        .file-item:hover .file-actions {
+            opacity: 1;
+        }
+
+        .nav-item.active {
+            background-color: var(--surface-1);
+            color: var(--text-primary);
+        }
+
+        .status-pending {
+            opacity: 0.6;
+        }
+
+        /* --- Custom Video Player Styles --- */
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .video-wrapper.fullscreen:not(.active) {
+            cursor: none;
+        }
+
+        .video-wrapper video {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: contain;
+        }
+
+        .big-play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background-color: rgba(17, 24, 39, 0.7);
+            border: 4px solid transparent;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+            backdrop-filter: blur(4px);
+            z-index: 20;
+        }
+
+        .big-play-button:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .big-play-button svg {
+            width: 44px;
+            height: 44px;
+            fill: white;
+            transition: opacity 0.2s ease;
+        }
+
+        .video-wrapper.buffering .big-play-button {
+            display: none;
+        }
+
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-left: -25px;
+            margin-top: -25px;
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            z-index: 21;
+            display: none;
+            animation: spin 1s linear infinite;
+        }
+
+        .video-wrapper.buffering .loading-spinner {
+            display: block;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .video-wrapper.playing .big-play-button:not(.loading) {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .controls-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 15;
+            pointer-events: none;
+        }
+
+        .controls-overlay>* {
+            pointer-events: auto;
+        }
+
+        .video-wrapper.active .controls-overlay {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .top-controls {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--top-controls-bg);
+        }
+
+        .video-info h1 {
+            font-size: 1.2em;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .video-info p {
+            font-size: 0.9em;
+            margin: 4px 0 0;
+            color: #ccc;
+        }
+
+        .top-right-controls {
+            display: flex;
+            gap: 15px;
+        }
+
+        .bottom-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 10px 20px;
+            background: var(--controls-bg);
+        }
+
+        .progress-bar-container {
+            position: relative;
+            height: 4px;
+            width: 100%;
+            cursor: pointer;
+            transition: height 0.2s ease-in-out;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar-container:hover {
+            height: 6px;
+        }
+
+        .progress-bar-background,
+        .progress-bar-buffered,
+        .progress-bar {
+            position: absolute;
+            height: 100%;
+            top: 0;
+            border-radius: 3px;
+        }
+
+        .progress-bar-background {
+            background-color: var(--progress-bg);
+            width: 100%;
+        }
+
+        .progress-bar-buffered {
+            background-color: var(--buffered-bg);
+            width: 0;
+        }
+
+        .progress-bar {
+            background: var(--accent-color);
+            width: 0;
+            z-index: 2;
+        }
+
+        .progress-bar-scrubber {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translate(-50%, -50%);
+            width: 14px;
+            height: 14px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            z-index: 3;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+
+        .progress-bar-container:hover .progress-bar-scrubber,
+        .video-wrapper.scrubbing .progress-bar-scrubber {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .seek-tooltip {
+            position: absolute;
+            bottom: 15px;
+            left: 0;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            user-select: none;
+            white-space: nowrap;
+            display: none;
+            z-index: 4;
+        }
+
+        .progress-bar-container:hover .seek-tooltip {
+            display: block;
+        }
+
+        .bottom-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .controls-left,
+        .controls-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .icon-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            border-radius: 50%;
+            transition: background-color 0.2s ease;
+        }
+
+        .icon-button:hover {
+            background-color: var(--menu-item-hover-bg);
+        }
+
+        .icon-button svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        .volume-controls {
+            display: flex;
+            align-items: center;
+        }
+
+        .volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 70px;
+            height: 4px;
+            background: var(--progress-bg);
+            cursor: pointer;
+            border-radius: 2px;
+            margin-left: 8px;
+            transition: width 0.2s ease-in-out, opacity 0.2s ease-in-out;
+            opacity: 0;
+            width: 0;
+        }
+
+        .volume-controls:hover .volume-slider {
+            opacity: 1;
+            width: 70px;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            background: white;
+            border-radius: 50%;
+            border: none;
+        }
+
+        .time-indicator {
+            font-size: 0.9em;
+            color: #ccc;
+        }
+
+        .settings-container {
+            position: relative;
+        }
+
+        .settings-menu {
+            position: absolute;
+            bottom: 50px;
+            right: 0;
+            transform: translateX(25%);
+            background-color: var(--menu-bg);
+            border-radius: 8px;
+            padding: 5px;
+            display: none;
+            flex-direction: column;
+            width: 220px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .settings-menu.active {
+            display: flex;
+        }
+
+        .settings-view {
+            width: 100%;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .settings-menu-item {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background-color: transparent;
+            color: var(--text-primary);
+            text-align: left;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.9em;
+            transition: background-color 0.2s ease;
+        }
+
+        .settings-menu-item:hover {
+            background-color: var(--menu-item-hover-bg);
+        }
+
+        .settings-menu-item>span:first-child {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .settings-menu-item>span:last-child {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .current-quality-indicator {
+            color: #aaa;
+            font-size: 0.9em;
+        }
+
+        .settings-menu-item .right-arrow-icon {
+            width: 20px;
+            height: 20px;
+            fill: #aaa;
+        }
+
+        .settings-menu-header {
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 5px;
+        }
+
+        .settings-menu-header h4 {
+            margin: 0;
+            padding: 10px 0;
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        .quality-list-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .quality-button {
+            width: 100%;
+            padding: 10px 10px 10px 42px;
+            border: none;
+            background-color: transparent;
+            color: var(--text-primary);
+            text-align: left;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            font-size: 0.9em;
+            transition: background-color 0.2s ease;
+            position: relative;
+        }
+
+        .quality-button .check-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            fill: white;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .quality-button.active .check-icon {
+            opacity: 1;
+        }
+
+        .quality-button:hover {
+            background-color: var(--menu-item-hover-bg);
+        }
+
+        .quality-info-tag {
+            color: #aaa;
+            font-size: 0.85em;
+            margin-left: 6px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .auto-quality-button {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .top-controls {
+                padding: 10px;
+            }
+
+            .video-info h1 {
+                font-size: 1em;
+            }
+
+            .video-info p {
+                font-size: 0.8em;
+            }
+
+            .bottom-container {
+                padding: 5px 10px;
+            }
+
+            .controls-left,
+            .controls-right {
+                gap: 5px;
+            }
+
+            .volume-controls:hover .volume-slider,
+            .volume-slider {
+                display: none;
+            }
+
+            .time-indicator {
+                font-size: 0.8em;
+            }
+
+            .icon-button svg {
+                width: 22px;
+                height: 22px;
+            }
+
+            .settings-menu {
+                right: 5px;
+                transform: translateX(0);
+            }
         }
     </style>
 </head>
@@ -124,76 +627,106 @@
     <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden"></div>
     <div class="relative min-h-screen md:flex">
         <aside id="sidebar"
-            class="w-64 flex-shrink-0 bg-surface-1 flex flex-col fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out z-40">
-            <div class="flex items-center justify-between h-16 border-b border-border px-6">
+            class="w-64 flex-shrink-0 bg-black flex flex-col fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out z-40 border-r border-border">
+            <div class="flex items-center justify-between h-20 px-6">
                 <div class="flex items-center gap-3">
-                    <svg class="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="currentColor"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M12.01 2C6.49 2 2.02 6.48 2.02 12s4.47 10 9.99 10c5.52 0 10-4.48 10-10S17.53 2 12.01 2zM12 20c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-15c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1s1-.45 1-1V6c0-.55-.45-1-1-1zm1 10h-2v2h2v-2z" />
-                    </svg>
-                    <h1 class="text-xl font-bold text-text-primary">Cloud Storage</h1>
+                    <img src="https://placehold.co/32x32/E50914/FFFFFF?text=V4" alt="Download Icon" class="w-8 h-8" />
+                    <h1 class="text-xl font-bold text-text-primary">V4 Drive</h1>
                 </div>
                 <button id="close-sidebar-btn" class="md:hidden text-text-secondary hover:text-primary">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
-            <div class="p-4">
-                <button id="uploadModalBtn"
-                    class="w-full bg-white text-black font-semibold rounded-full py-3 px-5 flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-shadow">
-                    <i class="fas fa-plus"></i>
-                    <span>New</span>
-                </button>
-            </div>
-            <nav id="fragmentList" class="flex-1 px-4 space-y-1 custom-scrollbar overflow-y-auto">
-            </nav>
-            <div class="p-4 border-t border-border">
-                <div id="gb-used" class="text-xs text-text-secondary">
-                    0.0 MB of 0.0 MB used
+            <div class="flex-1 flex flex-col p-4 space-y-4">
+                <div class="space-y-2">
+                    <button id="uploadModalBtn"
+                        class="w-full bg-primary text-white font-semibold rounded-md py-2.5 px-4 flex items-center justify-center gap-2 shadow-md hover:bg-red-700 transition-colors">
+                        <i class="fas fa-upload"></i>
+                        <span>Upload</span>
+                    </button>
+                    <button id="newFolderBtn"
+                        class="w-full bg-surface-1 text-text-primary font-medium rounded-md py-2.5 px-4 flex items-center justify-center gap-2 hover:bg-surface-2 transition-colors">
+                        <i class="fas fa-folder-plus"></i><span>New Folder</span>
+                    </button>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2">
-                    <div id="storage-bar" class="h-1.5 rounded-full bg-green-500" style="width: 0%"></div>
+                <nav class="flex-1 space-y-2 custom-scrollbar overflow-y-auto">
+                    <h2 class="px-2 pt-2 pb-1 text-xs font-semibold text-text-secondary uppercase tracking-wider">Quick
+                        Access</h2>
+                    <a href="#" id="reload-btn"
+                        class="nav-item flex items-center px-2 py-2 font-medium rounded-md text-text-secondary hover:bg-surface-1 hover:text-text-primary">
+                        <i class="fas fa-sync-alt w-6 mr-2"></i><span>Reload</span>
+                    </a>
+                    <a href="#" id="recent-btn"
+                        class="nav-item flex items-center px-2 py-2 font-medium rounded-md text-text-secondary hover:bg-surface-1 hover:text-text-primary">
+                        <i class="fas fa-clock-rotate-left w-6 mr-2"></i><span>Recent</span>
+                    </a>
+                    <a href="#"
+                        class="nav-item flex items-center px-2 py-2 font-medium rounded-md text-text-secondary hover:bg-surface-1 hover:text-text-primary">
+                        <i class="fas fa-star w-6 mr-2"></i><span>Starred</span>
+                    </a>
+                    <a href="#" id="storage-btn"
+                        class="nav-item flex items-center px-2 py-2 font-medium rounded-md text-text-secondary hover:bg-surface-1 hover:text-text-primary">
+                        <i class="fas fa-hdd w-6 mr-2"></i><span>Storage</span>
+                    </a>
+                    <a href="#"
+                        class="nav-item flex items-center px-2 py-2 font-medium rounded-md text-text-secondary hover:bg-surface-1 hover:text-text-primary">
+                        <i class="fas fa-trash w-6 mr-2"></i><span>Trash</span>
+                    </a>
+                    <h2 class="px-2 pt-4 pb-1 text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                        Fragments</h2>
+                    <div id="fragmentList" class="space-y-1">
+                    </div>
+                </nav>
+                <div class="p-4 rounded-lg border border-border">
+                    <h2 class="text-sm font-semibold text-text-primary mb-2">Storage</h2>
+                    <div class="w-full bg-surface-2 rounded-full h-1.5">
+                        <div id="storage-bar" class="bg-primary h-1.5 rounded-full" style="width: 0%"></div>
+                    </div>
+                    <div id="gb-used" class="text-xs text-text-secondary mt-2">
+                        0.0 GB of 15 GB used
+                    </div>
                 </div>
             </div>
         </aside>
 
         <main class="flex-1 flex flex-col">
-            <header class="flex items-center justify-between h-16 border-b border-border px-4 sm:px-6">
-                <div class="flex items-center gap-4">
-                    <button id="menu-toggle-btn" class="md:hidden text-text-secondary hover:text-primary">
-                        <i class="fas fa-bars text-xl"></i>
+            <header class="flex items-center justify-between h-20 border-b border-border px-4 sm:px-6">
+                <button id="menu-toggle-btn" class="md:hidden text-text-secondary hover:text-primary">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div class="flex items-center">
+                    <button id="back-btn"
+                        class="hidden w-10 h-10 rounded-full flex-shrink-0 items-center justify-center text-text-secondary bg-surface-1 hover:bg-surface-2 mr-2 md:flex">
+                        <i class="fas fa-arrow-left text-lg"></i>
                     </button>
-                    <div class="relative w-full max-w-xs sm:max-w-xl">
-                        <i
-                            class="fas fa-search absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 text-text-secondary"></i>
-                        <input type="search" id="searchInput" placeholder="Search..."
-                            class="w-full bg-surface-2 focus:bg-surface-2 border-transparent focus:border-primary focus:ring-0 rounded-full pl-10 sm:pl-12 pr-4 py-3 transition-all text-sm text-text-primary">
+                    <div id="breadcrumb" class="hidden md:flex items-center text-xl font-bold truncate">
                     </div>
                 </div>
+                <div class="flex-1"></div>
                 <div class="flex items-center gap-2 sm:gap-4">
-                    <button
-                        class="w-10 h-10 rounded-full hover:bg-surface-2 flex items-center justify-center text-text-secondary"><i
-                            class="fas fa-cog"></i></button>
-                    <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center font-bold">U</div>
+                    <div class="relative w-full max-w-xs sm:max-w-sm">
+                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary"></i>
+                        <input type="search" id="searchInput" placeholder="Search files and folders..."
+                            class="w-full bg-surface-1 border-transparent focus:border-primary focus:ring-0 rounded-full pl-10 pr-4 py-2.5 transition-all text-sm text-text-primary placeholder-text-secondary">
+                    </div>
+                    <div id="view-switcher" class="flex items-center bg-surface-1 rounded-full p-1">
+                        <button id="tiles-view-btn" class="px-3 py-1.5 text-sm rounded-full bg-primary text-white"><i
+                                class="fas fa-th-large"></i></button>
+                        <button id="list-view-btn"
+                            class="px-3 py-1.5 text-sm rounded-full text-text-secondary hover:bg-surface-2"><i
+                                class="fas fa-list"></i></button>
+                    </div>
                 </div>
             </header>
 
             <div class="flex-1 flex flex-col p-4 sm:p-6 overflow-hidden">
-                <div class="flex items-center justify-between pb-4 border-b border-border mb-4">
-                    <div id="breadcrumb" class="flex items-center text-lg sm:text-2xl font-bold truncate">
+                <h2 id="main-title" class="text-2xl font-bold pb-4 mb-4 md:hidden">My Files</h2>
+                <div id="browser" class="flex-1 overflow-y-auto custom-scrollbar -m-3 p-3">
+                    <div id="objectList">
                     </div>
-                    <div id="view-switcher" class="flex items-center bg-surface-2 rounded-lg p-1">
-                        <button id="list-view-btn" class="px-3 py-1.5 text-sm rounded-md bg-primary text-white"><i
-                                class="fas fa-list"></i></button>
-                        <button id="grid-view-btn"
-                            class="px-3 py-1.5 text-sm rounded-md text-text-secondary hover:bg-surface-1"><i
-                                class="fas fa-th-large"></i></button>
-                    </div>
-                </div>
-                <div id="browser"
-                    class="flex-1 overflow-y-auto custom-scrollbar -mx-4 sm:-mr-6 sm:-ml-6 px-4 sm:pr-6 sm:pl-6">
-                    <div id="objectList" class="space-y-1">
-                    </div>
+
+                    <div id="load-more-container" class="text-center py-4"></div>
+
                     <div id="browserSpinner" class="flex items-center justify-center p-8" style="display: none;">
                         <i class="fas fa-spinner fa-spin text-3xl text-primary"></i>
                         <span class="ml-4 text-text-secondary">Loading Files...</span>
@@ -203,55 +736,56 @@
         </main>
     </div>
 
+    <!-- MODALS AND OTHER UI ELEMENTS -->
+    <input type="file" id="resumeFileInput" class="hidden">
     <div id="uploadModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center p-4">
         <div class="modal bg-surface-1 rounded-xl border border-border p-8 w-full max-w-lg">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-semibold">Upload Files</h3>
+                <h3 class="text-xl font-semibold">Upload Content</h3>
                 <button id="closeUploadModalBtn" class="text-text-secondary hover:text-primary"><i
                         class="fas fa-times text-xl"></i></button>
             </div>
-
             <div id="dropZone"
-                class="relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-border rounded-lg cursor-pointer transition-all duration-300 hover:border-primary hover:bg-surface-2">
-                <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                    <i class="fas fa-cloud-upload-alt text-4xl text-text-secondary mb-3"></i>
-                    <p id="dropText" class="mb-2 text-sm text-center text-text-secondary">
-                        <span class="font-semibold">Click to upload</span> or drag and drop
-                    </p>
+                class="relative p-4 border-2 border-dashed border-border rounded-lg transition-all duration-300 hover:border-primary hover:bg-surface-2">
+                <div class="flex flex-col items-center justify-center space-y-4">
+                    <div class="flex items-center justify-center gap-4">
+                        <button id="selectFilesBtn"
+                            class="bg-surface-2 hover:bg-surface-2/80 px-6 py-3 rounded-lg text-sm font-semibold flex items-center gap-2"><i
+                                class="fas fa-file"></i> Select Files</button>
+                        <button id="selectFolderBtn"
+                            class="bg-surface-2 hover:bg-surface-2/80 px-6 py-3 rounded-lg text-sm font-semibold flex items-center gap-2"><i
+                                class="fas fa-folder"></i> Select Folder</button>
+                    </div>
+                    <p id="dropText" class="text-sm text-center text-text-secondary h-6">...or drag and drop</p>
                 </div>
-                <input type="file" id="fileInput" class="opacity-0 absolute top-0 left-0 w-full h-full cursor-pointer"
-                    multiple />
             </div>
-
+            <input type="file" id="fileInput" class="hidden" multiple />
+            <input type="file" id="folderInput" class="hidden" webkitdirectory directory />
             <div class="mt-4 space-y-4">
                 <input type="text" id="fragmentInput" placeholder="Fragment (e.g., images)"
                     class="w-full bg-surface-2 focus:bg-surface-2 border border-border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary transition-all text-text-primary">
-                <input type="text" id="pathPrefixInput" placeholder="Path Prefix (optional, e.g., vacation/)"
-                    class="w-full bg-surface-2 focus:bg-surface-2 border border-border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary transition-all text-text-primary">
+                <input type="text" id="pathPrefixInput" placeholder="Current Path"
+                    class="w-full bg-surface-2 border border-border rounded-lg px-4 py-2.5 text-text-secondary"
+                    readonly>
             </div>
-
             <button
-                class="btn btn-primary w-full py-3 mt-6 text-white font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                id="uploadBtn">
-                Upload
-            </button>
+                class="bg-primary w-full py-3 mt-6 text-white font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-700 transition-colors"
+                id="uploadBtn">Upload</button>
         </div>
     </div>
-
     <div id="deleteModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center p-4">
         <div class="modal bg-surface-1 rounded-xl border border-border p-6 w-full max-w-md">
             <h3 class="text-lg font-semibold mb-2">Confirm Deletion</h3>
-            <p class="text-sm text-text-secondary mb-6">Are you sure you want to delete this object? This action cannot
-                be undone.</p>
+            <p id="deleteModalText" class="text-sm text-text-secondary mb-6">Are you sure you want to delete this
+                object? This action cannot be undone.</p>
             <div class="flex justify-end gap-3">
                 <button id="cancelDeleteBtn"
                     class="bg-surface-2 hover:bg-surface-2/80 px-4 py-2 rounded-lg text-sm font-semibold">Cancel</button>
                 <button id="confirmDeleteBtn"
-                    class="btn btn-danger bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">Delete</button>
+                    class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">Delete</button>
             </div>
         </div>
     </div>
-
     <div id="renameModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center p-4">
         <div class="modal bg-surface-1 rounded-xl border border-border p-6 w-full max-w-md">
             <h3 class="text-lg font-semibold mb-4">Rename Object</h3>
@@ -261,11 +795,23 @@
                 <button id="cancelRenameBtn"
                     class="bg-surface-2 hover:bg-surface-2/80 px-4 py-2 rounded-lg text-sm font-semibold">Cancel</button>
                 <button id="confirmRenameBtn"
-                    class="btn btn-primary text-white px-4 py-2 rounded-lg text-sm font-semibold">Rename</button>
+                    class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-700">Rename</button>
             </div>
         </div>
     </div>
-
+    <div id="newFolderModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center p-4">
+        <div class="modal bg-surface-1 rounded-xl border border-border p-6 w-full max-w-md">
+            <h3 class="text-lg font-semibold mb-4">Create New Folder</h3>
+            <input type="text" id="newFolderNameInput" placeholder="Folder Name"
+                class="w-full bg-surface-2 focus:bg-surface-2 border border-border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary transition-all text-text-primary">
+            <div class="flex justify-end gap-3 mt-6">
+                <button id="cancelNewFolderBtn"
+                    class="bg-surface-2 hover:bg-surface-2/80 px-4 py-2 rounded-lg text-sm font-semibold">Cancel</button>
+                <button id="confirmNewFolderBtn"
+                    class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-700">Create</button>
+            </div>
+        </div>
+    </div>
     <div id="shareModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center p-4">
         <div class="modal bg-surface-1 rounded-xl border border-border p-6 w-full max-w-md">
             <h3 class="text-lg font-semibold mb-4">Share Object</h3>
@@ -273,7 +819,7 @@
                 <select id="shareDisposition"
                     class="select-custom w-full bg-surface-2 focus:bg-surface-2 border border-border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-primary transition-all text-text-primary">
                     <option value="view" selected>Share for viewing</option>
-                    <option value="stream">Share for video streaming (note: supports only .mp4 videos)</option>
+                    <option value="stream">Share for video streaming (works best with .mp4)</option>
                     <option value="download">Share for downloading</option>
                 </select>
                 <input type="number" id="shareExpiry" value="3600" placeholder="Expires in (seconds)"
@@ -282,20 +828,19 @@
                     <input type="text" id="shareUrl" readonly placeholder="Generated URL..."
                         class="w-full bg-surface-2 focus:bg-surface-2 border border-border rounded-lg px-4 py-2.5 pr-10 text-text-primary">
                     <button id="copyShareUrlBtn"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-primary">
-                        <i class="far fa-copy"></i>
-                    </button>
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-primary"><i
+                            class="far fa-copy"></i></button>
                 </div>
             </div>
             <div class="flex justify-end gap-3 mt-6">
                 <button id="closeShareBtn"
                     class="bg-surface-2 hover:bg-surface-2/80 px-4 py-2 rounded-lg text-sm font-semibold">Close</button>
                 <button id="generateShareBtn"
-                    class="btn btn-primary text-white px-4 py-2 rounded-lg text-sm font-semibold">Generate Link</button>
+                    class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-700">Generate
+                    Link</button>
             </div>
         </div>
     </div>
-
     <div id="fileViewerModal" class="modal-backdrop fixed inset-0 z-[60] hidden items-center justify-center p-4 sm:p-8">
         <div class="modal bg-surface-1 rounded-xl border border-border flex flex-col w-full max-w-5xl h-[90vh]">
             <div class="flex justify-between items-center p-4 border-b border-border flex-shrink-0">
@@ -303,8 +848,7 @@
                 <button id="closeFileViewerBtn" class="text-text-secondary hover:text-primary"><i
                         class="fas fa-times text-xl"></i></button>
             </div>
-            <div id="fileViewerContent"
-                class="flex-1 p-2 overflow-auto custom-scrollbar flex items-center justify-center bg-black/20">
+            <div id="fileViewerContent" class="flex-1 p-0 overflow-hidden flex items-center justify-center bg-black">
                 <div id="fileViewerSpinner" class="text-center">
                     <i class="fas fa-spinner fa-spin text-4xl text-primary"></i>
                     <p class="mt-4 text-text-secondary">Loading preview...</p>
@@ -312,7 +856,6 @@
             </div>
         </div>
     </div>
-
     <div id="upload-progress-panel"
         class="fixed bottom-4 right-4 w-full max-w-sm sm:w-80 bg-surface-1 rounded-lg shadow-2xl border border-border z-50 translate-y-[calc(100%+2rem)] opacity-0">
         <div class="flex items-center justify-between p-3 border-b border-border">
@@ -320,462 +863,132 @@
             <button id="toggle-upload-panel-btn" class="text-text-secondary hover:text-primary"><i
                     class="fas fa-chevron-down"></i></button>
         </div>
-        <div id="upload-items-container" class="p-2 space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
-        </div>
+        <div id="upload-items-container" class="p-2 space-y-2 max-h-64 overflow-y-auto custom-scrollbar"></div>
     </div>
-
     <div id="toast-container" class="fixed top-5 right-5 z-[100] w-full max-w-xs space-y-3"></div>
-
-    <div id="contextMenu" class="absolute z-50 hidden bg-surface-2 rounded-lg shadow-lg py-2 w-40 text-sm">
-    </div>
-
+    <div id="contextMenu" class="absolute z-50 hidden bg-surface-2 rounded-lg shadow-lg py-2 w-48 text-sm"></div>
 
     <script>
-        // --- GLOBAL STATE & CONSTANTS ---
+        // --- Global App State ---
         let currentObjectList = [];
+        let clientSideFolders = [];
         let activeFragment = '';
-        let currentView = 'list';
-        let currentPath = ''; // To track the current folder path
+        let currentPath = '';
+        let currentView = 'tiles';
+        let currentAppView = 'browser';
         const serverLink = `https://storage.litiaina.com`;
-        const token = localStorage.getItem("current-token")?.trim() || "dummy-token";
-        const uid = localStorage.getItem("current-account-uid")?.trim() || "dummy-uid";
-        const totalCapacity = Number(localStorage.getItem("current-capacity")?.trim()) || 10737418240; // 10 GB
+        const token = localStorage.getItem("current-token")?.trim() || "";
+        const totalCapacity = Number(localStorage.getItem("current-capacity")?.trim()) || 0;
+        const KB = 1024, MB = 1024 * KB, GB = 1024 * MB;
+        let uploadQueue = [], activeUploads = 0, MAX_CONCURRENT_UPLOADS = 4;
+        let allRenderableItems = [], currentlyDisplayedCount = 0, RENDER_BATCH_SIZE = 10;
+        let filesToUpload = null;
 
-        const KB = 1024;
-        const MB = 1024 * KB;
-        const GB = 1024 * MB;
+        // --- Global Player State (for cleanup) ---
+        let hlsInstance = null;
+        let playerEventListeners = [];
 
-        // --- UPLOAD QUEUE STATE ---
-        let uploadQueue = [];
-        let activeUploads = 0;
-        const MAX_CONCURRENT_UPLOADS = 4;
-
-        // --- UTILITY FUNCTIONS ---
-        function showToast(message, type = 'info', duration = 4000) {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-
-            const icons = {
-                success: 'fa-check-circle',
-                error: 'fa-times-circle',
-                info: 'fa-info-circle'
-            };
-            const colors = {
-                success: 'bg-green-500',
-                error: 'bg-red-500',
-                info: 'bg-blue-500'
-            }
-
-            toast.className = `flex items-center w-full p-4 text-white ${colors[type]} rounded-lg shadow-lg transform transition-all duration-300 translate-x-full opacity-0`;
-            toast.innerHTML = `
-            <i class="fas ${icons[type]} mr-3"></i>
-            <div class="text-sm font-medium">${message}</div>
-        `;
-
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.classList.remove('translate-x-full', 'opacity-0');
-                toast.classList.add('translate-x-0', 'opacity-100');
-            }, 10);
-
-            const closeToast = () => {
-                toast.classList.remove('translate-x-0', 'opacity-100');
-                toast.classList.add('translate-x-full', 'opacity-0');
-                toast.addEventListener('transitionend', () => toast.remove(), { once: true });
-            };
-
-            toast.onclick = closeToast;
-            setTimeout(closeToast, duration);
-        }
-
-        function formatBytes(bytes, decimals = 2) {
-            bytes = Number(bytes);
-            if (!bytes || bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const dm = decimals < 0 ? 0 : decimals;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-        }
-        function formatTime(seconds) {
-            if (isNaN(seconds) || seconds === Infinity || seconds < 0) return '--';
-            const h = Math.floor(seconds / 3600);
-            const m = Math.floor((seconds % 3600) / 60);
-            const s = Math.floor(seconds % 60);
-            return `${h > 0 ? h + 'h ' : ''}${m > 0 ? m + 'm ' : ''}${s}s`;
-        }
+        // --- Utility Functions ---
+        function showToast(message, type = 'info', duration = 4000) { const container = document.getElementById('toast-container'); const toast = document.createElement('div'); const icons = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' }; const colors = { success: 'bg-green-500', error: 'bg-red-500', info: 'bg-blue-500' }; toast.className = `flex items-center w-full p-4 text-white ${colors[type]} rounded-lg shadow-lg transform transition-all duration-300 translate-x-full opacity-0`; toast.innerHTML = `<i class="fas ${icons[type]} mr-3"></i><div class="text-sm font-medium">${message}</div>`; container.appendChild(toast); setTimeout(() => { toast.classList.remove('translate-x-full', 'opacity-0'); toast.classList.add('translate-x-0', 'opacity-100'); }, 10); const closeToast = () => { toast.classList.remove('translate-x-0', 'opacity-100'); toast.classList.add('translate-x-full', 'opacity-0'); toast.addEventListener('transitionend', () => toast.remove(), { once: true }); }; toast.onclick = closeToast; setTimeout(closeToast, duration); }
+        function formatBytes(bytes, decimals = 2) { bytes = Number(bytes); if (!bytes || bytes === 0) return '0 Bytes'; const k = 1024; const dm = decimals < 0 ? 0 : decimals; const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB']; const i = Math.floor(Math.log(bytes) / Math.log(k)); return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]; }
+        function formatTime(seconds) { if (isNaN(seconds) || seconds === Infinity || seconds < 0) return '--'; const h = Math.floor(seconds / 3600); const m = Math.floor((seconds % 3600) / 60); const s = Math.floor(seconds % 60); return `${h > 0 ? h + 'h ' : ''}${m > 0 ? m + 'm ' : ''}${s}s`; }
         function getFileIcon(fileName) {
             const extension = fileName.split('.').pop().toLowerCase();
             const iconMap = {
-                // Images
-                'jpg': 'fa-file-image', 'jpeg': 'fa-file-image', 'png': 'fa-file-image', 'gif': 'fa-file-image', 'svg': 'fa-file-image',
-                // Documents
-                'pdf': 'fa-file-pdf', 'doc': 'fa-file-word', 'docx': 'fa-file-word', 'xls': 'fa-file-excel', 'xlsx': 'fa-file-excel',
-                'ppt': 'fa-file-powerpoint', 'pptx': 'fa-file-powerpoint', 'txt': 'fa-file-alt',
-                // Archives
-                'zip': 'fa-file-archive', 'rar': 'fa-file-archive', '7z': 'fa-file-archive',
-                // Code
-                'html': 'fa-file-code', 'css': 'fa-file-code', 'js': 'fa-file-code', 'json': 'fa-file-code',
-                // Audio/Video
-                'mp3': 'fa-file-audio', 'wav': 'fa-file-audio', 'mp4': 'fa-file-video', 'mov': 'fa-file-video', 'avi': 'fa-file-video',
+                'jpg': { icon: 'fa-file-image', color: 'text-green-500' }, 'jpeg': { icon: 'fa-file-image', color: 'text-green-500' }, 'png': { icon: 'fa-file-image', color: 'text-green-500' }, 'gif': { icon: 'fa-file-image', color: 'text-green-500' }, 'svg': { icon: 'fa-file-image', color: 'text-green-500' },
+                'pdf': { icon: 'fa-file-pdf', color: 'text-red-500' },
+                'doc': { icon: 'fa-file-word', color: 'text-blue-500' }, 'docx': { icon: 'fa-file-word', color: 'text-blue-500' },
+                'xls': { icon: 'fa-file-excel', color: 'text-green-600' }, 'xlsx': { icon: 'fa-file-excel', color: 'text-green-600' },
+                'ppt': { icon: 'fa-file-powerpoint', color: 'text-orange-500' }, 'pptx': { icon: 'fa-file-powerpoint', color: 'text-orange-500' },
+                'txt': { icon: 'fa-file-alt', color: 'text-gray-400' },
+                'zip': { icon: 'fa-file-archive', color: 'text-yellow-500' }, 'rar': { icon: 'fa-file-archive', color: 'text-yellow-500' }, '7z': { icon: 'fa-file-archive', color: 'text-yellow-500' },
+                'html': { icon: 'fa-file-code', color: 'text-orange-600' }, 'css': { icon: 'fa-file-code', color: 'text-blue-600' }, 'js': { icon: 'fa-file-code', color: 'text-yellow-400' }, 'json': { icon: 'fa-file-code', color: 'text-purple-400' },
+                'mp3': { icon: 'fa-file-audio', color: 'text-pink-500' }, 'wav': { icon: 'fa-file-audio', color: 'text-pink-500' },
+                'mp4': { icon: 'fa-file-video', color: 'text-purple-500' }, 'mov': { icon: 'fa-file-video', color: 'text-purple-500' }, 'avi': { icon: 'fa-file-video', color: 'text-purple-500' }, 'mkv': { icon: 'fa-file-video', color: 'text-purple-500' }, 'webm': { icon: 'fa-file-video', color: 'text-purple-500' }, 'flv': { icon: 'fa-file-video', color: 'text-purple-500' }, 'wmv': { icon: 'fa-file-video', color: 'text-purple-500' },
             };
-            return iconMap[extension] || 'fa-file';
+            return iconMap[extension] || { icon: 'fa-file', color: 'text-gray-500' };
         }
 
-
-        // --- UI MANAGEMENT ---
-        function resetUploadModal() {
-            document.getElementById('dropText').innerHTML = '<span class="font-semibold">Click to upload</span> or drag and drop';
-            document.getElementById('fileInput').value = '';
-            document.getElementById('pathPrefixInput').value = '';
+        // --- Upload Logic ---
+        function resetUploadModal() { document.getElementById('dropText').innerHTML = '...or drag and drop'; filesToUpload = null; document.getElementById('pathPrefixInput').value = ''; document.getElementById('fileInput').value = ''; document.getElementById('folderInput').value = ''; }
+        async function updateCapacityDisplay() { const gbUsedElement = document.getElementById('gb-used'); const storageBar = document.getElementById('storage-bar'); if (!token) { gbUsedElement.textContent = `Error loading data`; storageBar.style.width = '0%'; return; } try { const response = await fetch(`${serverLink}/v4/capacity/usage`, { method: 'GET', headers: { "authorization": `Bearer ${token}` } }); if (response.ok) { const capacity = await response.json(); const usedSpace = Number(capacity.capacity_used) || 0; const percentage = (usedSpace / totalCapacity) * 100; gbUsedElement.textContent = `${formatBytes(usedSpace, 1)} of ${formatBytes(totalCapacity, 0)} used`; storageBar.style.width = `${percentage}%`; } else { gbUsedElement.textContent = `Error of ${formatBytes(totalCapacity, 0)} used`; storageBar.style.width = '0%'; } } catch (error) { const usedSpace = 2.4 * GB; const percentage = (usedSpace / totalCapacity) * 100; gbUsedElement.textContent = `${formatBytes(usedSpace, 1)} of ${formatBytes(totalCapacity, 0)} used`; storageBar.style.width = `${percentage}%`; console.warn("Could not fetch capacity, showing mock data.", error); } }
+        function getOptimalChunkSize(fileSize) { 
+            if (fileSize < 100 * MB) return 2 * MB; 
+            if (fileSize < 500 * MB) return 5 * MB; 
+            if (fileSize < 1 * GB) return 8 * MB; 
+            return 16 * MB; 
         }
-
-        // --- CORE API LOGIC ---
-        async function updateCapacityDisplay() {
-            const gbUsedElement = document.getElementById('gb-used');
-            const storageBar = document.getElementById('storage-bar');
-
-            if (!token || !uid) {
-                gbUsedElement.textContent = `USED: -- / TOTAL: ${formatBytes(totalCapacity)}`;
-                storageBar.style.width = '0%';
-                storageBar.className = "h-1.5 rounded-full bg-green-500"; // reset
-                return;
-            }
-
-            try {
-                const url = `${serverLink}/v4/capacity/usage`;
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: { "authorization": `Bearer ${token}`, "uid": uid }
-                });
-
-                if (response.ok) {
-                    const capacity = await response.json();
-                    const usedSpace = Number(capacity.capacity_used) || 0;
-                    const percentage = (usedSpace / totalCapacity) * 100;
-
-                    gbUsedElement.textContent = `${formatBytes(usedSpace)} of ${formatBytes(totalCapacity)} used`;
-                    storageBar.style.width = `${percentage}%`;
-
-                    // ✅ change bar color based on usage
-                    if (percentage < 60) {
-                        storageBar.className = "h-1.5 rounded-full bg-green-500";
-                    } else if (percentage < 85) {
-                        storageBar.className = "h-1.5 rounded-full bg-yellow-500";
-                    } else {
-                        storageBar.className = "h-1.5 rounded-full bg-red-500";
-                    }
-
-                } else {
-                    gbUsedElement.textContent = `Error of ${formatBytes(totalCapacity)} used`;
-                    storageBar.style.width = '0%';
-                    storageBar.className = "h-1.5 rounded-full bg-green-500";
-                }
-            } catch (error) {
-                const usedSpace = 3.2 * GB;
-                const percentage = (usedSpace / totalCapacity) * 100;
-
-                gbUsedElement.textContent = `USED: ${formatBytes(usedSpace)} / TOTAL: ${formatBytes(totalCapacity)}`;
-                storageBar.style.width = `${percentage}%`;
-
-                // fallback coloring
-                if (percentage < 60) {
-                    storageBar.className = "h-1.5 rounded-full bg-green-500";
-                } else if (percentage < 85) {
-                    storageBar.className = "h-1.5 rounded-full bg-yellow-500";
-                } else {
-                    storageBar.className = "h-1.5 rounded-full bg-red-500";
-                }
-
-                console.warn("Could not fetch capacity, showing mock data.", error);
-            }
-        }
-
-        function getOptimalChunkSize(fileSize) {
-            if (fileSize < 100 * MB) return 2 * MB;
-            if (fileSize < 500 * MB) return 5 * MB;
-            if (fileSize < 1 * GB) return 8 * MB;
-            return 16 * MB;
-        }
+        
+        // --- CORRECTED CHECKSUM LOGIC ---
+        // This function now correctly returns a Base64 encoded string for the Digest header.
         async function calculateChecksum(blob) {
             const buffer = await blob.arrayBuffer();
             const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            // Convert the ArrayBuffer to a binary string and then Base64 encode it.
+            const binaryString = String.fromCharCode.apply(null, new Uint8Array(hashBuffer));
+            return btoa(binaryString);
         }
+        // --- END OF CORRECTED LOGIC ---
 
-        // --- Session Management for Resumability ---
         function getSessionKey(file) { return `upload-session-${file.name}-${file.size}-${file.lastModified}`; }
         function saveSession(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
         function getSession(key) { const session = localStorage.getItem(key); return session ? JSON.parse(session) : null; }
         function clearSession(key) { localStorage.removeItem(key); }
-
-        // --- UPLOAD QUEUE & PANEL LOGIC ---
-
-        function showUploadPanel() {
-            const panel = document.getElementById('upload-progress-panel');
-            panel.classList.remove('translate-y-[calc(100%+2rem)]', 'opacity-0');
-        }
-
-        function updateUploadPanelTitle() {
-            const title = document.getElementById('upload-panel-title');
-            const completed = uploadQueue.filter(item => item.status === 'complete').length;
-            const total = uploadQueue.length;
-            if (activeUploads === 0 && uploadQueue.every(item => item.status === 'complete' || item.status === 'error' || item.status === 'cancelled')) {
-                title.textContent = `${completed} of ${total} uploads complete`;
-            } else {
-                const remaining = uploadQueue.filter(item => item.status === 'pending' || item.status === 'uploading').length;
-                title.textContent = `Uploading ${activeUploads} of ${remaining} files...`;
-            }
-        }
-
-        function createUploadItemUI(uploadItem) {
-            const container = document.getElementById('upload-items-container');
-            const itemEl = document.createElement('div');
-            itemEl.id = `upload-${uploadItem.id}`;
-            itemEl.className = 'flex items-center p-2 bg-surface-2 rounded-md';
-            itemEl.innerHTML = `
-            <div class="flex-shrink-0 w-8 flex items-center justify-center">
-                <i class="far ${getFileIcon(uploadItem.file.name)} text-lg text-text-secondary"></i>
-            </div>
-            <div class="flex-1 overflow-hidden ml-3">
-                <p class="text-sm font-medium truncate text-text-primary">${uploadItem.pathPrefix}${uploadItem.file.name}</p>
-                <p class="status-text text-xs text-text-secondary mt-0.5">Waiting...</p>
-            </div>
-            <div class="status-icon text-lg ml-3 w-6 h-6 flex items-center justify-center">
-                <button class="cancel-btn w-6 h-6 rounded-full hover:bg-surface-1 flex items-center justify-center"><i class="fas fa-times text-xs"></i></button>
-            </div>
-        `;
-            container.appendChild(itemEl);
-
-            itemEl.querySelector('.cancel-btn').onclick = () => {
-                if (uploadItem.controller) {
-                    uploadItem.controller.abort();
-                }
-                uploadItem.status = 'cancelled';
-                const itemUI = document.getElementById(`upload-${uploadItem.id}`);
-                itemUI.querySelector('.status-text').textContent = 'Cancelled';
-                itemUI.querySelector('.status-icon').innerHTML = `<i class="fas fa-ban text-red-500"></i>`;
-                if (activeUploads > 0) {
-                    activeUploads--;
-                }
-                processUploadQueue();
-            };
-        }
-
-        function processUploadQueue() {
-            updateUploadPanelTitle();
-            while (activeUploads < MAX_CONCURRENT_UPLOADS && uploadQueue.some(item => item.status === 'pending')) {
-                const nextUpload = uploadQueue.find(item => item.status === 'pending');
-                if (nextUpload) {
-                    activeUploads++;
-                    nextUpload.status = 'uploading';
-                    startUpload(nextUpload);
-                }
-            }
-        }
-
-        async function handleFileUploadRequest() {
-            const fileInput = document.getElementById('fileInput');
-            const files = fileInput.files;
-            const fragment = document.getElementById('fragmentInput').value.trim();
-            let pathPrefix = document.getElementById('pathPrefixInput').value.trim();
-
-            if (pathPrefix && !pathPrefix.endsWith('/')) {
-                pathPrefix += '/';
-            }
-
-            if (files.length === 0) {
-                showToast('Please select files to upload.', 'error');
-                return;
-            }
-            if (!fragment) {
-                showToast('Please provide a fragment name.', 'error');
-                return;
-            }
-            if (!token || !uid) {
-                showToast('Authentication details are missing.', 'error');
-                return;
-            }
-
-            showUploadPanel();
-
-            for (const file of files) {
-                const uploadItem = {
-                    id: crypto.randomUUID(),
-                    file: file,
-                    fragment: fragment,
-                    pathPrefix: pathPrefix,
-                    status: 'pending', // pending, uploading, complete, error, cancelled
-                    controller: new AbortController(),
-                };
-                uploadQueue.push(uploadItem);
-                createUploadItemUI(uploadItem);
-            }
-
-            processUploadQueue();
-            document.getElementById('uploadModal').classList.add('hidden');
-            resetUploadModal();
-        }
-
-        async function startUpload(uploadItem) {
-            const { file, id } = uploadItem;
-            const sessionKey = getSessionKey(file);
-            const ui = {
-                statusText: document.querySelector(`#upload-${id} .status-text`),
-                statusIcon: document.querySelector(`#upload-${id} .status-icon`),
-            };
-            ui.statusText.textContent = 'Starting...';
-
-            ui.statusIcon.innerHTML = `
-            <svg class="progress-ring w-full h-full" viewBox="0 0 36 36">
-                <circle stroke-width="3" stroke="var(--surface-1)" fill="transparent" r="15.9155" cx="18" cy="18"/>
-                <circle class="progress-ring__bar" stroke-width="3" stroke="var(--primary)" fill="transparent" r="15.9155" cx="18" cy="18"
-                    style="stroke-dasharray: 100, 100; stroke-dashoffset: 100; transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke-dashoffset 0.3s;"/>
-            </svg>
-        `;
-            ui.progressBar = ui.statusIcon.querySelector('.progress-ring__bar');
-
-
-            try {
-                const existingSession = getSession(sessionKey);
-                if (existingSession && existingSession.file_id) {
-                    ui.statusText.textContent = 'Resuming...';
-                    await resumeChunkedFile(uploadItem, existingSession.file_id, sessionKey, ui);
-                } else {
-                    await uploadChunkedFile(uploadItem, sessionKey, ui);
-                }
-
-                uploadItem.status = 'complete';
-                if (ui.progressBar) ui.progressBar.style.strokeDashoffset = 0;
-                ui.statusText.textContent = 'Completed';
-                ui.statusIcon.innerHTML = `<i class="fas fa-check-circle text-green-500"></i>`;
-                clearSession(sessionKey);
-                await updateCapacityDisplay();
-                if (uploadItem.fragment === activeFragment) {
-                    await listObjects(activeFragment);
-                }
-
-            } catch (err) {
-                if (err.name !== 'AbortError' && uploadItem.status !== 'cancelled') {
-                    console.error('Upload failed:', err);
-                    uploadItem.status = 'error';
-                    ui.statusText.textContent = `Error: ${err.message.substring(0, 30)}...`;
-                    ui.statusIcon.innerHTML = `<i class="fas fa-exclamation-circle text-red-500"></i>`;
-                    clearSession(sessionKey);
-                }
-            } finally {
-                activeUploads--;
-                processUploadQueue();
-            }
-        }
-
+        function showUploadPanel() { const panel = document.getElementById('upload-progress-panel'); panel.classList.remove('translate-y-[calc(100%+2rem)]', 'opacity-0'); }
+        function updateUploadPanelTitle() { const title = document.getElementById('upload-panel-title'); const completed = uploadQueue.filter(item => item.status === 'complete').length; const total = uploadQueue.length; if (activeUploads === 0 && uploadQueue.every(item => item.status === 'complete' || item.status === 'error' || item.status === 'cancelled')) { title.textContent = `${completed} of ${total} uploads complete`; } else { const remaining = uploadQueue.filter(item => item.status === 'pending' || item.status === 'uploading').length; title.textContent = `Uploading ${activeUploads} of ${remaining} files...`; } }
+        function createUploadItemUI(uploadItem) { const container = document.getElementById('upload-items-container'); const itemEl = document.createElement('div'); itemEl.id = `upload-${uploadItem.id}`; itemEl.className = 'flex items-center p-2 bg-surface-2 rounded-md'; const { icon, color } = getFileIcon(uploadItem.file.name); itemEl.innerHTML = `<div class="flex-shrink-0 w-8 flex items-center justify-center"><i class="far ${icon} text-lg ${color}"></i></div><div class="flex-1 overflow-hidden ml-3"><p class="text-sm font-medium truncate text-text-primary" title="${uploadItem.objectKey}">${uploadItem.objectKey}</p><p class="status-text text-xs text-text-secondary mt-0.5">Waiting...</p></div><div class="status-icon text-lg ml-3 w-6 h-6 flex items-center justify-center"><button class="cancel-btn w-6 h-6 rounded-full hover:bg-surface-1 flex items-center justify-center"><i class="fas fa-times text-xs"></i></button></div>`; container.appendChild(itemEl); itemEl.querySelector('.cancel-btn').onclick = () => { if (uploadItem.controller) { uploadItem.controller.abort(); } uploadItem.status = 'cancelled'; const itemUI = document.getElementById(`upload-${uploadItem.id}`); itemUI.querySelector('.status-text').textContent = 'Cancelled'; itemUI.querySelector('.status-icon').innerHTML = `<i class="fas fa-ban text-red-500"></i>`; if (activeUploads > 0) { activeUploads--; } processUploadQueue(); }; }
+        function processUploadQueue() { updateUploadPanelTitle(); while (activeUploads < MAX_CONCURRENT_UPLOADS && uploadQueue.some(item => item.status === 'pending')) { const nextUpload = uploadQueue.find(item => item.status === 'pending'); if (nextUpload) { activeUploads++; nextUpload.status = 'uploading'; startUpload(nextUpload); } } }
+        async function handleFileUploadRequest() { const files = filesToUpload; const fragment = document.getElementById('fragmentInput').value.trim(); let basePath = document.getElementById('pathPrefixInput').value.trim(); if (basePath && !basePath.endsWith('/')) { basePath += '/'; } if (!files || files.length === 0) { showToast('Please select files or a folder to upload.', 'error'); return; } if (!fragment) { showToast('Please provide a fragment name.', 'error'); return; } if (!token) { showToast('Authentication details are missing.', 'error'); return; } showUploadPanel(); for (const file of files) { const objectKey = basePath + (file.webkitRelativePath || file.name); const uploadItem = { id: crypto.randomUUID(), file: file, fragment: fragment, objectKey: objectKey, status: 'pending', controller: new AbortController(), }; uploadQueue.push(uploadItem); createUploadItemUI(uploadItem); } processUploadQueue(); document.getElementById('uploadModal').classList.add('hidden'); resetUploadModal(); }
+        async function startUpload(uploadItem) { const { file, id, objectKey } = uploadItem; const sessionKey = `upload-session-${objectKey}-${file.size}-${file.lastModified}`; const ui = { statusText: document.querySelector(`#upload-${id} .status-text`), statusIcon: document.querySelector(`#upload-${id} .status-icon`), }; ui.statusText.textContent = 'Starting...'; ui.statusIcon.innerHTML = `<svg class="progress-ring w-full h-full" viewBox="0 0 36 36"><circle stroke-width="3" stroke="var(--surface-1)" fill="transparent" r="15.9155" cx="18" cy="18"/><circle class="progress-ring__bar" stroke-width="3" stroke="var(--primary)" fill="transparent" r="15.9155" cx="18" cy="18" style="stroke-dasharray: 100, 100; stroke-dashoffset: 100; transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke-dashoffset 0.3s;"/></svg>`; ui.progressBar = ui.statusIcon.querySelector('.progress-ring__bar'); try { const existingSession = getSession(sessionKey); if (existingSession && existingSession.file_id) { ui.statusText.textContent = 'Resuming...'; await resumeChunkedFile(uploadItem, existingSession.file_id, sessionKey, ui); } else { await uploadChunkedFile(uploadItem, sessionKey, ui); } uploadItem.status = 'complete'; if (ui.progressBar) ui.progressBar.style.strokeDashoffset = 0; ui.statusText.textContent = 'Completed'; ui.statusIcon.innerHTML = `<i class="fas fa-check-circle text-green-500"></i>`; clearSession(sessionKey); await updateCapacityDisplay(); if (uploadItem.fragment === activeFragment) { await listObjects(activeFragment); } } catch (err) { if (err.name !== 'AbortError' && uploadItem.status !== 'cancelled') { console.error('Upload failed:', err); uploadItem.status = 'error'; ui.statusText.textContent = `Error: ${err.message.substring(0, 30)}...`; ui.statusIcon.innerHTML = `<i class="fas fa-exclamation-circle text-red-500"></i>`; clearSession(sessionKey); } } finally { activeUploads--; processUploadQueue(); } }
+        
+        // --- CORRECTED RESUME LOGIC (SAVE) ---
         async function uploadChunkedFile(uploadItem, sessionKey, ui) {
-            const { file, fragment, pathPrefix, controller } = uploadItem;
+            const { file, fragment, objectKey, controller } = uploadItem;
             const fileSize = file.size;
             const chunkSize = getOptimalChunkSize(fileSize);
             const totalChunks = Math.ceil(fileSize / chunkSize);
-
-            const objectKey = `${pathPrefix}${file.name}`;
-            const initiateResponse = await fetch(`${serverLink}/v4/fragment/object/upload/init/${fragment}/${objectKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', authorization: `Bearer ${token}`, uid: uid },
-                body: JSON.stringify({
-                    content_type: file.type || 'application/octet-stream',
-                    total_size_bytes: fileSize,
-                    total_chunks: totalChunks,
-                }),
-                signal: controller.signal
-            });
-
+            const initiateResponse = await fetch(`${serverLink}/v4/fragment/object/upload/init/${fragment}/${objectKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json', authorization: `Bearer ${token}` }, body: JSON.stringify({ content_type: file.type || 'application/octet-stream', total_size_bytes: fileSize, total_chunks: totalChunks, }), signal: controller.signal });
             if (!initiateResponse.ok) throw new Error(`${await initiateResponse.text()}`);
             const { file_id } = await initiateResponse.json();
-            saveSession(sessionKey, { file_id, name: file.name, size: file.size });
+            
+            // Save all necessary info for resuming.
+            const sessionData = {
+                file_id: file_id,
+                name: file.name,
+                size: file.size,
+                lastModified: file.lastModified,
+                fragment: fragment,
+                objectKey: objectKey
+            };
+            saveSession(sessionKey, sessionData);
+            
             const allChunks = Array.from({ length: totalChunks }, (_, i) => i);
             await processAndFinalizeChunks(uploadItem, file_id, allChunks, 0, ui);
         }
+        // --- END OF CORRECTION ---
 
-        async function resumeChunkedFile(uploadItem, file_id, sessionKey, ui) {
-            const { file, controller } = uploadItem;
-            const statusResponse = await fetch(`${serverLink}/v4/fragment/object/upload/status/${file_id}`, {
-                headers: { authorization: `Bearer ${token}`, uid: uid },
-                signal: controller.signal
-            });
-
-            if (!statusResponse.ok) {
-                showToast('Could not resume. Starting a new upload.', 'warning');
-                clearSession(sessionKey);
-                await uploadChunkedFile(uploadItem, sessionKey, ui);
-                return;
-            }
-
-            const status = await statusResponse.json();
-            const chunkSize = getOptimalChunkSize(file.size);
-            const uploadedChunks = new Set(status.uploaded_chunks);
-            const allChunks = Array.from({ length: status.total_chunks }, (_, i) => i);
-            const chunksToUpload = allChunks.filter(i => !uploadedChunks.has(i));
-            const alreadyUploadedBytes = uploadedChunks.size * chunkSize;
-            await processAndFinalizeChunks(uploadItem, file_id, chunksToUpload, alreadyUploadedBytes, ui);
-        }
-
-        async function processAndFinalizeChunks(uploadItem, file_id, chunkQueue, initialUploadedBytes, ui) {
-            const { file, controller } = uploadItem;
-            const fileSize = file.size;
-            const chunkSize = getOptimalChunkSize(fileSize);
-            let uploadedBytes = initialUploadedBytes;
-            let lastUploadedBytes = initialUploadedBytes;
-            let lastTime = performance.now();
-            let speeds = [];
-            let maxWorkers = Math.min(navigator.hardwareConcurrency || 4, 8);
-            const MAX_WORKERS_CAP = 16;
-
-            const updateProgress = () => {
-                const progress = Math.round((uploadedBytes / fileSize) * 100);
-                if (ui.progressBar) {
-                    const offset = 100 - progress;
-                    ui.progressBar.style.strokeDashoffset = offset;
-                }
-
-                const now = performance.now();
-                const timeDiff = (now - lastTime) / 1000;
-                if (timeDiff > 0.5) {
-                    const bytesDiff = uploadedBytes - lastUploadedBytes;
-                    const currentSpeed = bytesDiff / timeDiff;
-                    if (currentSpeed > 0) {
-                        speeds.push(currentSpeed);
-                        if (speeds.length > 10) speeds.shift();
-                    }
-                    const avgSpeed = speeds.length > 0 ? speeds.reduce((a, b) => a + b, 0) / speeds.length : 0;
-                    const remainingBytes = fileSize - uploadedBytes;
-                    const estTime = avgSpeed > 0 ? remainingBytes / avgSpeed : 0;
-                    ui.statusText.textContent = `Uploading... ${formatBytes(avgSpeed)}/s, ETA: ${formatTime(estTime)}`;
-                    lastTime = now;
-                    lastUploadedBytes = uploadedBytes;
-                    if (avgSpeed > 2 * MB && maxWorkers < MAX_WORKERS_CAP) {
-                        maxWorkers = Math.min(maxWorkers + 1, MAX_WORKERS_CAP);
-                    }
-                }
-            };
-            updateProgress();
-
+        async function resumeChunkedFile(uploadItem, file_id, sessionKey, ui) { const { file, controller } = uploadItem; const statusResponse = await fetch(`${serverLink}/v4/fragment/object/upload/status/${file_id}`, { headers: { authorization: `Bearer ${token}` }, signal: controller.signal }); if (!statusResponse.ok) { showToast('Could not resume. Starting a new upload.', 'warning'); clearSession(sessionKey); await uploadChunkedFile(uploadItem, sessionKey, ui); return; } const status = await statusResponse.json(); const chunkSize = getOptimalChunkSize(file.size); const uploadedChunks = new Set(status.uploaded_chunks); const allChunks = Array.from({ length: status.total_chunks }, (_, i) => i); const chunksToUpload = allChunks.filter(i => !uploadedChunks.has(i)); const alreadyUploadedBytes = uploadedChunks.size * chunkSize; await processAndFinalizeChunks(uploadItem, file_id, chunksToUpload, alreadyUploadedBytes, ui); }
+        async function processAndFinalizeChunks(uploadItem, file_id, chunkQueue, initialUploadedBytes, ui) { const { file, controller } = uploadItem; const fileSize = file.size; const chunkSize = getOptimalChunkSize(fileSize); let uploadedBytes = initialUploadedBytes; let lastUploadedBytes = initialUploadedBytes; let lastTime = performance.now(); let speeds = []; let maxWorkers = Math.min(navigator.hardwareConcurrency || 4, 8); const MAX_WORKERS_CAP = 16; const updateProgress = () => { const progress = Math.round((uploadedBytes / fileSize) * 100); if (ui.progressBar) { const offset = 100 - progress; ui.progressBar.style.strokeDashoffset = offset; } const now = performance.now(); const timeDiff = (now - lastTime) / 1000; if (timeDiff > 0.5) { const bytesDiff = uploadedBytes - lastUploadedBytes; const currentSpeed = bytesDiff / timeDiff; if (currentSpeed > 0) { speeds.push(currentSpeed); if (speeds.length > 10) speeds.shift(); } const avgSpeed = speeds.length > 0 ? speeds.reduce((a, b) => a + b, 0) / speeds.length : 0; const remainingBytes = fileSize - uploadedBytes; const estTime = avgSpeed > 0 ? remainingBytes / avgSpeed : 0; ui.statusText.textContent = `Uploading... ${formatBytes(avgSpeed)}/s, ETA: ${formatTime(estTime)}`; lastTime = now; lastUploadedBytes = uploadedBytes; if (avgSpeed > 2 * MB && maxWorkers < MAX_WORKERS_CAP) { maxWorkers = Math.min(maxWorkers + 1, MAX_WORKERS_CAP); } } }; updateProgress();
+            
             const uploadChunk = async (chunkIndex) => {
                 const start = chunkIndex * chunkSize;
                 const end = Math.min(start + chunkSize, fileSize);
                 const blob = file.slice(start, end);
-                const checksum = await calculateChecksum(blob);
-                const formData = new FormData();
-                formData.append('chunk', blob);
-
-                const url = `${serverLink}/v4/fragment/object/upload/chunk/${file_id}/${chunkIndex}?checksum=${checksum}`;
+                const base64Checksum = await calculateChecksum(blob);
+                
+                const url = `${serverLink}/v4/fragment/object/upload/chunk/raw/${file_id}/${chunkIndex}`;
 
                 for (let retries = 3; retries > 0; retries--) {
                     if (controller.signal.aborted) throw new Error('Upload cancelled');
                     try {
                         const response = await fetch(url, {
                             method: 'PUT',
-                            headers: { authorization: `Bearer ${token}`, uid: uid },
-                            body: formData,
+                            headers: {
+                                authorization: `Bearer ${token}`,
+                                'Digest': `sha-256=${base64Checksum}`,
+                                'Content-Type': 'application/octet-stream'
+                            },
+                            body: blob,
                             signal: controller.signal
                         });
                         if (!response.ok) throw new Error(`Chunk ${chunkIndex} failed: ${await response.text()}`);
@@ -791,720 +1004,531 @@
                 }
             };
 
-            await new Promise((resolve, reject) => {
-                let activeWorkersCount = 0;
-                let uploadFailedError = null;
-                const processSingleChunk = async () => {
-                    if (uploadFailedError) return;
-                    activeWorkersCount++;
-                    while (chunkQueue.length > 0) {
-                        if (uploadFailedError) break;
-                        const chunkIndex = chunkQueue.shift();
-                        if (chunkIndex === undefined) break;
-                        try {
-                            await uploadChunk(chunkIndex);
-                        } catch (err) {
-                            uploadFailedError = err;
-                            reject(err);
-                            break;
+            await new Promise((resolve, reject) => { let activeWorkersCount = 0; let uploadFailedError = null; const processSingleChunk = async () => { if (uploadFailedError) return; activeWorkersCount++; while (chunkQueue.length > 0) { if (uploadFailedError) break; const chunkIndex = chunkQueue.shift(); if (chunkIndex === undefined) break; try { await uploadChunk(chunkIndex); } catch (err) { uploadFailedError = err; reject(err); break; } } activeWorkersCount--; if (activeWorkersCount === 0 && chunkQueue.length === 0) { uploadFailedError ? reject(uploadFailedError) : resolve(); } }; const workerManager = setInterval(() => { if (chunkQueue.length === 0 || uploadFailedError) { clearInterval(workerManager); return; } while (activeWorkersCount < maxWorkers && chunkQueue.length > 0) { processSingleChunk(); } }, 100); const initialWorkers = Math.min(maxWorkers, chunkQueue.length); for (let i = 0; i < initialWorkers; i++) { processSingleChunk(); } }); const finalizeResponse = await fetch(`${serverLink}/v4/fragment/object/upload/finalize/${file_id}`, { method: 'POST', headers: { authorization: `Bearer ${token}` }, signal: controller.signal }); if (!finalizeResponse.ok) throw new Error('Failed to finalize upload.'); }
+        
+        // --- CORRECTED RESUME LOGIC (LOAD) ---
+        function createResumableUploadItemUI(sessionKey, sessionData) { const container = document.getElementById('upload-items-container'); const itemEl = document.createElement('div'); const itemId = `resume-${sessionKey.replace(/[^a-zA-Z0-9]/g, '')}`; itemEl.id = itemId; itemEl.className = 'flex items-center p-2 bg-surface-2 rounded-md'; const { icon, color } = getFileIcon(sessionData.name); itemEl.innerHTML = ` <div class="flex-shrink-0 w-8 flex items-center justify-center"> <i class="far ${icon} text-lg ${color}"></i> </div> <div class="flex-1 overflow-hidden ml-3"> <p class="text-sm font-medium truncate text-text-primary" title="${sessionData.objectKey}">${sessionData.objectKey}</p> <p class="status-text text-xs text-yellow-400 mt-0.5">Interrupted</p> </div> <div class="status-icon text-lg ml-3 flex items-center justify-center gap-2"> <button class="resume-btn w-8 h-6 rounded-md bg-green-600 hover:bg-green-700 flex items-center justify-center" title="Resume Upload"> <i class="fas fa-play text-xs"></i> </button> <button class="remove-session-btn w-8 h-6 rounded-md bg-red-600 hover:bg-red-700 flex items-center justify-center" title="Cancel Upload"> <i class="fas fa-times text-xs"></i> </button> </div> `; container.appendChild(itemEl); showUploadPanel(); itemEl.querySelector('.resume-btn').onclick = () => { const resumeInput = document.getElementById('resumeFileInput'); resumeInput.dataset.sessionKey = sessionKey; resumeInput.click(); }; itemEl.querySelector('.remove-session-btn').onclick = () => { clearSession(sessionKey); itemEl.remove(); showToast('Upload cancelled and removed.', 'info'); updateUploadPanelTitle(); }; }
+        function loadUnfinishedUploads() {
+            const resumeInput = document.getElementById('resumeFileInput');
+            let hasUnfinished = false;
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('upload-session-')) {
+                    const sessionData = getSession(key);
+                    // Check for all required fields to ensure it's a valid session.
+                    if (sessionData && sessionData.file_id && sessionData.name && sessionData.size && sessionData.lastModified && sessionData.objectKey) {
+                        if (!uploadQueue.some(item => getSessionKey(item.file) === key)) {
+                            createResumableUploadItemUI(key, sessionData);
+                            hasUnfinished = true;
                         }
                     }
-                    activeWorkersCount--;
-                    if (activeWorkersCount === 0 && chunkQueue.length === 0) {
-                        uploadFailedError ? reject(uploadFailedError) : resolve();
-                    }
-                };
-                const workerManager = setInterval(() => {
-                    if (chunkQueue.length === 0 || uploadFailedError) {
-                        clearInterval(workerManager);
-                        return;
-                    }
-                    while (activeWorkersCount < maxWorkers && chunkQueue.length > 0) {
-                        processSingleChunk();
-                    }
-                }, 100);
-
-                const initialWorkers = Math.min(maxWorkers, chunkQueue.length);
-                for (let i = 0; i < initialWorkers; i++) {
-                    processSingleChunk();
-                }
-            });
-
-            const finalizeResponse = await fetch(`${serverLink}/v4/fragment/object/upload/finalize/${file_id}`, {
-                method: 'POST',
-                headers: { authorization: `Bearer ${token}`, uid: uid },
-                signal: controller.signal
-            });
-            if (!finalizeResponse.ok) throw new Error('Failed to finalize upload.');
-        }
-
-        // --- BROWSER/MANAGER LOGIC ---
-        function navigateTo(path) {
-            currentPath = path;
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput.value) {
-                searchInput.value = '';
-            }
-            renderObjects(currentObjectList);
-        }
-
-        function renderObjects(objects) {
-            const listContainer = document.getElementById('objectList');
-            const breadcrumbContainer = document.getElementById('breadcrumb');
-            listContainer.innerHTML = '';
-            breadcrumbContainer.innerHTML = '';
-
-            // 1. Render Breadcrumbs
-            const pathParts = currentPath.split('/').filter(p => p);
-            let pathAccumulator = '';
-
-            const rootCrumb = document.createElement('a');
-            rootCrumb.href = '#';
-            rootCrumb.className = 'text-text-primary hover:text-primary transition-colors';
-            rootCrumb.textContent = activeFragment.charAt(0).toUpperCase() + activeFragment.slice(1);
-            rootCrumb.onclick = (e) => { e.preventDefault(); navigateTo(''); };
-            breadcrumbContainer.appendChild(rootCrumb);
-
-            pathParts.forEach(part => {
-                pathAccumulator += part + '/';
-                const separator = document.createElement('span');
-                separator.className = 'mx-2 text-text-secondary';
-                separator.textContent = '/';
-                breadcrumbContainer.appendChild(separator);
-
-                const partCrumb = document.createElement('a');
-                partCrumb.href = '#';
-                partCrumb.className = 'text-text-primary hover:text-primary transition-colors';
-                partCrumb.textContent = part;
-                const finalPath = pathAccumulator;
-                partCrumb.onclick = (e) => { e.preventDefault(); navigateTo(finalPath); };
-                breadcrumbContainer.appendChild(partCrumb);
-            });
-
-            // 2. Parse objects into folders and files
-            const folders = new Set();
-            const files = [];
-
-            objects.forEach(obj => {
-                if (obj.key.startsWith(currentPath)) {
-                    const relativePath = obj.key.substring(currentPath.length);
-                    const slashIndex = relativePath.indexOf('/');
-
-                    if (slashIndex !== -1 && slashIndex > 0) {
-                        const folderName = relativePath.substring(0, slashIndex);
-                        folders.add(folderName);
-                    } else if (slashIndex === -1 && relativePath.length > 0) {
-                        files.push(obj);
-                    }
-                }
-            });
-
-            // 3. Render View
-            if (currentView === 'grid') {
-                listContainer.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6';
-            } else {
-                listContainer.className = 'space-y-1';
-            }
-
-            if (folders.size === 0 && files.length === 0) {
-                listContainer.className = '';
-                listContainer.innerHTML = '<div class="text-center py-16 text-text-secondary"><i class="fas fa-folder-open text-4xl mb-4"></i><p>This folder is empty.</p></div>';
-                return;
-            }
-
-            if (currentView === 'list') {
-                const header = document.createElement('div');
-                header.className = 'hidden sm:flex items-center px-4 py-2 text-xs text-text-secondary border-b border-border font-semibold sticky top-0 bg-background z-10';
-                header.innerHTML = `
-                <div class="w-1/2 flex items-center">Name</div>
-                <div class="w-1/4">Last Modified</div>
-                <div class="w-1/4">File Size</div>
-                <div class="w-20"></div>
-            `;
-                listContainer.appendChild(header);
-            }
-
-            // Render Folders
-            Array.from(folders).sort().forEach(folderName => {
-                const item = document.createElement('div');
-                const newPath = currentPath + folderName + '/';
-
-                if (currentView === 'list') {
-                    item.className = 'file-item flex items-center px-4 py-3 hover:bg-surface-1 rounded-lg transition-colors border-b border-border cursor-pointer';
-                    item.innerHTML = `
-                    <div class="flex items-center w-full">
-                        <i class="fas fa-folder text-xl text-primary w-8 text-center"></i>
-                        <span class="font-medium text-text-primary truncate ml-4">${folderName}</span>
-                    </div>
-                `;
-                } else {
-                    item.className = 'grid-item relative group flex flex-col bg-surface-1 rounded-xl overflow-hidden border border-transparent hover:border-primary transition-all cursor-pointer';
-                    item.innerHTML = `
-                    <div class="file-thumbnail h-32 sm:h-36 flex items-center justify-center">
-                        <i class="fas fa-folder text-5xl text-text-secondary"></i>
-                    </div>
-                    <div class="p-3 flex items-center gap-2 border-t border-border">
-                         <i class="fas fa-folder text-md text-primary"></i>
-                        <p class="font-medium text-sm truncate flex-1">${folderName}</p>
-                    </div>
-                `;
-                }
-                item.onclick = () => navigateTo(newPath);
-                listContainer.appendChild(item);
-            });
-
-            // Render Files
-            files.sort((a, b) => new Date(Number(b.last_modified.$date.$numberLong)) - new Date(Number(a.last_modified.$date.$numberLong)));
-            files.forEach(obj => {
-                const item = document.createElement('div');
-                const relativePath = obj.key.substring(currentPath.length);
-
-                if (currentView === 'list') {
-                    item.className = 'file-item flex items-center px-4 py-3 hover:bg-surface-1 rounded-lg transition-colors border-b border-border';
-                    item.innerHTML = `
-                    <div class="flex items-center w-full sm:w-1/2">
-                        <i class="far ${getFileIcon(obj.key)} text-xl text-primary w-8 text-center"></i>
-                        <span class="font-medium text-text-primary truncate ml-4">${relativePath}</span>
-                    </div>
-                    <div class="hidden sm:block w-1/4 text-sm text-text-secondary">${new Date(Number(obj.last_modified.$date.$numberLong)).toLocaleDateString()}</div>
-                    <div class="hidden sm:block w-1/4 text-sm text-text-secondary">${formatBytes(obj.size_bytes)}</div>
-                    <div class="w-20 flex justify-end ml-auto">
-                        <div class="file-actions opacity-100 sm:opacity-0 transition-opacity flex items-center gap-1">
-                            <button data-action="more" title="More actions" class="w-8 h-8 rounded-full hover:bg-surface-2 flex items-center justify-center text-text-secondary hover:text-primary transition-colors"><i class="fas fa-ellipsis-v"></i></button>
-                        </div>
-                    </div>
-                `;
-                } else {
-                    item.className = 'grid-item relative group flex flex-col bg-surface-1 rounded-xl overflow-hidden border border-transparent hover:border-primary transition-all cursor-pointer';
-                    item.innerHTML = `
-                    <div class="file-thumbnail h-32 sm:h-36 flex items-center justify-center">
-                        <i class="far ${getFileIcon(obj.key)} text-5xl text-text-secondary"></i>
-                    </div>
-                    <div class="p-3 flex items-center gap-2 border-t border-border">
-                         <i class="far ${getFileIcon(obj.key)} text-md text-primary"></i>
-                        <p class="font-medium text-sm truncate flex-1">${relativePath}</p>
-                    </div>
-                    <div class="grid-actions absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button data-action="more" title="More actions" class="w-7 h-7 rounded-full bg-surface-2/80 backdrop-blur-sm hover:bg-surface-2 flex items-center justify-center text-text-secondary hover:text-primary transition-colors"><i class="fas fa-ellipsis-v text-xs"></i></button>
-                    </div>
-                `;
-                }
-                item.querySelector('[data-action="more"]').addEventListener('click', e => {
-                    e.stopPropagation();
-                    showContextMenu(e.currentTarget, obj);
-                });
-                listContainer.appendChild(item);
-            });
-        }
-
-        async function listObjects(fragment) {
-            if (!fragment) {
-                document.getElementById('breadcrumb').innerHTML = `<h2 class="text-2xl font-bold">No Fragment Selected</h2>`;
-                document.getElementById('objectList').innerHTML = '<div class="text-center py-16 text-text-secondary"><i class="fas fa-exclamation-circle text-4xl mb-4"></i><p>No fragments found. Please upload a file to create one.</p></div>';
-                return;
-            }
-
-            document.getElementById('browserSpinner').style.display = 'flex';
-            document.getElementById('objectList').innerHTML = '';
-
-            try {
-                const response = await fetch(`${serverLink}/v4/fragment/object/metadata/${fragment}`, {
-                    headers: { authorization: `Bearer ${token}`, uid: uid }
-                });
-                if (!response.ok) throw new Error(`Server responded with ${response.status}`);
-                const objects = await response.json();
-                currentObjectList = objects;
-                renderObjects(objects);
-            } catch (err) {
-                showToast(`Failed to list objects: ${err.message}`, 'error');
-                document.getElementById('objectList').innerHTML = `<div class="text-center py-16 text-red-500"><i class="fas fa-exclamation-triangle text-4xl mb-4"></i><p>Error loading objects.</p></div>`;
-            } finally {
-                document.getElementById('browserSpinner').style.display = 'none';
-            }
-        }
-
-        async function loadFragments() {
-            const fragmentList = document.getElementById('fragmentList');
-            try {
-                const response = await fetch(`${serverLink}/v4/fragment/metadata`, {
-                    headers: { authorization: `Bearer ${token}`, uid: uid }
-                });
-                if (!response.ok) throw new Error(`Server responded with ${response.status}`);
-                const fragments = await response.json();
-
-                fragmentList.innerHTML = ''; // Clear existing list
-
-                if (fragments.length > 0) {
-                    if (!fragments.includes(activeFragment)) {
-                        activeFragment = fragments[0];
-                        currentPath = '';
-                    }
-
-                    fragments.forEach((fragment) => {
-                        const item = document.createElement('a');
-                        item.href = '#';
-                        item.className = `fragment-item flex items-center px-4 py-2.5 font-medium rounded-lg`;
-                        if (fragment === activeFragment) {
-                            item.classList.add('bg-primary/20', 'text-text-primary');
-                        } else {
-                            item.classList.add('text-text-secondary', 'hover:bg-surface-2', 'hover:text-text-primary');
-                        }
-                        item.innerHTML = `
-                        <i class="fas fa-folder mr-3"></i>
-                        <span>${fragment}</span>
-                    `;
-                        fragmentList.appendChild(item);
-                    });
-                    listObjects(activeFragment);
-                } else {
-                    activeFragment = '';
-                    currentPath = '';
-                    listObjects(null);
-                }
-
-            } catch (err) {
-                showToast(`Failed to load fragments: ${err.message}`, 'error');
-                fragmentList.innerHTML = `<div class="p-4 text-xs text-red-500">Could not load fragments.</div>`;
-                listObjects(null);
-            }
-        }
-
-        function filterObjects() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            if (!query) {
-                renderObjects(currentObjectList);
-                return;
-            }
-            const filtered = currentObjectList.filter(obj => obj.key.toLowerCase().includes(query));
-            renderFlatList(filtered);
-        }
-
-        function renderFlatList(objects) {
-            const listContainer = document.getElementById('objectList');
-            const breadcrumbContainer = document.getElementById('breadcrumb');
-            listContainer.innerHTML = '';
-            breadcrumbContainer.innerHTML = `<h2 class="text-2xl font-bold">Search Results</h2>`;
-
-            if (objects.length === 0) {
-                listContainer.innerHTML = '<div class="text-center py-16 text-text-secondary"><i class="fas fa-search text-4xl mb-4"></i><p>No objects found.</p></div>';
-                return;
-            }
-
-            listContainer.className = 'space-y-1';
-            const header = document.createElement('div');
-            header.className = 'hidden sm:flex items-center px-4 py-2 text-xs text-text-secondary border-b border-border font-semibold sticky top-0 bg-background z-10';
-            header.innerHTML = `
-            <div class="w-1/2 flex items-center">Name</div>
-            <div class="w-1/4">Last Modified</div>
-            <div class="w-1/4">File Size</div>
-            <div class="w-20"></div>
-        `;
-            listContainer.appendChild(header);
-
-            objects.forEach(obj => {
-                const item = document.createElement('div');
-                item.className = 'file-item flex items-center px-4 py-3 hover:bg-surface-1 rounded-lg transition-colors border-b border-border';
-                item.innerHTML = `
-                <div class="flex items-center w-full sm:w-1/2">
-                    <i class="far ${getFileIcon(obj.key)} text-xl text-primary w-8 text-center"></i>
-                    <span class="font-medium text-text-primary truncate ml-4">${obj.key}</span>
-                </div>
-                <div class="hidden sm:block w-1/4 text-sm text-text-secondary">${new Date(Number(obj.last_modified.$date.$numberLong)).toLocaleDateString()}</div>
-                <div class="hidden sm:block w-1/4 text-sm text-text-secondary">${formatBytes(obj.size_bytes)}</div>
-                <div class="w-20 flex justify-end ml-auto">
-                    <div class="file-actions opacity-100 sm:opacity-0 transition-opacity flex items-center gap-1">
-                        <button data-action="more" title="More actions" class="w-8 h-8 rounded-full hover:bg-surface-2 flex items-center justify-center text-text-secondary hover:text-primary transition-colors"><i class="fas fa-ellipsis-v"></i></button>
-                    </div>
-                </div>
-            `;
-                item.querySelector('[data-action="more"]').addEventListener('click', e => {
-                    e.stopPropagation();
-                    showContextMenu(e.currentTarget, obj);
-                });
-                listContainer.appendChild(item);
-            });
-        }
-
-        async function getObjectBlob(fragment, key, endpoint) {
-            const response = await fetch(`${serverLink}/v4/fragment/object/${endpoint}/${fragment}/${key}`, {
-                headers: { authorization: `Bearer ${token}`, uid: uid }
-            });
-            if (!response.ok) throw new Error(`Server responded with ${response.status}`);
-            return await response.blob();
-        }
-
-        async function handleObjectAction(action, fragment, key) {
-            try {
-                switch (action) {
-                    case 'view': {
-                        showFileViewerModal(key);
-                        const blob = await getObjectBlob(fragment, key, 'get');
-                        await renderFileViewerContent(blob, key);
-                        break;
-                    }
-                    case 'download': {
-                        showToast('Starting download...', 'info', 3000);
-                        const blob = await getObjectBlob(fragment, key, 'download');
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = key.split('/').pop() || 'download';
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                        break;
-                    }
-                    case 'delete':
-                        showDeleteModal(fragment, key);
-                        break;
-                    case 'rename':
-                        showRenameModal(fragment, key);
-                        break;
-                    case 'share':
-                        showShareModal(fragment, key);
-                        break;
-                }
-            } catch (err) {
-                showToast(`Action failed: ${err.message}`, 'error');
-                if (action === 'view') {
-                    closeFileViewerModal();
                 }
             }
-        }
-
-        // --- CONTEXT MENU LOGIC ---
-        function showContextMenu(button, object) {
-            const menu = document.getElementById('contextMenu');
-            menu.innerHTML = `
-            <a href="#" data-action="view" class="flex items-center px-4 py-2 hover:bg-surface-1"><i class="fas fa-eye w-6 mr-2"></i>View</a>
-            <a href="#" data-action="share" class="flex items-center px-4 py-2 hover:bg-surface-1"><i class="fas fa-share-alt w-6 mr-2"></i>Share</a>
-            <a href="#" data-action="rename" class="flex items-center px-4 py-2 hover:bg-surface-1"><i class="fas fa-pencil-alt w-6 mr-2"></i>Rename</a>
-            <a href="#" data-action="download" class="flex items-center px-4 py-2 hover:bg-surface-1"><i class="fas fa-download w-6 mr-2"></i>Download</a>
-            <div class="my-1 border-t border-border"></div>
-            <a href="#" data-action="delete" class="flex items-center px-4 py-2 text-red-500 hover:bg-surface-1"><i class="fas fa-trash w-6 mr-2"></i>Delete</a>
-        `;
-
-            const rect = button.getBoundingClientRect();
-
-            menu.classList.remove('hidden');
-            const menuWidth = menu.offsetWidth;
-            const menuHeight = menu.offsetHeight;
-
-            let top = rect.bottom + window.scrollY;
-            let left = rect.right + window.scrollX - menuWidth;
-
-            if (left < 8) { left = 8; }
-            if (left + menuWidth > document.documentElement.clientWidth) { left = document.documentElement.clientWidth - menuWidth - 8; }
-            if (top + menuHeight > document.documentElement.clientHeight + window.scrollY) { top = rect.top + window.scrollY - menuHeight; }
-            if (top < window.scrollY) { top = window.scrollY + 8; }
-
-            menu.style.top = `${top}px`;
-            menu.style.left = `${left}px`;
-
-            menu.onclick = (e) => {
-                e.preventDefault();
-                const target = e.target.closest('a');
-                if (target) {
-                    const action = target.dataset.action;
-                    handleObjectAction(action, object.fragment, object.key);
-                    menu.classList.add('hidden');
-                }
-            };
-        }
-
-        // --- MODAL LOGIC ---
-        function showDeleteModal(fragment, key) {
-            const modal = document.getElementById('deleteModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            document.getElementById('confirmDeleteBtn').onclick = async () => {
-                try {
-                    const response = await fetch(`${serverLink}/v4/fragment/object/delete/${fragment}/${key}`, {
-                        method: 'DELETE',
-                        headers: { authorization: `Bearer ${token}`, uid: uid }
-                    });
-                    if (!response.ok) throw new Error(`Server responded with ${response.status}`);
-                    showToast('Object deleted successfully.', 'success');
-                    listObjects(fragment);
-                } catch (err) {
-                    showToast(`Failed to delete object: ${err.message}`, 'error');
-                } finally {
-                    modal.classList.add('hidden');
-                }
-            };
-            document.getElementById('cancelDeleteBtn').onclick = () => modal.classList.add('hidden');
-        }
-
-        function showRenameModal(fragment, key) {
-            const modal = document.getElementById('renameModal');
-            const input = document.getElementById('newObjectKeyInput');
-            input.value = key;
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            document.getElementById('confirmRenameBtn').onclick = async () => {
-                const newKey = input.value.trim();
-                if (!newKey || newKey === key) {
-                    showToast('Please enter a new, valid object key.', 'error');
+            if (hasUnfinished) {
+                document.getElementById('upload-panel-title').textContent = 'Unfinished uploads found';
+            }
+            resumeInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                const sessionKey = e.target.dataset.sessionKey;
+                if (!file || !sessionKey) return;
+                const sessionData = getSession(sessionKey);
+                if (!sessionData) {
+                    showToast('Upload session not found.', 'error');
                     return;
                 }
-                try {
-                    const response = await fetch(`${serverLink}/v4/fragment/object/rename`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json', authorization: `Bearer ${token}`, uid: uid },
-                        body: JSON.stringify({
-                            source_fragment: fragment,
-                            source_key: key,
-                            destination_fragment: fragment,
-                            destination_key: newKey
-                        })
-                    });
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        throw new Error(errorText || `Server responded with ${response.status}`);
-                    }
-                    showToast('Object renamed successfully.', 'success');
-                    listObjects(fragment);
-                } catch (err) {
-                    showToast(`Failed to rename object: ${err.message}`, 'error');
-                } finally {
-                    modal.classList.add('hidden');
-                }
-            };
-            document.getElementById('cancelRenameBtn').onclick = () => modal.classList.add('hidden');
-        }
-
-        function showShareModal(fragment, key) {
-            const modal = document.getElementById('shareModal');
-            const urlInput = document.getElementById('shareUrl');
-            urlInput.value = '';
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-
-            document.getElementById('generateShareBtn').onclick = async () => {
-                const disposition = document.getElementById('shareDisposition').value;
-                const expires_in = parseInt(document.getElementById('shareExpiry').value, 10) || 3600;
-                try {
-                    const response = await fetch(`${serverLink}/v4/fragment/object/share`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', authorization: `Bearer ${token}`, uid: uid },
-                        body: JSON.stringify({ fragment, object_key: key, expires_in, disposition })
-                    });
-                    if (!response.ok) throw new Error(`Server responded with ${response.status}`);
-                    const data = await response.json();
-                    urlInput.value = data.url;
-                } catch (err) {
-                    showToast(`Failed to generate link: ${err.message}`, 'error');
-                }
-            };
-            document.getElementById('copyShareUrlBtn').onclick = () => {
-                if (urlInput.value) {
-                    navigator.clipboard.writeText(urlInput.value);
-                    showToast('URL copied to clipboard!', 'success');
+                if (file.name === sessionData.name && file.size === sessionData.size && file.lastModified === sessionData.lastModified) {
+                    const itemId = `resume-${sessionKey.replace(/[^a-zA-Z0-9]/g, '')}`;
+                    document.getElementById(itemId)?.remove();
+                    const uploadItem = {
+                        id: crypto.randomUUID(),
+                        file: file,
+                        fragment: sessionData.fragment,
+                        objectKey: sessionData.objectKey,
+                        status: 'pending',
+                        controller: new AbortController(),
+                    };
+                    uploadQueue.push(uploadItem);
+                    createUploadItemUI(uploadItem);
+                    processUploadQueue();
+                    showToast(`Resuming upload for ${file.name}`, 'success');
                 } else {
-                    showToast('Generate a URL first!', 'error');
+                    showToast('Incorrect file selected. Please choose the original file.', 'error');
                 }
-            };
-            document.getElementById('closeShareBtn').onclick = () => modal.classList.add('hidden');
+                e.target.value = '';
+                delete e.target.dataset.sessionKey;
+            });
         }
+        // --- END OF CORRECTION ---
 
-        const fileViewerModal = document.getElementById('fileViewerModal');
-        const fileViewerTitle = document.getElementById('fileViewerTitle');
-        const fileViewerContent = document.getElementById('fileViewerContent');
-        const fileViewerSpinner = document.getElementById('fileViewerSpinner');
-        let currentObjectUrl = null;
+        // --- File Browser Logic ---
+        function navigateBack() { if (currentPath === '') return; let pathParts = currentPath.split('/').filter(p => p); pathParts.pop(); let newPath = pathParts.join('/') + (pathParts.length > 0 ? '/' : ''); navigateTo(newPath); }
+        function navigateTo(path) { currentAppView = 'browser'; currentPath = path; const searchInput = document.getElementById('searchInput'); if (searchInput.value) { searchInput.value = ''; } renderObjects(currentObjectList); }
+        function renderObjects(objects) { const listContainer = document.getElementById('objectList'); const breadcrumbContainer = document.getElementById('breadcrumb'); const backBtn = document.getElementById('back-btn'); listContainer.innerHTML = ''; breadcrumbContainer.innerHTML = ''; document.getElementById('load-more-container').innerHTML = ''; if (currentPath) { backBtn.classList.remove('hidden'); } else { backBtn.classList.add('hidden'); } const pathParts = currentPath.split('/').filter(p => p); let pathAccumulator = ''; const rootCrumb = document.createElement('a'); rootCrumb.href = '#'; rootCrumb.className = 'text-text-primary hover:text-primary transition-colors'; rootCrumb.textContent = activeFragment ? (activeFragment.charAt(0).toUpperCase() + activeFragment.slice(1)) : 'Files'; rootCrumb.onclick = (e) => { e.preventDefault(); navigateTo(''); }; breadcrumbContainer.appendChild(rootCrumb); pathParts.forEach(part => { pathAccumulator += part + '/'; const separator = document.createElement('span'); separator.className = 'mx-2 text-text-secondary'; separator.textContent = '/'; breadcrumbContainer.appendChild(separator); const partCrumb = document.createElement('a'); partCrumb.href = '#'; partCrumb.className = 'text-text-primary hover:text-primary transition-colors'; partCrumb.textContent = part; const finalPath = pathAccumulator; partCrumb.onclick = (e) => { e.preventDefault(); navigateTo(finalPath); }; breadcrumbContainer.appendChild(partCrumb); }); document.getElementById('main-title').textContent = pathParts.length > 0 ? pathParts[pathParts.length - 1] : 'My Files'; const folders = new Set(); const fileGroups = new Map(); objects.forEach(obj => { if (obj.key.startsWith(currentPath)) { const relativePath = obj.key.substring(currentPath.length); const slashIndex = relativePath.indexOf('/'); if (slashIndex !== -1 && slashIndex > 0) { folders.add(relativePath.substring(0, slashIndex)); } else if (slashIndex === -1 && relativePath.length > 0) { if (!fileGroups.has(obj.key)) { fileGroups.set(obj.key, []); } fileGroups.get(obj.key).push(obj); } } }); fileGroups.forEach(versions => { versions.sort((a, b) => new Date(Number(b.last_modified.$date.$numberLong)) - new Date(Number(a.last_modified.$date.$numberLong))); }); if (folders.size === 0 && fileGroups.size === 0 && clientSideFolders.filter(f => f.path === currentPath).length === 0) { listContainer.className = 'w-full'; listContainer.innerHTML = '<div class="text-center py-16 text-text-secondary col-span-full"><i class="fas fa-folder-open text-4xl mb-4"></i><p>This folder is empty.</p></div>'; return; } const sortedFolders = Array.from(folders).sort(); const sortedFileGroups = Array.from(fileGroups.values()).sort((a, b) => { const dateA = new Date(Number(a[0].last_modified.$date.$numberLong)); const dateB = new Date(Number(b[0].last_modified.$date.$numberLong)); return dateB - dateA; }); const currentVirtualFolders = clientSideFolders.filter(f => f.path === currentPath).sort((a, b) => a.name.localeCompare(b.name)); allRenderableItems = [...currentVirtualFolders.map(f => ({ type: 'folder', name: f.name })), ...sortedFolders.map(name => ({ type: 'folder', name })), ...sortedFileGroups.map(versions => ({ type: 'file', data: versions }))]; currentlyDisplayedCount = 0; if (currentView === 'tiles') { listContainer.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4'; } else { listContainer.className = 'space-y-1'; const header = document.createElement('div'); header.className = 'hidden sm:flex items-center px-4 py-2 text-xs text-text-secondary border-b border-border font-semibold sticky top-0 bg-background z-10'; header.innerHTML = `<div class="w-1/2 flex items-center">Name</div><div class="w-1/4">Last Modified</div><div class="w-1/4">File Size</div><div class="w-20"></div>`; listContainer.appendChild(header); } loadMoreItems(); }
+        function loadMoreItems() { const nextBatch = allRenderableItems.slice(currentlyDisplayedCount, currentlyDisplayedCount + RENDER_BATCH_SIZE); if (nextBatch.length === 0) return; if (currentView === 'tiles') { appendTiles(nextBatch); } else { appendListItems(nextBatch); } currentlyDisplayedCount += nextBatch.length; updateLoadMoreButton(); }
+        function updateLoadMoreButton() { const container = document.getElementById('load-more-container'); container.innerHTML = ''; if (currentlyDisplayedCount < allRenderableItems.length) { const button = document.createElement('button'); button.textContent = 'Load More'; button.className = 'bg-surface-1 hover:bg-surface-2 text-text-primary font-semibold py-2 px-4 rounded-lg transition-colors'; button.onclick = loadMoreItems; container.appendChild(button); } }
+        function appendTiles(items) { const listContainer = document.getElementById('objectList'); items.forEach(itemData => { if (itemData.type === 'folder') { const item = document.createElement('div'); const newPath = currentPath + itemData.name + '/'; item.className = 'relative group bg-surface-1 rounded-lg cursor-pointer transition-all border border-border hover:border-primary flex flex-col overflow-hidden'; item.innerHTML = ` <div class="h-32 flex items-center justify-center bg-surface-1 rounded-t-lg"> <i class="fas fa-folder text-5xl text-primary"></i> </div> <div class="p-3 border-t border-border"> <p class="font-semibold text-text-primary truncate" title="${itemData.name}">${itemData.name}</p> <p class="text-xs text-text-secondary mt-1">Folder</p> </div><button data-action="more" title="More actions" class="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 hover:bg-surface-2 flex items-center justify-center text-text-secondary hover:text-primary transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0"><i class="fas fa-ellipsis-h"></i></button> `; item.querySelector('[data-action="more"]').addEventListener('click', e => { e.stopPropagation(); showContextMenu(e.currentTarget, itemData); }); item.addEventListener('click', (e) => { if (!e.target.closest('[data-action="more"]')) { navigateTo(newPath); } }); listContainer.appendChild(item); } else { const versions = itemData.data; const latestVersion = versions[0]; const obj = latestVersion; const item = document.createElement('div'); const relativePath = obj.key.substring(currentPath.length); const extension = relativePath.split('.').pop().toLowerCase(); const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension); const isPending = obj.status === 'Pending'; item.className = `relative group bg-surface-1 rounded-lg cursor-pointer transition-all border border-border hover:border-primary flex flex-col overflow-hidden ${isPending ? 'status-pending' : ''}`; let thumbnailHTML; if (isImage) { thumbnailHTML = `<div class="w-full h-32 flex items-center justify-center bg-black rounded-t-lg overflow-hidden"><i class="far fa-file-image text-4xl text-text-secondary image-placeholder"></i><img data-key="${obj.key}" class="image-preview w-full h-full object-cover hidden" src="" alt="${relativePath}"></div>`; } else { const { icon, color } = getFileIcon(obj.key); thumbnailHTML = `<div class="w-full h-32 flex items-center justify-center bg-surface-1 rounded-t-lg"><i class="far ${icon} text-5xl ${color}"></i></div>`; } let versionTag = versions.length > 1 ? `<span class="absolute top-2 left-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full">${versions.length} versions</span>` : ''; let statusIcon = isPending ? `<span class="absolute bottom-2 right-2 text-yellow-400" title="Pending"><i class="fas fa-clock"></i></span>` : ''; item.innerHTML = `${thumbnailHTML}<div class="p-3 border-t border-border">${versionTag}<p class="font-semibold text-text-primary truncate" title="${relativePath}">${relativePath}</p><p class="text-xs text-text-secondary mt-1">${new Date(Number(obj.last_modified.$date.$numberLong)).toLocaleDateString()} &middot; ${formatBytes(obj.size_bytes)}</p>${statusIcon}</div><button data-action="more" title="More actions" class="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 hover:bg-surface-2 flex items-center justify-center text-text-secondary hover:text-primary transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0"><i class="fas fa-ellipsis-h"></i></button>`; item.querySelector('[data-action="more"]').addEventListener('click', e => { e.stopPropagation(); showContextMenu(e.currentTarget, { type: 'file', data: obj }); }); item.addEventListener('click', (e) => { if (!e.target.closest('[data-action="more"]')) { handleObjectAction('view', obj.fragment, obj.key); } }); listContainer.appendChild(item); if (isImage && !isPending) { getShareableUrl(obj.fragment, obj.key, 'view', 3600).then(url => { const imgElement = item.querySelector(`img[data-key="${obj.key}"]`); const placeholderElement = item.querySelector('.image-placeholder'); if (imgElement) { imgElement.src = url; imgElement.onload = () => { imgElement.classList.remove('hidden'); if (placeholderElement) placeholderElement.classList.add('hidden'); }; } }).catch(err => console.error(`Failed to load thumbnail for ${obj.key}:`, err)); } } }); }
+        function appendListItems(items) { const listContainer = document.getElementById('objectList'); items.forEach(itemData => { if (itemData.type === 'folder') { const item = document.createElement('div'); const newPath = currentPath + itemData.name + '/'; item.className = 'file-item flex items-center px-4 py-3 hover:bg-surface-1 rounded-lg transition-colors cursor-pointer group'; item.innerHTML = `<div class="flex items-center w-full sm:w-1/2"><i class="fas fa-folder text-xl text-primary w-8 text-center"></i><span class="font-medium text-text-primary truncate ml-4">${itemData.name}</span></div><div class="hidden sm:block w-1/4 text-sm text-text-secondary">--</div><div class="hidden sm:block w-1/4 text-sm text-text-secondary">--</div><div class="w-20 flex justify-end ml-auto"><div class="file-actions opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center gap-1"><button data-action="more" title="More actions" class="w-8 h-8 rounded-full hover:bg-surface-2 flex items-center justify-center text-text-secondary hover:text-primary transition-colors"><i class="fas fa-ellipsis-v"></i></button></div></div>`; item.querySelector('[data-action="more"]').addEventListener('click', e => { e.stopPropagation(); showContextMenu(e.currentTarget, itemData); }); item.addEventListener('click', e => { if (!e.target.closest('[data-action="more"]')) { navigateTo(newPath); } }); listContainer.appendChild(item); } else { const versions = itemData.data; const latestVersion = versions[0]; const obj = latestVersion; const item = document.createElement('div'); const relativePath = obj.key.substring(currentPath.length); const { icon, color } = getFileIcon(relativePath); const isPending = obj.status === 'Pending'; let versionTag = versions.length > 1 ? `<span class="ml-2 bg-blue-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">${versions.length} versions</span>` : ''; let statusIcon = isPending ? `<i class="fas fa-clock text-yellow-400 ml-2" title="Pending"></i>` : ''; item.className = `file-item flex items-center px-4 py-3 hover:bg-surface-1 rounded-lg transition-colors cursor-pointer group ${isPending ? 'status-pending' : ''}`; item.innerHTML = `<div class="flex items-center w-full sm:w-1/2" title="${relativePath}"><i class="far ${icon} text-xl ${color} w-8 text-center"></i><span class="font-medium text-text-primary truncate ml-4">${relativePath}</span>${versionTag}${statusIcon}</div><div class="hidden sm:block w-1/4 text-sm text-text-secondary">${new Date(Number(obj.last_modified.$date.$numberLong)).toLocaleDateString()}</div><div class="hidden sm:block w-1/4 text-sm text-text-secondary">${formatBytes(obj.size_bytes)}</div><div class="w-20 flex justify-end ml-auto"><div class="file-actions opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center gap-1"><button data-action="more" title="More actions" class="w-8 h-8 rounded-full hover:bg-surface-2 flex items-center justify-center text-text-secondary hover:text-primary transition-colors"><i class="fas fa-ellipsis-v"></i></button></div></div>`; item.querySelector('[data-action="more"]').addEventListener('click', e => { e.stopPropagation(); showContextMenu(e.currentTarget, { type: 'file', data: obj }); }); item.addEventListener('click', e => { if (!e.target.closest('[data-action="more"]')) { handleObjectAction('view', obj.fragment, obj.key); } }); listContainer.appendChild(item); } }); }
+        async function listObjects(fragment) { currentAppView = 'browser'; clientSideFolders = []; if (!fragment) { document.getElementById('objectList').innerHTML = '<div class="text-center py-16 text-text-secondary col-span-full"><i class="fas fa-exclamation-circle text-4xl mb-4"></i><p>No fragments found. Please upload a file to create one.</p></div>'; return; } document.getElementById('browserSpinner').style.display = 'flex'; document.getElementById('objectList').innerHTML = ''; try { const response = await fetch(`${serverLink}/v4/fragment/object/metadata/${fragment}?limit=999999&show_all=true`, { headers: { authorization: `Bearer ${token}` } }); if (!response.ok) throw new Error(`Server responded with ${response.status}`); const objects = await response.json(); currentObjectList = objects; renderObjects(objects); } catch (err) { showToast(`Failed to list objects: ${err.message}`, 'error'); document.getElementById('objectList').innerHTML = `<div class="text-center py-16 text-red-500 col-span-full"><i class="fas fa-exclamation-triangle text-4xl mb-4"></i><p>Error loading objects.</p></div>`; } finally { document.getElementById('browserSpinner').style.display = 'none'; } }
+        async function loadFragments() { const fragmentList = document.getElementById('fragmentList'); if (!fragmentList) { console.error("Fatal: fragmentList element not found."); return; } try { const response = await fetch(`${serverLink}/v4/fragment/metadata`, { headers: { authorization: `Bearer ${token}` } }); if (!response.ok) throw new Error(`Server responded with ${response.status}`); const fragments = await response.json(); fragmentList.innerHTML = ''; if (fragments.length > 0) { if (!fragments.includes(activeFragment)) { activeFragment = fragments[0]; currentPath = ''; } fragments.forEach((fragment) => { const item = document.createElement('a'); item.href = '#'; item.className = `fragment-item nav-item flex items-center px-2 py-2 font-medium rounded-md`; if (fragment === activeFragment) { item.classList.add('active'); } else { item.classList.add('text-text-secondary', 'hover:bg-surface-1', 'hover:text-text-primary'); } item.innerHTML = `<i class="fas fa-database w-6 mr-2"></i><span>${fragment}</span>`; fragmentList.appendChild(item); }); listObjects(activeFragment); } else { activeFragment = ''; currentPath = ''; listObjects(null); } } catch (err) { showToast(`Failed to load fragments: ${err.message}`, 'error'); fragmentList.innerHTML = `<div class="p-4 text-xs text-red-500">Could not load fragments.</div>`; listObjects(null); } }
+        function filterObjects() { const query = document.getElementById('searchInput').value.toLowerCase(); const breadcrumb = document.getElementById('breadcrumb'); if (!query) { renderObjects(currentObjectList); return; } breadcrumb.innerHTML = `<span class="text-xl font-bold">Search Results</span>`; const filtered = currentObjectList.filter(obj => obj.key.toLowerCase().includes(query)); renderFlatList(filtered); }
+        function renderFlatList(objects) { const listContainer = document.getElementById('objectList'); listContainer.innerHTML = ''; if (objects.length === 0) { listContainer.className = 'w-full'; listContainer.innerHTML = '<div class="text-center py-16 text-text-secondary col-span-full"><i class="fas fa-search text-4xl mb-4"></i><p>No objects found.</p></div>'; return; } listContainer.className = 'space-y-1'; const header = document.createElement('div'); header.className = 'hidden sm:flex items-center px-4 py-2 text-xs text-text-secondary border-b border-border font-semibold sticky top-0 bg-background z-10'; header.innerHTML = `<div class="w-1/2 flex items-center">Name</div><div class="w-1/4">Last Modified</div><div class="w-1/4">File Size</div><div class="w-20"></div>`; listContainer.appendChild(header); objects.forEach(obj => { const item = document.createElement('div'); const isPending = obj.status === 'Pending'; item.className = `file-item flex items-center px-4 py-3 hover:bg-surface-1 rounded-lg transition-colors cursor-pointer group ${isPending ? 'status-pending' : ''}`; const { icon, color } = getFileIcon(obj.key); let statusIcon = isPending ? `<i class="fas fa-clock text-yellow-400 ml-2" title="Pending"></i>` : ''; item.innerHTML = ` <div class="flex items-center w-full sm:w-1/2" title="${obj.key}"> <i class="far ${icon} text-xl ${color} w-8 text-center"></i> <span class="font-medium text-text-primary truncate ml-4">${obj.key}</span> ${statusIcon} </div> <div class="hidden sm:block w-1/4 text-sm text-text-secondary">${new Date(Number(obj.last_modified.$date.$numberLong)).toLocaleDateString()}</div> <div class="hidden sm:block w-1/4 text-sm text-text-secondary">${formatBytes(obj.size_bytes)}</div> <div class="w-20 flex justify-end ml-auto"> <div class="file-actions opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center gap-1"> <button data-action="more" title="More actions" class="w-8 h-8 rounded-full hover:bg-surface-2 flex items-center justify-center text-text-secondary hover:text-primary transition-colors"><i class="fas fa-ellipsis-v"></i></button> </div> </div> `; item.querySelector('[data-action="more"]').addEventListener('click', e => { e.stopPropagation(); showContextMenu(e.currentTarget, { type: 'file', data: obj }); }); item.addEventListener('click', e => { if (!e.target.closest('[data-action="more"]')) { handleObjectAction('view', obj.fragment, obj.key); } }); listContainer.appendChild(item); }); }
+        async function getShareableUrl(fragment, key, disposition = 'view', expiresIn = 3600) { try { const response = await fetch(`${serverLink}/v4/fragment/object/share`, { method: 'POST', headers: { 'Content-Type': 'application/json', authorization: `Bearer ${token}` }, body: JSON.stringify({ fragment, object_key: key, expires_in: expiresIn, disposition }) }); if (!response.ok) { const errorText = await response.text(); throw new Error(errorText || `Server responded with ${response.status}`); } const data = await response.json(); return data.url; } catch (err) { console.error(`Failed to generate shareable URL: ${err.message}`); throw err; } }
+        async function handleObjectAction(action, fragment, key, type = 'file') { try { switch (action) { case 'view': { showFileViewerModal(key); const extension = key.split('.').pop().toLowerCase(); const isVideo = ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv'].includes(extension); const disposition = isVideo ? 'stream' : 'view'; const viewUrl = await getShareableUrl(fragment, key, disposition); if (viewUrl) { await renderFileViewerContent(viewUrl, key); } else { throw new Error("Could not generate a viewable link."); } break; } case 'download': { showToast('Preparing download...', 'info', 3000); const downloadUrl = await getShareableUrl(fragment, key, 'download'); if (downloadUrl) { const a = document.createElement('a'); a.href = downloadUrl; a.download = key.split('/').pop() || 'download'; document.body.appendChild(a); a.click(); document.body.removeChild(a); } else { throw new Error("Could not generate a download link."); } break; } case 'delete': showDeleteModal(fragment, key, type); break; case 'rename': showRenameModal(fragment, key); break; case 'share': showShareModal(fragment, key); break; } } catch (err) { showToast(`Action failed: ${err.message}`, 'error'); if (action === 'view') { closeFileViewerModal(); } } }
+        function showContextMenu(button, itemData) { const menu = document.getElementById('contextMenu'); if (itemData.type === 'file') { const object = itemData.data; menu.innerHTML = `<a href="#" data-action="view" class="flex items-center px-4 py-2 hover:bg-surface-1"><i class="fas fa-eye w-6 mr-2"></i>View</a><a href="#" data-action="share" class="flex items-center px-4 py-2 hover:bg-surface-1"><i class="fas fa-share-alt w-6 mr-2"></i>Share</a><a href="#" data-action="rename" class="flex items-center px-4 py-2 hover:bg-surface-1"><i class="fas fa-pencil-alt w-6 mr-2"></i>Rename</a><a href="#" data-action="download" class="flex items-center px-4 py-2 hover:bg-surface-1"><i class="fas fa-download w-6 mr-2"></i>Download</a><div class="my-1 border-t border-border"></div><a href="#" data-action="delete" class="flex items-center px-4 py-2 text-red-500 hover:bg-surface-1"><i class="fas fa-trash w-6 mr-2"></i>Delete</a>`; menu.onclick = (e) => { e.preventDefault(); const target = e.target.closest('a'); if (target) { const action = target.dataset.action; handleObjectAction(action, object.fragment, object.key, 'file'); menu.classList.add('hidden'); } }; } else if (itemData.type === 'folder') { const folderPrefix = currentPath + itemData.name + '/'; menu.innerHTML = `<a href="#" data-action="delete" class="flex items-center px-4 py-2 text-red-500 hover:bg-surface-1"><i class="fas fa-trash w-6 mr-2"></i>Delete Folder</a>`; menu.onclick = (e) => { e.preventDefault(); const target = e.target.closest('a'); if (target) { const action = target.dataset.action; handleObjectAction(action, activeFragment, folderPrefix, 'folder'); menu.classList.add('hidden'); } }; } const rect = button.getBoundingClientRect(); menu.classList.remove('hidden'); const menuWidth = menu.offsetWidth; const menuHeight = menu.offsetHeight; let top = rect.bottom + window.scrollY; let left = rect.right + window.scrollX - menuWidth; if (left < 8) { left = 8; } if (left + menuWidth > document.documentElement.clientWidth) { left = document.documentElement.clientWidth - menuWidth - 8; } if (top + menuHeight > document.documentElement.clientHeight + window.scrollY) { top = rect.top + window.scrollY - menuHeight; } if (top < window.scrollY) { top = window.scrollY + 8; } menu.style.top = `${top}px`; menu.style.left = `${left}px`; }
+        function showDeleteModal(fragment, keyOrPrefix, type) { const modal = document.getElementById('deleteModal'); const modalText = document.getElementById('deleteModalText'); if (type === 'folder') { modalText.textContent = `Are you sure you want to delete this folder and all its contents? This action cannot be undone.`; } else { modalText.textContent = 'Are you sure you want to delete this object? This action cannot be undone.'; } modal.classList.remove('hidden'); modal.classList.add('flex'); document.getElementById('confirmDeleteBtn').onclick = async () => { try { let response; if (type === 'folder') { response = await fetch(`${serverLink}/v4/fragment/object/delete/prefix`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', authorization: `Bearer ${token}` }, body: JSON.stringify({ fragment: fragment, prefix: keyOrPrefix }) }); } else { response = await fetch(`${serverLink}/v4/fragment/object/delete/${fragment}/${keyOrPrefix}`, { method: 'DELETE', headers: { authorization: `Bearer ${token}` } }); } if (!response.ok) throw new Error(`Server responded with ${response.status}`); showToast('Object(s) deleted successfully.', 'success'); listObjects(fragment); } catch (err) { showToast(`Failed to delete: ${err.message}`, 'error'); } finally { modal.classList.add('hidden'); } }; document.getElementById('cancelDeleteBtn').onclick = () => modal.classList.add('hidden'); }
+        function showRenameModal(fragment, key) { const modal = document.getElementById('renameModal'); const input = document.getElementById('newObjectKeyInput'); input.value = key; modal.classList.remove('hidden'); modal.classList.add('flex'); document.getElementById('confirmRenameBtn').onclick = async () => { const newKey = input.value.trim(); if (!newKey || newKey === key) { showToast('Please enter a new, valid object key.', 'error'); return; } try { const response = await fetch(`${serverLink}/v4/fragment/object/rename`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', authorization: `Bearer ${token}` }, body: JSON.stringify({ source_fragment: fragment, source_key: key, destination_fragment: fragment, destination_key: newKey }) }); if (!response.ok) { const errorText = await response.text(); throw new Error(errorText || `Server responded with ${response.status}`); } showToast('Object renamed successfully.', 'success'); listObjects(fragment); } catch (err) { showToast(`Failed to rename object: ${err.message}`, 'error'); } finally { modal.classList.add('hidden'); } }; document.getElementById('cancelRenameBtn').onclick = () => modal.classList.add('hidden'); }
+        function showShareModal(fragment, key) { const modal = document.getElementById('shareModal'); const urlInput = document.getElementById('shareUrl'); urlInput.value = ''; modal.classList.remove('hidden'); modal.classList.add('flex'); document.getElementById('generateShareBtn').onclick = async () => { const disposition = document.getElementById('shareDisposition').value; const expires_in = parseInt(document.getElementById('shareExpiry').value, 10) || 3600; try { const url = await getShareableUrl(fragment, key, disposition, expires_in); urlInput.value = url; } catch (err) { showToast(`Failed to generate link: ${err.message}`, 'error'); } }; document.getElementById('copyShareUrlBtn').onclick = () => { if (urlInput.value) { navigator.clipboard.writeText(urlInput.value); showToast('URL copied to clipboard!', 'success'); } else { showToast('Generate a URL first!', 'error'); } }; document.getElementById('closeShareBtn').onclick = () => modal.classList.add('hidden'); }
 
+        // --- File Viewer Modal Logic ---
+        const fileViewerModal = document.getElementById('fileViewerModal'); const fileViewerTitle = document.getElementById('fileViewerTitle'); const fileViewerContent = document.getElementById('fileViewerContent'); const fileViewerSpinner = document.getElementById('fileViewerSpinner');
         function closeFileViewerModal() {
+            destroyCustomPlayer(); // Clean up player instance and listeners
             fileViewerModal.classList.add('hidden');
-            if (currentObjectUrl) {
-                URL.revokeObjectURL(currentObjectUrl);
-                currentObjectUrl = null;
-            }
             fileViewerContent.innerHTML = '';
             fileViewerContent.appendChild(fileViewerSpinner);
         }
-
         function showFileViewerModal(objectKey) {
             const fileName = objectKey.split('/').pop();
             fileViewerTitle.textContent = fileName;
-
             fileViewerContent.innerHTML = '';
             fileViewerContent.appendChild(fileViewerSpinner);
-
             fileViewerModal.classList.remove('hidden');
             fileViewerModal.classList.add('flex');
         }
-
-        async function renderFileViewerContent(blob, objectKey) {
+        async function renderFileViewerContent(url, objectKey) {
             const fileName = objectKey.split('/').pop();
-            const fileType = blob.type;
+            const extension = fileName.split('.').pop().toLowerCase();
+            const typeMap = { 'jpg': 'image', 'jpeg': 'image', 'png': 'image', 'gif': 'image', 'svg': 'image', 'webp': 'image', 'mp4': 'video', 'mov': 'video', 'avi': 'video', 'webm': 'video', 'mkv': 'video', 'flv': 'video', 'wmv': 'video', 'mp3': 'audio', 'wav': 'audio', 'ogg': 'audio', 'pdf': 'pdf', 'txt': 'text', 'md': 'text', 'js': 'text', 'css': 'text', 'html': 'text', 'json': 'text' };
+            const fileType = typeMap[extension] || 'unknown';
 
-            if (currentObjectUrl) {
-                URL.revokeObjectURL(currentObjectUrl);
-            }
-            currentObjectUrl = URL.createObjectURL(blob);
+            fileViewerContent.innerHTML = ''; // Clear spinner
 
-            let contentElement;
-
-            if (fileType.startsWith('image/')) {
-                contentElement = document.createElement('img');
-                contentElement.src = currentObjectUrl;
+            if (fileType === 'video') {
+                setupCustomPlayer(url, fileName);
+            } else if (fileType === 'image') {
+                const contentElement = document.createElement('img');
+                contentElement.src = url;
                 contentElement.className = 'max-w-full max-h-full object-contain';
-            } else if (fileType.startsWith('video/')) {
-                contentElement = document.createElement('video');
-                contentElement.src = currentObjectUrl;
-                contentElement.controls = true;
-                contentElement.className = 'max-w-full max-h-full';
-            } else if (fileType.startsWith('audio/')) {
-                contentElement = document.createElement('audio');
-                contentElement.src = currentObjectUrl;
+                fileViewerContent.appendChild(contentElement);
+            } else if (fileType === 'audio') {
+                const contentElement = document.createElement('audio');
+                contentElement.src = url;
                 contentElement.controls = true;
                 contentElement.className = 'w-full max-w-md my-auto';
-            } else if (fileType === 'application/pdf') {
-                contentElement = document.createElement('iframe');
-                contentElement.src = currentObjectUrl;
-                contentElement.className = 'w-full h-full border-0';
-            } else if (fileType.startsWith('text/')) {
-                contentElement = document.createElement('pre');
-                contentElement.className = 'text-left text-sm p-4 bg-surface-2 rounded-lg whitespace-pre-wrap w-full h-full';
-                try {
-                    contentElement.textContent = await blob.text();
-                } catch (e) {
-                    contentElement.textContent = 'Could not read text content.';
-                }
+                fileViewerContent.appendChild(contentElement);
+            } else if (fileType === 'pdf' || fileType === 'text') {
+                const contentElement = document.createElement('iframe');
+                contentElement.src = url;
+                contentElement.className = 'w-full h-full border-0 bg-white';
+                fileViewerContent.appendChild(contentElement);
             } else {
-                contentElement = document.createElement('div');
+                const contentElement = document.createElement('div');
                 contentElement.className = 'text-center my-auto';
-                contentElement.innerHTML = `
-                <i class="far ${getFileIcon(fileName)} text-6xl text-text-secondary mb-4"></i>
-                <p class="text-text-primary">Preview not available for this file type.</p>
-                <p class="text-sm text-text-secondary">${fileName}</p>
-            `;
+                const { icon, color } = getFileIcon(fileName);
+                contentElement.innerHTML = `<i class="far ${icon} text-6xl ${color} mb-4"></i><p class="text-text-primary">Preview not available for this file type.</p><p class="text-sm text-text-secondary">${fileName}</p>`;
+                fileViewerContent.appendChild(contentElement);
             }
-
-            fileViewerContent.innerHTML = '';
-            fileViewerContent.appendChild(contentElement);
         }
 
+        // --- NEW INTEGRATED HLS.js PLAYER ---
+        function setupCustomPlayer(videoUrl, title) {
+            // 1. Inject Player HTML
+            fileViewerContent.innerHTML = `
+                <div class="video-wrapper">
+                    <video id="hlsVideoPlayer" playsinline></video>
+                    <div class="loading-spinner"></div>
+                    <button class="big-play-button" id="bigPlayBtn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></button>
+                    <div class="controls-overlay">
+                        <div class="top-controls">
+                            <div class="video-info"><h1 id="videoHeader"></h1><p id="videoDescription"></p></div>
+                        </div>
+                        <div class="bottom-container">
+                            <div class="progress-bar-container">
+                                <div class="seek-tooltip" id="seekTooltip">00:00</div>
+                                <div class="progress-bar-background"></div><div class="progress-bar-buffered"></div><div class="progress-bar"></div><div class="progress-bar-scrubber"></div>
+                            </div>
+                            <div class="bottom-controls">
+                                <div class="controls-left">
+                                    <button class="icon-button" id="playPauseBtn" title="Play/Pause (k)"><svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg><svg id="pauseIcon" viewBox="0 0 24 24" style="display: none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg></button>
+                                    <div class="volume-controls">
+                                        <button class="icon-button" id="volumeBtn" title="Mute (m)"><svg id="volumeHighIcon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"></path></svg><svg id="volumeMuteIcon" viewBox="0 0 24 24" style="display: none;"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"></path></svg></button>
+                                        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.01" value="1">
+                                    </div>
+                                    <span class="time-indicator">0:00 / 0:00</span>
+                                </div>
+                                <div class="controls-right">
+                                    <div class="settings-container">
+                                        <button class="icon-button" id="settingsBtn" title="Settings"><svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg></button>
+                                        <div class="settings-menu" id="settingsMenu"><div class="settings-view" id="mainSettingsView"><button class="settings-menu-item" id="qualityMenuItem"><span><svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 6.5c-3.03 0-5.5 2.47-5.5 5.5s2.47 5.5 5.5 5.5 5.5-2.47 5.5-5.5-2.47-5.5-5.5-5.5zm0 9c-1.93 0-3.5-1.57-3.5-3.5S10.07 8.5 12 8.5s3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg> Quality</span><span><span class="current-quality-indicator">Auto</span><svg class="right-arrow-icon" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"></path></svg></span></button></div><div class="settings-view" id="qualitySettingsView" style="display: none;"><div class="settings-menu-header"><button class="icon-button" id="qualityBackBtn" style="padding: 8px;"><svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"></path></svg></button><h4>Quality</h4></div><div class="quality-list-container"><div id="qualityList"></div><button class="quality-button auto-quality-button" id="autoQualityBtn"><svg class="check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg><span>Auto</span></button></div></div></div>
+                                    </div>
+                                    <button class="icon-button" id="pipBtn" title="Picture-in-Picture (i)"><svg viewBox="0 0 24 24"><path d="M19 7h-8v6h8V7zm2-4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 1.98 2 1.98h18c1.1 0 2-.88 2-1.98V5c0-1.1-.9-2-2-2zm0 16.01H3V4.98h18v14.03z"></path></svg></button>
+                                    <button class="icon-button" id="fullscreenBtn" title="Fullscreen (f)"><svg id="fullscreenOpenIcon" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"></path></svg><svg id="fullscreenCloseIcon" viewBox="0 0 24 24" style="display:none;"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"></path></svg></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
 
-        // --- EVENT LISTENERS ---
+            // 2. Get DOM References
+            const videoWrapper = fileViewerContent.querySelector('.video-wrapper');
+            const video = document.getElementById('hlsVideoPlayer');
+            const bigPlayBtn = document.getElementById('bigPlayBtn');
+            const playPauseBtn = document.getElementById('playPauseBtn');
+            const playIcon = document.getElementById('playIcon');
+            const pauseIcon = document.getElementById('pauseIcon');
+            const volumeBtn = document.getElementById('volumeBtn');
+            const volumeHighIcon = document.getElementById('volumeHighIcon');
+            const volumeMuteIcon = document.getElementById('volumeMuteIcon');
+            const volumeSlider = document.getElementById('volumeSlider');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const fullscreenOpenIcon = document.getElementById('fullscreenOpenIcon');
+            const fullscreenCloseIcon = document.getElementById('fullscreenCloseIcon');
+            const settingsBtn = document.getElementById('settingsBtn');
+            const pipBtn = document.getElementById('pipBtn');
+            const progressBarContainer = fileViewerContent.querySelector('.progress-bar-container');
+            const progressBar = fileViewerContent.querySelector('.progress-bar');
+            const progressScrubber = fileViewerContent.querySelector('.progress-bar-scrubber');
+            const bufferedProgressBar = fileViewerContent.querySelector('.progress-bar-buffered');
+            const timeIndicator = fileViewerContent.querySelector('.time-indicator');
+            const seekTooltip = document.getElementById('seekTooltip');
+            const settingsMenu = document.getElementById('settingsMenu');
+            const mainSettingsView = document.getElementById('mainSettingsView');
+            const qualitySettingsView = document.getElementById('qualitySettingsView');
+            const qualityMenuItem = document.getElementById('qualityMenuItem');
+            const qualityBackBtn = document.getElementById('qualityBackBtn');
+            const qualityList = document.getElementById('qualityList');
+            const autoQualityBtn = document.getElementById('autoQualityBtn');
+            const currentQualityIndicator = fileViewerContent.querySelector('.current-quality-indicator');
+
+            // 3. Setup Player Logic
+            let controlsTimeout, isScrubbing = false, isAutoMode = true, lastVolume = 1;
+
+            document.getElementById('videoHeader').textContent = title;
+            document.getElementById('videoDescription').textContent = 'Now Playing';
+
+            const isHLS = videoUrl.includes('.m3u8');
+            if (isHLS && Hls.isSupported()) {
+                if (hlsInstance) hlsInstance.destroy();
+                hlsInstance = new Hls();
+                hlsInstance.loadSource(videoUrl);
+                hlsInstance.attachMedia(video);
+                hlsInstance.on(Hls.Events.MANIFEST_PARSED, (e, data) => populateQualityMenu(data.levels));
+                hlsInstance.on(Hls.Events.LEVEL_SWITCHED, (e, data) => { isAutoMode = hlsInstance.autoLevelEnabled; updateActiveQualityButton(); });
+            } else {
+                video.src = videoUrl;
+            }
+            video.play().catch(e => console.log("Autoplay was prevented."));
+
+            // --- Utility Functions ---
+            const formatTime = (timeInSeconds) => { if (isNaN(timeInSeconds)) return "00:00"; const date = new Date(null); date.setSeconds(timeInSeconds); const supportsHours = date.toISOString().substr(11, 2) !== "00"; return date.toISOString().substr(supportsHours ? 11 : 14, supportsHours ? 8 : 5); };
+            const togglePlay = () => video.paused ? video.play() : video.pause();
+            const toggleFullscreen = () => { if (!document.fullscreenElement) { videoWrapper.requestFullscreen().catch(err => console.error(err)); } else { document.exitFullscreen(); } };
+            const togglePip = () => { if (document.pictureInPictureElement) { document.exitPictureInPicture(); } else if (document.pictureInPictureEnabled) { video.requestPictureInPicture(); } };
+            const toggleMute = () => { video.muted = !video.muted; };
+
+            const handleKeyboardShortcuts = (e) => {
+                const tagName = document.activeElement.tagName.toLowerCase();
+                if (tagName === 'input' || settingsMenu.classList.contains('active')) return;
+                if (document.activeElement !== document.body && !videoWrapper.contains(document.activeElement)) return;
+                e.preventDefault();
+                switch (e.key.toLowerCase()) {
+                    case " ": case "k": togglePlay(); break;
+                    case "f": toggleFullscreen(); break;
+                    case "i": togglePip(); break;
+                    case "m": toggleMute(); break;
+                    case "arrowleft": video.currentTime -= 5; break;
+                    case "arrowright": video.currentTime += 5; break;
+                }
+            };
+
+            const updateUI = () => {
+                const isPaused = video.paused;
+                playIcon.style.display = isPaused ? 'block' : 'none';
+                pauseIcon.style.display = isPaused ? 'none' : 'block';
+                videoWrapper.classList.toggle('playing', !isPaused);
+                if (video.duration) {
+                    const progressPercent = (video.currentTime / video.duration) * 100;
+                    progressBar.style.width = `${progressPercent}%`;
+                    progressScrubber.style.left = `${progressPercent}%`;
+                    timeIndicator.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+                }
+                const isMuted = video.muted || video.volume === 0;
+                volumeHighIcon.style.display = isMuted ? 'none' : 'block';
+                volumeMuteIcon.style.display = isMuted ? 'block' : 'none';
+                if (!isScrubbing) { volumeSlider.value = isMuted ? 0 : video.volume; }
+                const isFullscreen = !!document.fullscreenElement;
+                videoWrapper.classList.toggle('fullscreen', isFullscreen);
+                fullscreenOpenIcon.style.display = isFullscreen ? 'none' : 'block';
+                fullscreenCloseIcon.style.display = isFullscreen ? 'block' : 'none';
+            };
+
+            const hideControls = () => { if (video.paused || settingsMenu.classList.contains('active') || isScrubbing) return; videoWrapper.classList.remove('active'); };
+            const showControls = () => { videoWrapper.classList.add('active'); clearTimeout(controlsTimeout); if (!video.paused) { controlsTimeout = setTimeout(hideControls, 3000); } };
+            const toggleControls = () => { const isActive = videoWrapper.classList.toggle('active'); if (isActive) showControls(); else clearTimeout(controlsTimeout); };
+
+            const populateQualityMenu = (levels) => {
+                qualityList.innerHTML = '';
+                if (!levels || levels.length <= 1) { // Hide if only one quality
+                    qualityMenuItem.style.display = 'none';
+                    return;
+                }
+                qualityMenuItem.style.display = 'flex';
+                const sortedLevels = levels.map((level, index) => ({ ...level, originalIndex: index })).sort((a, b) => b.height - a.height);
+                sortedLevels.forEach((level) => {
+                    const button = document.createElement('button');
+                    button.className = 'quality-button';
+                    button.dataset.level = level.originalIndex;
+                    button.innerHTML = `<svg class="check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg><span>${level.height}p</span>`;
+                    button.onclick = () => { if (hlsInstance) { isAutoMode = false; hlsInstance.currentLevel = level.originalIndex; updateActiveQualityButton(); setTimeout(() => { qualitySettingsView.style.display = 'none'; mainSettingsView.style.display = 'block'; }, 150); } };
+                    qualityList.appendChild(button);
+                });
+                updateActiveQualityButton();
+            };
+
+            const updateActiveQualityButton = () => {
+                if (!hlsInstance || !hlsInstance.levels || hlsInstance.levels.length === 0) return;
+                const currentLevelData = hlsInstance.levels[hlsInstance.currentLevel];
+                if (!currentLevelData) return;
+                if (isAutoMode) { currentQualityIndicator.textContent = `Auto (${currentLevelData.height}p)`; } else { currentQualityIndicator.textContent = `${currentLevelData.height}p`; }
+                autoQualityBtn.classList.toggle('active', isAutoMode);
+                qualityList.querySelectorAll('.quality-button').forEach(btn => { const btnLevel = parseInt(btn.dataset.level); btn.classList.toggle('active', !isAutoMode && btnLevel === hlsInstance.currentLevel); });
+            };
+
+            const handleScrub = (e) => { const rect = progressBarContainer.getBoundingClientRect(); const clientX = e.touches ? e.touches[0].clientX : e.clientX; const percent = Math.min(Math.max(0, clientX - rect.left), rect.width) / rect.width; if (isFinite(video.duration)) { video.currentTime = percent * video.duration; progressBar.style.width = `${percent * 100}%`; progressScrubber.style.left = `${percent * 100}%`; } };
+            const startScrubbing = (e) => { isScrubbing = true; videoWrapper.classList.add('scrubbing'); handleScrub(e); };
+            const stopScrubbing = () => { isScrubbing = false; videoWrapper.classList.remove('scrubbing'); };
+
+            // 4. Add Event Listeners and store them for cleanup
+            const addListener = (element, event, handler, options) => {
+                element.addEventListener(event, handler, options);
+                playerEventListeners.push({ element, event, handler, options });
+            };
+
+            const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            if (isTouchDevice) {
+                let lastTap = 0, tapTimeout;
+                addListener(videoWrapper, 'touchend', (e) => {
+                    if (e.target.closest('.controls-overlay')) return;
+                    const currentTime = new Date().getTime();
+                    const tapLength = currentTime - lastTap;
+                    clearTimeout(tapTimeout);
+                    if (tapLength < 300 && tapLength > 0) { e.preventDefault(); togglePlay(); }
+                    else { tapTimeout = setTimeout(() => { toggleControls(); }, 300); }
+                    lastTap = currentTime;
+                });
+            } else {
+                addListener(videoWrapper, 'mousemove', showControls);
+                addListener(videoWrapper, 'mouseleave', hideControls);
+                addListener(videoWrapper, 'click', (e) => { if (!e.target.closest('.controls-overlay')) togglePlay(); });
+                addListener(videoWrapper, 'dblclick', (e) => { if (!e.target.closest('.controls-overlay')) toggleFullscreen(); });
+            }
+
+            addListener(bigPlayBtn, 'click', (e) => { e.stopPropagation(); togglePlay(); });
+            addListener(playPauseBtn, 'click', togglePlay);
+            addListener(fullscreenBtn, 'click', toggleFullscreen);
+            addListener(pipBtn, 'click', togglePip);
+            addListener(settingsBtn, 'click', (e) => { e.stopPropagation(); settingsMenu.classList.toggle('active'); qualitySettingsView.style.display = 'none'; mainSettingsView.style.display = 'block'; showControls(); });
+            addListener(qualityMenuItem, 'click', () => { mainSettingsView.style.display = 'none'; qualitySettingsView.style.display = 'block'; });
+            addListener(qualityBackBtn, 'click', () => { qualitySettingsView.style.display = 'none'; mainSettingsView.style.display = 'block'; });
+            addListener(autoQualityBtn, 'click', () => { if (hlsInstance) { isAutoMode = true; hlsInstance.currentLevel = -1; updateActiveQualityButton(); setTimeout(() => { qualitySettingsView.style.display = 'none'; mainSettingsView.style.display = 'block'; }, 150); } });
+            addListener(document, 'click', (e) => { if (!settingsBtn.contains(e.target) && !settingsMenu.contains(e.target)) { settingsMenu.classList.remove('active'); } });
+            addListener(video, 'play', () => { updateUI(); showControls(); });
+            addListener(video, 'pause', () => { updateUI(); clearTimeout(controlsTimeout); videoWrapper.classList.add('active'); });
+            addListener(video, 'timeupdate', updateUI);
+            addListener(video, 'loadedmetadata', updateUI);
+            addListener(video, 'volumechange', () => { if (!isScrubbing) { volumeSlider.value = video.muted ? 0 : video.volume; } updateUI(); });
+            addListener(video, 'waiting', () => videoWrapper.classList.add('buffering'));
+            addListener(video, 'playing', () => videoWrapper.classList.remove('buffering'));
+            addListener(video, 'progress', () => { if (video.buffered.length > 0 && video.duration > 0) { bufferedProgressBar.style.width = `${(video.buffered.end(video.buffered.length - 1) / video.duration) * 100}%`; } });
+            addListener(document, 'fullscreenchange', updateUI);
+            addListener(document, 'keydown', handleKeyboardShortcuts);
+            addListener(progressBarContainer, 'mousedown', startScrubbing);
+            addListener(document, 'mousemove', (e) => { if (isScrubbing) { handleScrub(e); } const rect = progressBarContainer.getBoundingClientRect(); const clientX = e.clientX; if (clientX >= rect.left && clientX <= rect.right && isFinite(video.duration)) { const percent = (clientX - rect.left) / rect.width; seekTooltip.style.left = `${percent * 100}%`; seekTooltip.textContent = formatTime(percent * video.duration); } });
+            addListener(document, 'mouseup', stopScrubbing);
+            addListener(progressBarContainer, 'touchstart', startScrubbing, { passive: true });
+            addListener(document, 'touchmove', (e) => { if (isScrubbing) handleScrub(e); }, { passive: true });
+            addListener(document, 'touchend', stopScrubbing);
+            addListener(volumeBtn, 'click', () => { if (video.muted) { video.muted = false; video.volume = lastVolume; } else { lastVolume = video.volume; video.muted = true; video.volume = 0; } });
+            addListener(volumeSlider, 'input', (e) => { const newVolume = parseFloat(e.target.value); video.volume = newVolume; video.muted = newVolume === 0; if (!video.muted) { lastVolume = newVolume; } });
+
+            showControls();
+        }
+
+        function destroyCustomPlayer() {
+            // Destroy HLS instance
+            if (hlsInstance) {
+                hlsInstance.destroy();
+                hlsInstance = null;
+            }
+            // Remove all dynamically added event listeners
+            playerEventListeners.forEach(({ element, event, handler, options }) => {
+                element.removeEventListener(event, handler, options);
+            });
+            playerEventListeners = []; // Clear the array
+        }
+
+        // --- NEW: App View Logic ---
+        function setActiveNavItem(element) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (!item.classList.contains('fragment-item')) {
+                    item.classList.add('text-text-secondary', 'hover:bg-surface-1', 'hover:text-text-primary');
+                }
+            });
+            document.querySelectorAll('.fragment-item').forEach(item => item.classList.remove('active'));
+
+            if (element) {
+                element.classList.add('active');
+                element.classList.remove('text-text-secondary', 'hover:bg-surface-1', 'hover:text-text-primary');
+            }
+        }
+
+        function showRecentFiles() {
+            currentAppView = 'recent';
+            document.getElementById('breadcrumb').innerHTML = `<span class="text-xl font-bold">Recent Files</span>`;
+            document.getElementById('back-btn').classList.add('hidden');
+            const sorted = [...currentObjectList].sort((a, b) => Number(b.last_modified.$date.$numberLong) - Number(a.last_modified.$date.$numberLong));
+            renderFlatList(sorted.slice(0, 50)); // Show top 50 recent files
+        }
+
+        function showStorageStats() {
+            currentAppView = 'storage';
+            const listContainer = document.getElementById('objectList');
+            document.getElementById('breadcrumb').innerHTML = `<span class="text-xl font-bold">Storage Details</span>`;
+            document.getElementById('back-btn').classList.add('hidden');
+            listContainer.innerHTML = '';
+            listContainer.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4';
+
+            const categories = {
+                Videos: { size: 0, count: 0, extensions: ['mp4', 'mov', 'avi', 'mkv', 'webm', 'flv', 'wmv'], color: 'bg-purple-500' },
+                Images: { size: 0, count: 0, extensions: ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'], color: 'bg-green-500' },
+                Audio: { size: 0, count: 0, extensions: ['mp3', 'wav', 'ogg'], color: 'bg-pink-500' },
+                Documents: { size: 0, count: 0, extensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt'], color: 'bg-blue-500' },
+                Archives: { size: 0, count: 0, extensions: ['zip', 'rar', '7z'], color: 'bg-yellow-500' },
+                Other: { size: 0, count: 0, extensions: [], color: 'bg-gray-500' }
+            };
+
+            let totalUsed = 0;
+            currentObjectList.forEach(obj => {
+                const size = obj.size_bytes;
+                totalUsed += size;
+                const extension = obj.key.split('.').pop().toLowerCase();
+                let categoryFound = false;
+                for (const catName in categories) {
+                    if (categories[catName].extensions.includes(extension)) {
+                        categories[catName].size += size;
+                        categories[catName].count++;
+                        categoryFound = true;
+                        break;
+                    }
+                }
+                if (!categoryFound) {
+                    categories.Other.size += size;
+                    categories.Other.count++;
+                }
+            });
+
+            for (const catName in categories) {
+                const category = categories[catName];
+                if (category.count > 0) {
+                    const percentage = totalUsed > 0 ? (category.size / totalUsed) * 100 : 0;
+                    const card = document.createElement('div');
+                    card.className = 'bg-surface-1 p-4 rounded-lg border border-border';
+                    card.innerHTML = `
+                        <h3 class="font-semibold text-lg mb-3">${catName}</h3>
+                        <p class="text-sm text-text-secondary">${category.count} files</p>
+                        <p class="text-xl font-bold text-text-primary mt-1">${formatBytes(category.size)}</p>
+                        <div class="w-full bg-surface-2 rounded-full h-2 mt-4">
+                            <div class="${category.color} h-2 rounded-full" style="width: ${percentage.toFixed(2)}%"></div>
+                        </div>
+                    `;
+                    listContainer.appendChild(card);
+                }
+            }
+        }
+
+        // --- App Initialization & Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
             updateCapacityDisplay();
             loadFragments();
+            loadUnfinishedUploads();
+            const browserEl = document.getElementById('browser'); let dragCounter = 0; browserEl.addEventListener('dragenter', (e) => { e.preventDefault(); e.stopPropagation(); dragCounter++; if (e.dataTransfer.types && e.dataTransfer.types.includes('Files')) { browserEl.classList.add('dragover'); } }); browserEl.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); }); browserEl.addEventListener('dragleave', (e) => { e.preventDefault(); e.stopPropagation(); dragCounter--; if (dragCounter === 0) { browserEl.classList.remove('dragover'); } }); browserEl.addEventListener('drop', (e) => { e.preventDefault(); e.stopPropagation(); dragCounter = 0; browserEl.classList.remove('dragover'); if (e.dataTransfer.files.length) { filesToUpload = e.dataTransfer.files; document.getElementById('uploadModalBtn').click(); } });
+            const sidebar = document.getElementById('sidebar'); const sidebarOverlay = document.getElementById('sidebar-overlay'); const menuToggleBtn = document.getElementById('menu-toggle-btn'); const closeSidebarBtn = document.getElementById('close-sidebar-btn'); function openSidebar() { sidebar.classList.remove('-translate-x-full'); sidebarOverlay.classList.remove('hidden'); } function closeSidebar() { sidebar.classList.add('-translate-x-full'); sidebarOverlay.classList.add('hidden'); }
+            menuToggleBtn.addEventListener('click', openSidebar); closeSidebarBtn.addEventListener('click', closeSidebar); sidebarOverlay.addEventListener('click', closeSidebar);
+            document.getElementById('back-btn').addEventListener('click', navigateBack);
+            document.addEventListener('click', () => { document.getElementById('contextMenu').classList.add('hidden'); });
+            document.getElementById('recent-btn').addEventListener('click', (e) => { e.preventDefault(); setActiveNavItem(e.currentTarget); showRecentFiles(); });
+            document.getElementById('storage-btn').addEventListener('click', (e) => { e.preventDefault(); setActiveNavItem(e.currentTarget); showStorageStats(); });
+            document.getElementById('reload-btn').addEventListener('click', (e) => { e.preventDefault(); showToast('Reloading data...', 'info'); loadFragments(); });
+            document.getElementById('fragmentList').addEventListener('click', (e) => { e.preventDefault(); const target = e.target.closest('.fragment-item'); if (target) { setActiveNavItem(target); if (!target.classList.contains('bg-surface-1')) { document.querySelectorAll('.fragment-item').forEach(item => { item.classList.remove('bg-surface-1', 'text-text-primary'); item.classList.add('text-text-secondary', 'hover:bg-surface-1', 'hover:text-text-primary'); }); target.classList.add('bg-surface-1', 'text-text-primary'); target.classList.remove('text-text-secondary', 'hover:bg-surface-1', 'hover:text-text-primary'); activeFragment = target.querySelector('span').textContent.trim(); currentPath = ''; listObjects(activeFragment); if (window.innerWidth < 768) { closeSidebar(); } } } });
 
-            const sidebar = document.getElementById('sidebar');
-            const sidebarOverlay = document.getElementById('sidebar-overlay');
-            const menuToggleBtn = document.getElementById('menu-toggle-btn');
-            const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+            const uploadModal = document.getElementById('uploadModal');
+            const selectFilesBtn = document.getElementById('selectFilesBtn');
+            const selectFolderBtn = document.getElementById('selectFolderBtn');
+            const fileInput = document.getElementById('fileInput');
+            const folderInput = document.getElementById('folderInput');
+            const dropText = document.getElementById('dropText');
 
-            function openSidebar() {
-                sidebar.classList.remove('-translate-x-full');
-                sidebarOverlay.classList.remove('hidden');
-            }
-
-            function closeSidebar() {
-                sidebar.classList.add('-translate-x-full');
-                sidebarOverlay.classList.add('hidden');
-            }
-
-            menuToggleBtn.addEventListener('click', openSidebar);
-            closeSidebarBtn.addEventListener('click', closeSidebar);
-            sidebarOverlay.addEventListener('click', closeSidebar);
-
-            document.addEventListener('click', () => {
-                document.getElementById('contextMenu').classList.add('hidden');
-            });
-
-            document.getElementById('fragmentList').addEventListener('click', (e) => {
-                e.preventDefault();
-                const target = e.target.closest('.fragment-item');
-                if (target && !target.classList.contains('bg-primary/20')) {
-                    document.querySelectorAll('.fragment-item').forEach(item => {
-                        item.classList.remove('bg-primary/20', 'text-text-primary');
-                        item.classList.add('text-text-secondary', 'hover:bg-surface-2', 'hover:text-text-primary');
-                    });
-                    target.classList.add('bg-primary/20', 'text-text-primary');
-                    target.classList.remove('text-text-secondary', 'hover:bg-surface-2', 'hover:text-text-primary');
-
-                    activeFragment = target.querySelector('span').textContent.trim();
-                    currentPath = '';
-                    listObjects(activeFragment);
-                    if (window.innerWidth < 768) {
-                        closeSidebar();
+            const handleFileSelection = (e) => {
+                filesToUpload = e.target.files;
+                if (filesToUpload && filesToUpload.length > 0) {
+                    const fileCount = filesToUpload.length;
+                    const isFolder = e.target.id === 'folderInput' || (filesToUpload[0] && filesToUpload[0].webkitRelativePath);
+                    if (isFolder) {
+                        const folderName = filesToUpload[0].webkitRelativePath.split('/')[0];
+                        dropText.innerHTML = `<span class="font-semibold">Folder "${folderName}" (${fileCount} files) selected</span>`;
+                    } else {
+                        dropText.innerHTML = `<span class="font-semibold">${fileCount} file${fileCount > 1 ? 's' : ''} selected</span>`;
                     }
                 }
-            });
+            };
 
-            const listViewBtn = document.getElementById('list-view-btn');
-            const gridViewBtn = document.getElementById('grid-view-btn');
-            listViewBtn.addEventListener('click', () => {
-                currentView = 'list';
-                listViewBtn.classList.add('bg-primary', 'text-white');
-                listViewBtn.classList.remove('text-text-secondary', 'hover:bg-surface-1');
-                gridViewBtn.classList.remove('bg-primary', 'text-white');
-                gridViewBtn.classList.add('text-text-secondary', 'hover:bg-surface-1');
-                renderObjects(currentObjectList);
-            });
-            gridViewBtn.addEventListener('click', () => {
-                currentView = 'grid';
-                gridViewBtn.classList.add('bg-primary', 'text-white');
-                gridViewBtn.classList.remove('text-text-secondary', 'hover:bg-surface-1');
-                listViewBtn.classList.remove('bg-primary', 'text-white');
-                listViewBtn.classList.add('text-text-secondary', 'hover:bg-surface-1');
-                renderObjects(currentObjectList);
-            });
+            selectFilesBtn.addEventListener('click', () => fileInput.click());
+            selectFolderBtn.addEventListener('click', () => folderInput.click());
+            fileInput.addEventListener('change', handleFileSelection);
+            folderInput.addEventListener('change', handleFileSelection);
 
-
-            const fileInput = document.getElementById('fileInput');
-            fileInput.addEventListener('change', () => {
-                if (fileInput.files.length > 0) {
-                    const fileCount = fileInput.files.length;
-                    document.getElementById('dropText').innerHTML = `<span class="font-semibold">${fileCount} file${fileCount > 1 ? 's' : ''} selected</span>`;
+            // New Folder Modal Logic
+            const newFolderModal = document.getElementById('newFolderModal');
+            const newFolderNameInput = document.getElementById('newFolderNameInput');
+            document.getElementById('newFolderBtn').addEventListener('click', () => {
+                newFolderNameInput.value = '';
+                newFolderModal.classList.remove('hidden');
+                newFolderModal.classList.add('flex');
+                newFolderNameInput.focus();
+            });
+            document.getElementById('cancelNewFolderBtn').addEventListener('click', () => {
+                newFolderModal.classList.add('hidden');
+            });
+            document.getElementById('confirmNewFolderBtn').addEventListener('click', () => {
+                const folderName = newFolderNameInput.value.trim();
+                if (folderName && !folderName.includes('/')) {
+                    // Add to a temporary client-side list
+                    clientSideFolders.push({ name: folderName, path: currentPath });
+                    // Re-render the current view to show the new folder
+                    renderObjects(currentObjectList);
+                    newFolderModal.classList.add('hidden');
+                } else {
+                    showToast('Invalid folder name. Please avoid using slashes.', 'error');
                 }
             });
+
 
             document.getElementById('uploadBtn').addEventListener('click', handleFileUploadRequest);
             document.getElementById('searchInput').addEventListener('input', filterObjects);
-
-            const dropZone = document.getElementById('dropZone');
-            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-            dropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dropZone.classList.remove('dragover');
-                if (e.dataTransfer.files.length) {
-                    fileInput.files = e.dataTransfer.files;
-                    fileInput.dispatchEvent(new Event('change'));
-                }
-            });
-
-            const uploadModal = document.getElementById('uploadModal');
             document.getElementById('uploadModalBtn').addEventListener('click', () => {
+                resetUploadModal();
                 document.getElementById('fragmentInput').value = activeFragment;
                 document.getElementById('pathPrefixInput').value = currentPath;
                 uploadModal.classList.remove('hidden');
             });
             document.getElementById('closeUploadModalBtn').addEventListener('click', () => uploadModal.classList.add('hidden'));
-
-            document.getElementById('toggle-upload-panel-btn').addEventListener('click', () => {
-                const panel = document.getElementById('upload-progress-panel');
-                const container = document.getElementById('upload-items-container');
-                container.classList.toggle('hidden');
-                panel.querySelector('i').classList.toggle('fa-chevron-down');
-                panel.querySelector('i').classList.toggle('fa-chevron-up');
-            });
-
-            document.getElementById('closeFileViewerBtn').addEventListener('click', closeFileViewerModal);
-            fileViewerModal.addEventListener('click', (e) => {
-                if (e.target === fileViewerModal) {
-                    closeFileViewerModal();
-                }
-            });
-            document.addEventListener('keydown', (e) => {
-                if (e.key === "Escape" && !fileViewerModal.classList.contains('hidden')) {
-                    closeFileViewerModal();
-                }
-            });
+            document.getElementById('toggle-upload-panel-btn').addEventListener('click', () => { const panel = document.getElementById('upload-progress-panel'); const container = document.getElementById('upload-items-container'); container.classList.toggle('hidden'); panel.querySelector('i').classList.toggle('fa-chevron-down'); panel.querySelector('i').classList.toggle('fa-chevron-up'); });
+            document.getElementById('closeFileViewerBtn').addEventListener('click', closeFileViewerModal); fileViewerModal.addEventListener('click', (e) => { if (e.target === fileViewerModal) { closeFileViewerModal(); } }); document.addEventListener('keydown', (e) => { if (e.key === "Escape" && !fileViewerModal.classList.contains('hidden')) { closeFileViewerModal(); } });
+            const tilesViewBtn = document.getElementById('tiles-view-btn'); const listViewBtn = document.getElementById('list-view-btn');
+            tilesViewBtn.addEventListener('click', () => { currentView = 'tiles'; tilesViewBtn.classList.add('bg-primary', 'text-white'); tilesViewBtn.classList.remove('text-text-secondary', 'hover:bg-surface-2'); listViewBtn.classList.remove('bg-primary', 'text-white'); listViewBtn.classList.add('text-text-secondary', 'hover:bg-surface-2'); if (currentAppView === 'browser') renderObjects(currentObjectList); });
+            listViewBtn.addEventListener('click', () => { currentView = 'list'; listViewBtn.classList.add('bg-primary', 'text-white'); listViewBtn.classList.remove('text-text-secondary', 'hover:bg-surface-2'); tilesViewBtn.classList.remove('bg-primary', 'text-white'); tilesViewBtn.classList.add('text-text-secondary', 'hover:bg-surface-2'); if (currentAppView === 'browser') renderObjects(currentObjectList); });
         });
     </script>
 </body>
