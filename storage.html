@@ -765,9 +765,10 @@
                 <input type="text" id="pathPrefixInput" placeholder="Current Path"
                     class="w-full bg-surface-2 border border-border rounded-lg px-4 py-2.5 text-text-secondary"
                     readonly>
-                <select id="uploadMethodSelect" class="select-custom w-full bg-surface-2 focus:bg-surface-2 border border-border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-primary transition-all text-text-primary">
-                    <option value="multipart" selected>Upload Method: Multipart</option>
-                    <option value="binary">Upload Method: Binary Stream</option>
+                <select id="uploadMethodSelect"
+                    class="select-custom w-full bg-surface-2 focus:bg-surface-2 border border-border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-primary transition-all text-text-primary">
+                    <option value="binary" selected>Upload Method: Binary Stream</option>
+                    <option value="multipart">Upload Method: Multipart</option>
                 </select>
             </div>
             <button
@@ -872,16 +873,24 @@
 
     <script id="hasherWorker" type="javascript/worker">
         self.onmessage = async (event) => {
-            const { chunk } = event.data;
+            const {
+                chunk
+            } = event.data;
             try {
                 const buffer = await chunk.arrayBuffer();
                 const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
                 const hashArray = Array.from(new Uint8Array(hashBuffer));
                 // FIXED: Convert to a hex string instead of Base64 for maximum safety in transit
                 const hexChecksum = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-                self.postMessage({ success: true, checksum: hexChecksum });
+                self.postMessage({
+                    success: true,
+                    checksum: hexChecksum
+                });
             } catch (e) {
-                self.postMessage({ success: false, error: e.message });
+                self.postMessage({
+                    success: false,
+                    error: e.message
+                });
             }
         };
     </script>
@@ -897,22 +906,30 @@
         const serverLink = `https://storage.litiaina.com`;
         const token = localStorage.getItem("current-token")?.trim() || "";
         const totalCapacity = Number(localStorage.getItem("current-capacity")?.trim()) || 0;
-        const KB = 1024, MB = 1024 * KB, GB = 1024 * MB;
-        let uploadQueue = [], activeUploads = 0, MAX_CONCURRENT_UPLOADS = 4;
-        let allRenderableItems = [], currentlyDisplayedCount = 0, RENDER_BATCH_SIZE = 10;
+        const KB = 1024,
+            MB = 1024 * KB,
+            GB = 1024 * MB;
+        let uploadQueue = [],
+            activeUploads = 0,
+            MAX_CONCURRENT_UPLOADS = 4;
+        let allRenderableItems = [],
+            currentlyDisplayedCount = 0,
+            RENDER_BATCH_SIZE = 10;
         let filesToUpload = null;
 
         // --- Global Player State (for cleanup) ---
         let hlsInstance = null;
         let playerEventListeners = [];
-        
+
         // --- Web Worker Pool for Hashing ---
         const workerPool = [];
         const maxHasherWorkers = navigator.hardwareConcurrency || 4;
         let workerIndex = 0;
         try {
             const workerScript = document.getElementById('hasherWorker').textContent;
-            const workerBlob = new Blob([workerScript], { type: 'application/javascript' });
+            const workerBlob = new Blob([workerScript], {
+                type: 'application/javascript'
+            });
             const workerUrl = URL.createObjectURL(workerBlob);
             for (let i = 0; i < maxHasherWorkers; i++) {
                 workerPool.push(new Worker(workerUrl));
@@ -922,37 +939,241 @@
         }
 
         // --- Utility Functions ---
-        function showToast(message, type = 'info', duration = 4000) { const container = document.getElementById('toast-container'); const toast = document.createElement('div'); const icons = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' }; const colors = { success: 'bg-green-500', error: 'bg-red-500', info: 'bg-blue-500' }; toast.className = `flex items-center w-full p-4 text-white ${colors[type]} rounded-lg shadow-lg transform transition-all duration-300 translate-x-full opacity-0`; toast.innerHTML = `<i class="fas ${icons[type]} mr-3"></i><div class="text-sm font-medium">${message}</div>`; container.appendChild(toast); setTimeout(() => { toast.classList.remove('translate-x-full', 'opacity-0'); toast.classList.add('translate-x-0', 'opacity-100'); }, 10); const closeToast = () => { toast.classList.remove('translate-x-0', 'opacity-100'); toast.classList.add('translate-x-full', 'opacity-0'); toast.addEventListener('transitionend', () => toast.remove(), { once: true }); }; toast.onclick = closeToast; setTimeout(closeToast, duration); }
-        function formatBytes(bytes, decimals = 2) { bytes = Number(bytes); if (!bytes || bytes === 0) return '0 Bytes'; const k = 1024; const dm = decimals < 0 ? 0 : decimals; const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB']; const i = Math.floor(Math.log(bytes) / Math.log(k)); return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]; }
-        function formatTime(seconds) { if (isNaN(seconds) || seconds === Infinity || seconds < 0) return '--'; const h = Math.floor(seconds / 3600); const m = Math.floor((seconds % 3600) / 60); const s = Math.floor(seconds % 60); return `${h > 0 ? h + 'h ' : ''}${m > 0 ? m + 'm ' : ''}${s}s`; }
+        function showToast(message, type = 'info', duration = 4000) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-times-circle',
+                info: 'fa-info-circle'
+            };
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500'
+            };
+            toast.className = `flex items-center w-full p-4 text-white ${colors[type]} rounded-lg shadow-lg transform transition-all duration-300 translate-x-full opacity-0`;
+            toast.innerHTML = `<i class="fas ${icons[type]} mr-3"></i><div class="text-sm font-medium">${message}</div>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full', 'opacity-0');
+                toast.classList.add('translate-x-0', 'opacity-100');
+            }, 10);
+            const closeToast = () => {
+                toast.classList.remove('translate-x-0', 'opacity-100');
+                toast.classList.add('translate-x-full', 'opacity-0');
+                toast.addEventListener('transitionend', () => toast.remove(), {
+                    once: true
+                });
+            };
+            toast.onclick = closeToast;
+            setTimeout(closeToast, duration);
+        }
+
+        function formatBytes(bytes, decimals = 2) {
+            bytes = Number(bytes);
+            if (!bytes || bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        function formatTime(seconds) {
+            if (isNaN(seconds) || seconds === Infinity || seconds < 0) return '--';
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = Math.floor(seconds % 60);
+            return `${h > 0 ? h + 'h ' : ''}${m > 0 ? m + 'm ' : ''}${s}s`;
+        }
+
         function getFileIcon(fileName) {
             const extension = fileName.split('.').pop().toLowerCase();
             const iconMap = {
-                'jpg': { icon: 'fa-file-image', color: 'text-green-500' }, 'jpeg': { icon: 'fa-file-image', color: 'text-green-500' }, 'png': { icon: 'fa-file-image', color: 'text-green-500' }, 'gif': { icon: 'fa-file-image', color: 'text-green-500' }, 'svg': { icon: 'fa-file-image', color: 'text-green-500' },
-                'pdf': { icon: 'fa-file-pdf', color: 'text-red-500' },
-                'doc': { icon: 'fa-file-word', color: 'text-blue-500' }, 'docx': { icon: 'fa-file-word', color: 'text-blue-500' },
-                'xls': { icon: 'fa-file-excel', color: 'text-green-600' }, 'xlsx': { icon: 'fa-file-excel', color: 'text-green-600' },
-                'ppt': { icon: 'fa-file-powerpoint', color: 'text-orange-500' }, 'pptx': { icon: 'fa-file-powerpoint', color: 'text-orange-500' },
-                'txt': { icon: 'fa-file-alt', color: 'text-gray-400' },
-                'zip': { icon: 'fa-file-archive', color: 'text-yellow-500' }, 'rar': { icon: 'fa-file-archive', color: 'text-yellow-500' }, '7z': { icon: 'fa-file-archive', color: 'text-yellow-500' },
-                'html': { icon: 'fa-file-code', color: 'text-orange-600' }, 'css': { icon: 'fa-file-code', color: 'text-blue-600' }, 'js': { icon: 'fa-file-code', color: 'text-yellow-400' }, 'json': { icon: 'fa-file-code', color: 'text-purple-400' },
-                'mp3': { icon: 'fa-file-audio', color: 'text-pink-500' }, 'wav': { icon: 'fa-file-audio', color: 'text-pink-500' },
-                'mp4': { icon: 'fa-file-video', color: 'text-purple-500' }, 'mov': { icon: 'fa-file-video', color: 'text-purple-500' }, 'avi': { icon: 'fa-file-video', color: 'text-purple-500' }, 'mkv': { icon: 'fa-file-video', color: 'text-purple-500' }, 'webm': { icon: 'fa-file-video', color: 'text-purple-500' }, 'flv': { icon: 'fa-file-video', color: 'text-purple-500' }, 'wmv': { icon: 'fa-file-video', color: 'text-purple-500' },
+                'jpg': {
+                    icon: 'fa-file-image',
+                    color: 'text-green-500'
+                },
+                'jpeg': {
+                    icon: 'fa-file-image',
+                    color: 'text-green-500'
+                },
+                'png': {
+                    icon: 'fa-file-image',
+                    color: 'text-green-500'
+                },
+                'gif': {
+                    icon: 'fa-file-image',
+                    color: 'text-green-500'
+                },
+                'svg': {
+                    icon: 'fa-file-image',
+                    color: 'text-green-500'
+                },
+                'pdf': {
+                    icon: 'fa-file-pdf',
+                    color: 'text-red-500'
+                },
+                'doc': {
+                    icon: 'fa-file-word',
+                    color: 'text-blue-500'
+                },
+                'docx': {
+                    icon: 'fa-file-word',
+                    color: 'text-blue-500'
+                },
+                'xls': {
+                    icon: 'fa-file-excel',
+                    color: 'text-green-600'
+                },
+                'xlsx': {
+                    icon: 'fa-file-excel',
+                    color: 'text-green-600'
+                },
+                'ppt': {
+                    icon: 'fa-file-powerpoint',
+                    color: 'text-orange-500'
+                },
+                'pptx': {
+                    icon: 'fa-file-powerpoint',
+                    color: 'text-orange-500'
+                },
+                'txt': {
+                    icon: 'fa-file-alt',
+                    color: 'text-gray-400'
+                },
+                'zip': {
+                    icon: 'fa-file-archive',
+                    color: 'text-yellow-500'
+                },
+                'rar': {
+                    icon: 'fa-file-archive',
+                    color: 'text-yellow-500'
+                },
+                '7z': {
+                    icon: 'fa-file-archive',
+                    color: 'text-yellow-500'
+                },
+                'html': {
+                    icon: 'fa-file-code',
+                    color: 'text-orange-600'
+                },
+                'css': {
+                    icon: 'fa-file-code',
+                    color: 'text-blue-600'
+                },
+                'js': {
+                    icon: 'fa-file-code',
+                    color: 'text-yellow-400'
+                },
+                'json': {
+                    icon: 'fa-file-code',
+                    color: 'text-purple-400'
+                },
+                'mp3': {
+                    icon: 'fa-file-audio',
+                    color: 'text-pink-500'
+                },
+                'wav': {
+                    icon: 'fa-file-audio',
+                    color: 'text-pink-500'
+                },
+                'mp4': {
+                    icon: 'fa-file-video',
+                    color: 'text-purple-500'
+                },
+                'mov': {
+                    icon: 'fa-file-video',
+                    color: 'text-purple-500'
+                },
+                'avi': {
+                    icon: 'fa-file-video',
+                    color: 'text-purple-500'
+                },
+                'mkv': {
+                    icon: 'fa-file-video',
+                    color: 'text-purple-500'
+                },
+                'webm': {
+                    icon: 'fa-file-video',
+                    color: 'text-purple-500'
+                },
+                'flv': {
+                    icon: 'fa-file-video',
+                    color: 'text-purple-500'
+                },
+                'wmv': {
+                    icon: 'fa-file-video',
+                    color: 'text-purple-500'
+                },
             };
-            return iconMap[extension] || { icon: 'fa-file', color: 'text-gray-500' };
+            return iconMap[extension] || {
+                icon: 'fa-file',
+                color: 'text-gray-500'
+            };
         }
 
-        function resetUploadModal() { document.getElementById('dropText').innerHTML = '...or drag and drop'; filesToUpload = null; document.getElementById('pathPrefixInput').value = ''; document.getElementById('fileInput').value = ''; document.getElementById('folderInput').value = ''; }
-        async function updateCapacityDisplay() { const gbUsedElement = document.getElementById('gb-used'); const storageBar = document.getElementById('storage-bar'); if (!token) { gbUsedElement.textContent = `Error loading data`; storageBar.style.width = '0%'; return; } try { const response = await fetch(`${serverLink}/v4/capacity/usage`, { method: 'GET', headers: { "authorization": `Bearer ${token}` } }); if (response.ok) { const capacity = await response.json(); const usedSpace = Number(capacity.capacity_used) || 0; const percentage = (usedSpace / totalCapacity) * 100; gbUsedElement.textContent = `${formatBytes(usedSpace, 1)} of ${formatBytes(totalCapacity, 0)} used`; storageBar.style.width = `${percentage}%`; } else { gbUsedElement.textContent = `Error of ${formatBytes(totalCapacity, 0)} used`; storageBar.style.width = '0%'; } } catch (error) { const usedSpace = 2.4 * GB; const percentage = (usedSpace / totalCapacity) * 100; gbUsedElement.textContent = `${formatBytes(usedSpace, 1)} of ${formatBytes(totalCapacity, 0)} used`; storageBar.style.width = `${percentage}%`; console.warn("Could not fetch capacity, showing mock data.", error); } }
-        function getOptimalChunkSize(fileSize) { if (fileSize < 100 * MB) return 2 * MB; if (fileSize < 500 * MB) return 5 * MB; if (fileSize < 1 * GB) return 8 * MB; return 16 * MB; }
-        
-        async function calculateChecksumHex(blob) { const buffer = await blob.arrayBuffer(); const hashBuffer = await crypto.subtle.digest('SHA-256', buffer); const hashArray = Array.from(new Uint8Array(hashBuffer)); return hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); }
-        
+        function resetUploadModal() {
+            document.getElementById('dropText').innerHTML = '...or drag and drop';
+            filesToUpload = null;
+            document.getElementById('pathPrefixInput').value = '';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('folderInput').value = '';
+        }
+        async function updateCapacityDisplay() {
+            const gbUsedElement = document.getElementById('gb-used');
+            const storageBar = document.getElementById('storage-bar');
+            if (!token) {
+                gbUsedElement.textContent = `Error loading data`;
+                storageBar.style.width = '0%';
+                return;
+            }
+            try {
+                const response = await fetch(`${serverLink}/v4/capacity/usage`, {
+                    method: 'GET',
+                    headers: {
+                        "authorization": `Bearer ${token}`
+                    }
+                });
+                if (response.ok) {
+                    const capacity = await response.json();
+                    const usedSpace = Number(capacity.capacity_used) || 0;
+                    const percentage = (usedSpace / totalCapacity) * 100;
+                    gbUsedElement.textContent = `${formatBytes(usedSpace, 1)} of ${formatBytes(totalCapacity, 0)} used`;
+                    storageBar.style.width = `${percentage}%`;
+                } else {
+                    gbUsedElement.textContent = `Error of ${formatBytes(totalCapacity, 0)} used`;
+                    storageBar.style.width = '0%';
+                }
+            } catch (error) {
+                const usedSpace = 2.4 * GB;
+                const percentage = (usedSpace / totalCapacity) * 100;
+                gbUsedElement.textContent = `${formatBytes(usedSpace, 1)} of ${formatBytes(totalCapacity, 0)} used`;
+                storageBar.style.width = `${percentage}%`;
+                console.warn("Could not fetch capacity, showing mock data.", error);
+            }
+        }
+
+        function getOptimalChunkSize(fileSize) {
+            if (fileSize < 100 * MB) return 2 * MB;
+            if (fileSize < 500 * MB) return 5 * MB;
+            if (fileSize < 1 * GB) return 8 * MB;
+            return 16 * MB;
+        }
+
+        async function calculateChecksumHex(blob) {
+            const buffer = await blob.arrayBuffer();
+            const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
         function calculateChecksumWithWorker(blob) {
             return new Promise((resolve, reject) => {
                 if (workerPool.length === 0) {
-                     reject(new Error("Checksum worker pool not initialized."));
-                     return;
+                    reject(new Error("Checksum worker pool not initialized."));
+                    return;
                 }
                 const worker = workerPool[workerIndex];
                 workerIndex = (workerIndex + 1) % maxHasherWorkers;
@@ -965,56 +1186,1109 @@
                     }
                 };
                 worker.addEventListener('message', handleMessage);
-                worker.postMessage({ chunk: blob });
+                worker.postMessage({
+                    chunk: blob
+                });
             });
         }
 
-        function getSessionKey(file) { return `upload-session-${file.name}-${file.size}-${file.lastModified}`; }
-        function saveSession(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
-        function getSession(key) { const session = localStorage.getItem(key); return session ? JSON.parse(session) : null; }
-        function clearSession(key) { localStorage.removeItem(key); }
-        function showUploadPanel() { const panel = document.getElementById('upload-progress-panel'); panel.classList.remove('translate-y-[calc(100%+2rem)]', 'opacity-0'); }
-        function updateUploadPanelTitle() { const title = document.getElementById('upload-panel-title'); const completed = uploadQueue.filter(item => item.status === 'complete').length; const total = uploadQueue.length; if (activeUploads === 0 && uploadQueue.every(item => item.status === 'complete' || item.status === 'error' || item.status === 'cancelled')) { title.textContent = `${completed} of ${total} uploads complete`; } else { const remaining = uploadQueue.filter(item => item.status === 'pending' || item.status === 'uploading').length; title.textContent = `Uploading ${activeUploads} of ${remaining} files...`; } }
-        function createUploadItemUI(uploadItem) { const container = document.getElementById('upload-items-container'); const itemEl = document.createElement('div'); itemEl.id = `upload-${uploadItem.id}`; itemEl.className = 'flex items-center p-2 bg-surface-2 rounded-md'; const { icon, color } = getFileIcon(uploadItem.file.name); itemEl.innerHTML = `<div class="flex-shrink-0 w-8 flex items-center justify-center"><i class="far ${icon} text-lg ${color}"></i></div><div class="flex-1 overflow-hidden ml-3"><p class="text-sm font-medium truncate text-text-primary" title="${uploadItem.objectKey}">${uploadItem.objectKey}</p><p class="status-text text-xs text-text-secondary mt-0.5">Waiting...</p></div><div class="status-icon text-lg ml-3 w-6 h-6 flex items-center justify-center"><button class="cancel-btn w-6 h-6 rounded-full hover:bg-surface-1 flex items-center justify-center"><i class="fas fa-times text-xs"></i></button></div>`; container.appendChild(itemEl); itemEl.querySelector('.cancel-btn').onclick = () => { if (uploadItem.controller) { uploadItem.controller.abort(); } uploadItem.status = 'cancelled'; const itemUI = document.getElementById(`upload-${uploadItem.id}`); itemUI.querySelector('.status-text').textContent = 'Cancelled'; itemUI.querySelector('.status-icon').innerHTML = `<i class="fas fa-ban text-red-500"></i>`; if (activeUploads > 0) { activeUploads--; } processUploadQueue(); }; }
-        function processUploadQueue() { updateUploadPanelTitle(); while (activeUploads < MAX_CONCURRENT_UPLOADS && uploadQueue.some(item => item.status === 'pending')) { const nextUpload = uploadQueue.find(item => item.status === 'pending'); if (nextUpload) { activeUploads++; nextUpload.status = 'uploading'; startUpload(nextUpload); } } }
-        async function handleFileUploadRequest() { const files = filesToUpload; const fragment = document.getElementById('fragmentInput').value.trim(); let basePath = document.getElementById('pathPrefixInput').value.trim(); const uploadMethod = document.getElementById('uploadMethodSelect').value; if (basePath && !basePath.endsWith('/')) { basePath += '/'; } if (!files || files.length === 0) { showToast('Please select files or a folder to upload.', 'error'); return; } if (!fragment) { showToast('Please provide a fragment name.', 'error'); return; } if (!token) { showToast('Authentication details are missing.', 'error'); return; } showUploadPanel(); for (const file of files) { const objectKey = basePath + (file.webkitRelativePath || file.name); const uploadItem = { id: crypto.randomUUID(), file: file, fragment: fragment, objectKey: objectKey, status: 'pending', controller: new AbortController(), uploadMethod: uploadMethod }; uploadQueue.push(uploadItem); createUploadItemUI(uploadItem); } processUploadQueue(); document.getElementById('uploadModal').classList.add('hidden'); resetUploadModal(); }
-        async function startUpload(uploadItem) { const { file, id, objectKey } = uploadItem; const sessionKey = `upload-session-${objectKey}-${file.size}-${file.lastModified}`; const ui = { statusText: document.querySelector(`#upload-${id} .status-text`), statusIcon: document.querySelector(`#upload-${id} .status-icon`), }; ui.statusText.textContent = 'Starting...'; ui.statusIcon.innerHTML = `<svg class="progress-ring w-full h-full" viewBox="0 0 36 36"><circle stroke-width="3" stroke="var(--surface-1)" fill="transparent" r="15.9155" cx="18" cy="18"/><circle class="progress-ring__bar" stroke-width="3" stroke="var(--primary)" fill="transparent" r="15.9155" cx="18" cy="18" style="stroke-dasharray: 100, 100; stroke-dashoffset: 100; transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke-dashoffset 0.3s;"/></svg>`; ui.progressBar = ui.statusIcon.querySelector('.progress-ring__bar'); try { const existingSession = getSession(sessionKey); if (existingSession && existingSession.file_id) { ui.statusText.textContent = 'Resuming...'; await resumeChunkedFile(uploadItem, existingSession.file_id, sessionKey, ui); } else { await uploadChunkedFile(uploadItem, sessionKey, ui); } uploadItem.status = 'complete'; if (ui.progressBar) ui.progressBar.style.strokeDashoffset = 0; ui.statusText.textContent = 'Completed'; ui.statusIcon.innerHTML = `<i class="fas fa-check-circle text-green-500"></i>`; clearSession(sessionKey); await updateCapacityDisplay(); if (uploadItem.fragment === activeFragment) { await listObjects(activeFragment); } } catch (err) { if (err.name !== 'AbortError' && uploadItem.status !== 'cancelled') { console.error('Upload failed:', err); uploadItem.status = 'error'; ui.statusText.textContent = `Error: ${err.message.substring(0, 30)}...`; ui.statusIcon.innerHTML = `<i class="fas fa-exclamation-circle text-red-500"></i>`; clearSession(sessionKey); } } finally { activeUploads--; processUploadQueue(); } }
-        async function uploadChunkedFile(uploadItem, sessionKey, ui) { const { file, fragment, objectKey, controller, uploadMethod } = uploadItem; const fileSize = file.size; const chunkSize = getOptimalChunkSize(fileSize); const totalChunks = Math.ceil(fileSize / chunkSize); const initiateResponse = await fetch(`${serverLink}/v4/fragment/object/upload/init/${fragment}/${objectKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json', authorization: `Bearer ${token}` }, body: JSON.stringify({ content_type: file.type || 'application/octet-stream', total_size_bytes: fileSize, total_chunks: totalChunks, }), signal: controller.signal }); if (!initiateResponse.ok) throw new Error(`${await initiateResponse.text()}`); const { file_id } = await initiateResponse.json(); 
+        function getSessionKey(file) {
+            return `upload-session-${file.name}-${file.size}-${file.lastModified}`;
+        }
 
-        const sessionData = { file_id: file_id, name: file.name, size: file.size, lastModified: file.lastModified, fragment: fragment, objectKey: objectKey, uploadMethod: uploadMethod }; saveSession(sessionKey, sessionData); const allChunks = Array.from({ length: totalChunks }, (_, i) => i); await processAndFinalizeChunks(uploadItem, file_id, allChunks, 0, ui); }
-        async function resumeChunkedFile(uploadItem, file_id, sessionKey, ui) { const { file, controller } = uploadItem; const statusResponse = await fetch(`${serverLink}/v4/fragment/object/upload/status/${file_id}`, { headers: { authorization: `Bearer ${token}` }, signal: controller.signal }); if (!statusResponse.ok) { showToast('Could not resume. Starting a new upload.', 'warning'); clearSession(sessionKey); await uploadChunkedFile(uploadItem, sessionKey, ui); return; } const status = await statusResponse.json(); const chunkSize = getOptimalChunkSize(file.size); const uploadedChunks = new Set(status.uploaded_chunks); const allChunks = Array.from({ length: status.total_chunks }, (_, i) => i); const chunksToUpload = allChunks.filter(i => !uploadedChunks.has(i)); const alreadyUploadedBytes = uploadedChunks.size * chunkSize; await processAndFinalizeChunks(uploadItem, file_id, chunksToUpload, alreadyUploadedBytes, ui); }
-        async function processAndFinalizeChunks(uploadItem, file_id, chunkQueue, initialUploadedBytes, ui) { const { file, controller, uploadMethod } = uploadItem; const fileSize = file.size; const chunkSize = getOptimalChunkSize(fileSize); let uploadedBytes = initialUploadedBytes; let lastUploadedBytes = initialUploadedBytes; let lastTime = performance.now(); let speeds = []; let maxWorkers = Math.min(navigator.hardwareConcurrency || 4, 8); const MAX_WORKERS_CAP = 16; const updateProgress = () => { const progress = Math.round((uploadedBytes / fileSize) * 100); if (ui.progressBar) { const offset = 100 - progress; ui.progressBar.style.strokeDashoffset = offset; } const now = performance.now(); const timeDiff = (now - lastTime) / 1000; if (timeDiff > 0.5) { const bytesDiff = uploadedBytes - lastUploadedBytes; const currentSpeed = bytesDiff / timeDiff; if (currentSpeed > 0) { speeds.push(currentSpeed); if (speeds.length > 10) speeds.shift(); } const avgSpeed = speeds.length > 0 ? speeds.reduce((a, b) => a + b, 0) / speeds.length : 0; const remainingBytes = fileSize - uploadedBytes; const estTime = avgSpeed > 0 ? remainingBytes / avgSpeed : 0; ui.statusText.textContent = `Uploading... ${formatBytes(avgSpeed)}/s, ETA: ${formatTime(estTime)}`; lastTime = now; lastUploadedBytes = uploadedBytes; if (avgSpeed > 2 * MB && maxWorkers < MAX_WORKERS_CAP) { maxWorkers = Math.min(maxWorkers + 1, MAX_WORKERS_CAP); } } }; updateProgress(); const uploadChunk = async (chunkIndex) => { const start = chunkIndex * chunkSize; const end = Math.min(start + chunkSize, fileSize); const blob = file.slice(start, end); for (let retries = 3; retries > 0; retries--) { if (controller.signal.aborted) throw new Error('Upload cancelled'); try { let response; if (uploadMethod === 'binary') { const hexChecksum = await calculateChecksumWithWorker(blob); console.log(`Sending Chunk ${chunkIndex}: Size=${blob.size}, Method=Binary, Checksum=${hexChecksum}`); const url = `${serverLink}/v4/fragment/object/upload/chunk/raw/${file_id}/${chunkIndex}`; response = await fetch(url, { method: 'PUT', headers: { 'authorization': `Bearer ${token}`, 'Content-Type': 'application/octet-stream', 'Digest': `sha256=${hexChecksum}` }, body: blob, signal: controller.signal }); } else { const hexChecksum = await calculateChecksumHex(blob); console.log(`Sending Chunk ${chunkIndex}: Size=${blob.size}, Method=Multipart, Checksum=${hexChecksum}`); const formData = new FormData(); formData.append('chunk', blob); const url = `${serverLink}/v4/fragment/object/upload/chunk/${file_id}/${chunkIndex}?checksum=${hexChecksum}`; response = await fetch(url, { method: 'PUT', headers: { authorization: `Bearer ${token}` }, body: formData, signal: controller.signal }); } if (!response.ok) throw new Error(`Chunk ${chunkIndex} failed: ${await response.text()}`); uploadedBytes += blob.size; updateProgress(); return; } catch (err) { if (err.name === 'AbortError') throw err; if (retries === 1) throw err; maxWorkers = Math.max(2, maxWorkers - 1); await new Promise(r => setTimeout(r, 2000)); } } }; await new Promise((resolve, reject) => { let activeWorkersCount = 0; let uploadFailedError = null; const processSingleChunk = async () => { if (uploadFailedError) return; activeWorkersCount++; while (chunkQueue.length > 0) { if (uploadFailedError) break; const chunkIndex = chunkQueue.shift(); if (chunkIndex === undefined) break; try { await uploadChunk(chunkIndex); } catch (err) { uploadFailedError = err; reject(err); break; } } activeWorkersCount--; if (activeWorkersCount === 0 && chunkQueue.length === 0) { uploadFailedError ? reject(uploadFailedError) : resolve(); } }; const workerManager = setInterval(() => { if (chunkQueue.length === 0 || uploadFailedError) { clearInterval(workerManager); return; } while (activeWorkersCount < maxWorkers && chunkQueue.length > 0) { processSingleChunk(); } }, 100); const initialWorkers = Math.min(maxWorkers, chunkQueue.length); for (let i = 0; i < initialWorkers; i++) { processSingleChunk(); } }); const finalizeResponse = await fetch(`${serverLink}/v4/fragment/object/upload/finalize/${file_id}`, { method: 'POST', headers: { authorization: `Bearer ${token}` }, signal: controller.signal }); if (!finalizeResponse.ok) throw new Error('Failed to finalize upload.'); }
-        function createResumableUploadItemUI(sessionKey, sessionData) { const container = document.getElementById('upload-items-container'); const itemEl = document.createElement('div'); const itemId = `resume-${sessionKey.replace(/[^a-zA-Z0-9]/g, '')}`; itemEl.id = itemId; itemEl.className = 'flex items-center p-2 bg-surface-2 rounded-md'; const { icon, color } = getFileIcon(sessionData.name); 
+        function saveSession(key, data) {
+            localStorage.setItem(key, JSON.stringify(data));
+        }
 
-        itemEl.innerHTML = ` <div class="flex-shrink-0 w-8 flex items-center justify-center"> <i class="far ${icon} text-lg ${color}"></i> </div> <div class="flex-1 overflow-hidden ml-3"> <p class="text-sm font-medium truncate text-text-primary" title="${sessionData.objectKey}">${sessionData.objectKey}</p> <p class="status-text text-xs text-yellow-400 mt-0.5">Interrupted</p> </div> <div class="status-icon text-lg ml-3 flex items-center justify-center gap-2"> <button class="resume-btn w-8 h-6 rounded-md bg-green-600 hover:bg-green-700 flex items-center justify-center" title="Resume Upload"> <i class="fas fa-play text-xs"></i> </button> <button class="remove-session-btn w-8 h-6 rounded-md bg-red-600 hover:bg-red-700 flex items-center justify-center" title="Cancel Upload"> <i class="fas fa-times text-xs"></i> </button> </div> `; container.appendChild(itemEl); showUploadPanel(); itemEl.querySelector('.resume-btn').onclick = () => { const resumeInput = document.getElementById('resumeFileInput'); resumeInput.dataset.sessionKey = sessionKey; resumeInput.click(); }; itemEl.querySelector('.remove-session-btn').onclick = () => { clearSession(sessionKey); itemEl.remove(); showToast('Upload cancelled and removed.', 'info'); updateUploadPanelTitle(); }; }
-        function loadUnfinishedUploads() { const resumeInput = document.getElementById('resumeFileInput'); let hasUnfinished = false; for (let i = 0; i < localStorage.length; i++) { const key = localStorage.key(i); if (key.startsWith('upload-session-')) { const sessionData = getSession(key); if (sessionData && sessionData.name && sessionData.size) { if (!uploadQueue.some(item => getSessionKey(item.file) === key)) { createResumableUploadItemUI(key, sessionData); hasUnfinished = true; } } } } if (hasUnfinished) { document.getElementById('upload-panel-title').textContent = 'Unfinished uploads found'; } resumeInput.addEventListener('change', async (e) => { const file = e.target.files[0]; const sessionKey = e.target.dataset.sessionKey; if (!file || !sessionKey) return; const sessionData = getSession(sessionKey); if (!sessionData) { showToast('Upload session not found.', 'error'); return; } if (file.name === sessionData.name && file.size === sessionData.size && file.lastModified === sessionData.lastModified) { const itemId = `resume-${sessionKey.replace(/[^a-zA-Z0-9]/g, '')}`; document.getElementById(itemId)?.remove(); 
-        const uploadItem = { id: crypto.randomUUID(), file: file, fragment: sessionData.fragment, objectKey: sessionData.objectKey, status: 'pending', controller: new AbortController(), uploadMethod: sessionData.uploadMethod || 'binary' }; uploadQueue.push(uploadItem); createUploadItemUI(uploadItem); processUploadQueue(); showToast(`Resuming upload for ${file.name}`, 'success'); } else { showToast('Incorrect file selected. Please choose the original file.', 'error'); } e.target.value = ''; delete e.target.dataset.sessionKey; }); }
+        function getSession(key) {
+            const session = localStorage.getItem(key);
+            return session ? JSON.parse(session) : null;
+        }
 
-        function navigateBack() { if (currentPath === '') return; let pathParts = currentPath.split('/').filter(p => p); pathParts.pop(); let newPath = pathParts.join('/') + (pathParts.length > 0 ? '/' : ''); navigateTo(newPath); }
-        function navigateTo(path) { currentAppView = 'browser'; currentPath = path; const searchInput = document.getElementById('searchInput'); if (searchInput.value) { searchInput.value = ''; } renderObjects(currentObjectList); }
-        function renderObjects(objects) { const listContainer = document.getElementById('objectList'); const breadcrumbContainer = document.getElementById('breadcrumb'); const backBtn = document.getElementById('back-btn'); listContainer.innerHTML = ''; breadcrumbContainer.innerHTML = ''; document.getElementById('load-more-container').innerHTML = ''; if (currentPath) { backBtn.classList.remove('hidden'); } else { backBtn.classList.add('hidden'); } const pathParts = currentPath.split('/').filter(p => p); let pathAccumulator = ''; const rootCrumb = document.createElement('a'); rootCrumb.href = '#'; rootCrumb.className = 'text-text-primary hover:text-primary transition-colors'; rootCrumb.textContent = activeFragment ? (activeFragment.charAt(0).toUpperCase() + activeFragment.slice(1)) : 'Files'; rootCrumb.onclick = (e) => { e.preventDefault(); navigateTo(''); }; breadcrumbContainer.appendChild(rootCrumb); pathParts.forEach(part => { pathAccumulator += part + '/'; const separator = document.createElement('span'); separator.className = 'mx-2 text-text-secondary'; separator.textContent = '/'; breadcrumbContainer.appendChild(separator); const partCrumb = document.createElement('a'); partCrumb.href = '#'; partCrumb.className = 'text-text-primary hover:text-primary transition-colors'; partCrumb.textContent = part; const finalPath = pathAccumulator; partCrumb.onclick = (e) => { e.preventDefault(); navigateTo(finalPath); }; breadcrumbContainer.appendChild(partCrumb); }); document.getElementById('main-title').textContent = pathParts.length > 0 ? pathParts[pathParts.length - 1] : 'My Files'; const folders = new Set(); const fileGroups = new Map(); objects.forEach(obj => { if (obj.key.startsWith(currentPath)) { const relativePath = obj.key.substring(currentPath.length); const slashIndex = relativePath.indexOf('/'); if (slashIndex !== -1 && slashIndex > 0) { folders.add(relativePath.substring(0, slashIndex)); } else if (slashIndex === -1 && relativePath.length > 0) { if (!fileGroups.has(obj.key)) { fileGroups.set(obj.key, []); } fileGroups.get(obj.key).push(obj); } } }); fileGroups.forEach(versions => { versions.sort((a, b) => new Date(Number(b.last_modified.$date.$numberLong)) - new Date(Number(a.last_modified.$date.$numberLong))); }); if (folders.size === 0 && fileGroups.size === 0 && clientSideFolders.filter(f => f.path === currentPath).length === 0) { listContainer.className = 'w-full'; listContainer.innerHTML = '<div class="text-center py-16 text-text-secondary col-span-full"><i class="fas fa-folder-open text-4xl mb-4"></i><p>This folder is empty.</p></div>'; return; } const sortedFolders = Array.from(folders).sort(); const sortedFileGroups = Array.from(fileGroups.values()).sort((a, b) => { const dateA = new Date(Number(a[0].last_modified.$date.$numberLong)); const dateB = new Date(Number(b[0].last_modified.$date.$numberLong)); return dateB - dateA; }); const currentVirtualFolders = clientSideFolders.filter(f => f.path === currentPath).sort((a, b) => a.name.localeCompare(b.name)); allRenderableItems = [...currentVirtualFolders.map(f => ({ type: 'folder', name: f.name })), ...sortedFolders.map(name => ({ type: 'folder', name })), ...sortedFileGroups.map(versions => ({ type: 'file', data: versions }))]; currentlyDisplayedCount = 0; if (currentView === 'tiles') { listContainer.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4'; } else { listContainer.className = 'space-y-1'; const header = document.createElement('div'); header.className = 'hidden sm:flex items-center px-4 py-2 text-xs text-text-secondary border-b border-border font-semibold sticky top-0 bg-background z-10'; header.innerHTML = `<div class="w-1/2 flex items-center">Name</div><div class="w-1/4">Last Modified</div><div class="w-1/4">File Size</div><div class="w-20"></div>`; listContainer.appendChild(header); } loadMoreItems(); }
-        function loadMoreItems() { const nextBatch = allRenderableItems.slice(currentlyDisplayedCount, currentlyDisplayedCount + RENDER_BATCH_SIZE); if (nextBatch.length === 0) return; if (currentView === 'tiles') { appendTiles(nextBatch); } else { appendListItems(nextBatch); } currentlyDisplayedCount += nextBatch.length; updateLoadMoreButton(); }
-        function updateLoadMoreButton() { const container = document.getElementById('load-more-container'); container.innerHTML = ''; if (currentlyDisplayedCount < allRenderableItems.length) { const button = document.createElement('button'); button.textContent = 'Load More'; button.className = 'bg-surface-1 hover:bg-surface-2 text-text-primary font-semibold py-2 px-4 rounded-lg transition-colors'; button.onclick = loadMoreItems; container.appendChild(button); } }
-        function appendTiles(items) { const listContainer = document.getElementById('objectList'); items.forEach(itemData => { if (itemData.type === 'folder') { const item = document.createElement('div'); const newPath = currentPath + itemData.name + '/'; item.className = 'relative group bg-surface-1 rounded-lg cursor-pointer transition-all border border-border hover:border-primary flex flex-col overflow-hidden'; item.innerHTML = ` <div class="h-32 flex items-center justify-center bg-surface-1 rounded-t-lg"> <i class="fas fa-folder text-5xl text-primary"></i> </div> <div class="p-3 border-t border-border"> <p class="font-semibold text-text-primary truncate" title="${itemData.name}">${itemData.name}</p> <p class="text-xs text-text-secondary mt-1">Folder</p> </div><button data-action="more" title="More actions" class="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 hover:bg-surface-2 flex items-center justify-center text-text-secondary hover:text-primary transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0"><i class="fas fa-ellipsis-h"></i></button> `; item.querySelector('[data-action="more"]').addEventListener('click', e => { e.stopPropagation(); showContextMenu(e.currentTarget, itemData); }); item.addEventListener('click', (e) => { if (!e.target.closest('[data-action="more"]')) { navigateTo(newPath); } }); listContainer.appendChild(item); } else { const versions = itemData.data; const latestVersion = versions[0]; const obj = latestVersion; const item = document.createElement('div'); const relativePath = obj.key.substring(currentPath.length); const extension = relativePath.split('.').pop().toLowerCase(); const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension); const isPending = obj.status === 'Pending'; item.className = `relative group bg-surface-1 rounded-lg cursor-pointer transition-all border border-border hover:border-primary flex flex-col overflow-hidden ${isPending ? 'status-pending' : ''}`; let thumbnailHTML; if (isImage) { thumbnailHTML = `<div class="w-full h-32 flex items-center justify-center bg-black rounded-t-lg overflow-hidden"><i class="far fa-file-image text-4xl text-text-secondary image-placeholder"></i><img data-key="${obj.key}" class="image-preview w-full h-full object-cover hidden" src="" alt="${relativePath}"></div>`; } else { const { icon, color } = getFileIcon(obj.key); thumbnailHTML = `<div class="w-full h-32 flex items-center justify-center bg-surface-1 rounded-t-lg"><i class="far ${icon} text-5xl ${color}"></i></div>`; } let versionTag = versions.length > 1 ? `<span class="absolute top-2 left-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full">${versions.length} versions</span>` : ''; let statusIcon = isPending ? `<span class="absolute bottom-2 right-2 text-yellow-400" title="Pending"><i class="fas fa-clock"></i></span>` : ''; item.innerHTML = `${thumbnailHTML}<div class="p-3 border-t border-border">${versionTag}<p class="font-semibold text-text-primary truncate" title="${relativePath}">${relativePath}</p><p class="text-xs text-text-secondary mt-1">${new Date(Number(obj.last_modified.$date.$numberLong)).toLocaleDateString()} &middot; ${formatBytes(obj.size_bytes)}</p>${statusIcon}</div><button data-action="more" title="More actions" class="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 hover:bg-surface-2 flex items-center justify-center text-text-secondary hover:text-primary transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0"><i class="fas fa-ellipsis-h"></i></button>`; item.querySelector('[data-action="more"]').addEventListener('click', e => { e.stopPropagation(); showContextMenu(e.currentTarget, { type: 'file', data: obj }); }); item.addEventListener('click', (e) => { if (!e.target.closest('[data-action="more"]')) { handleObjectAction('view', obj.fragment, obj.key); } }); listContainer.appendChild(item); if (isImage && !isPending) { getShareableUrl(obj.fragment, obj.key, 'view', 3600).then(url => { const imgElement = item.querySelector(`img[data-key="${obj.key}"]`); const placeholderElement = item.querySelector('.image-placeholder'); if (imgElement) { imgElement.src = url; imgElement.onload = () => { imgElement.classList.remove('hidden'); if (placeholderElement) placeholderElement.classList.add('hidden'); }; } }).catch(err => console.error(`Failed to load thumbnail for ${obj.key}:`, err)); } } }); }
-        function appendListItems(items) { const listContainer = document.getElementById('objectList'); items.forEach(itemData => { if (itemData.type === 'folder') { const item = document.createElement('div'); const newPath = currentPath + itemData.name + '/'; item.className = 'file-item flex items-center px-4 py-3 hover:bg-surface-1 rounded-lg transition-colors cursor-pointer group'; item.innerHTML = `<div class="flex items-center w-full sm:w-1/2"><i class="fas fa-folder text-xl text-primary w-8 text-center"></i><span class="font-medium text-text-primary truncate ml-4">${itemData.name}</span></div><div class="hidden sm:block w-1/4 text-sm text-text-secondary">--</div><div class="hidden sm:block w-1/4 text-sm text-text-secondary">--</div><div class="w-20 flex justify-end ml-auto"><div class="file-actions opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center gap-1"><button data-action="more" title="More actions" class="w-8 h-8 rounded-full hover:bg-surface-2 flex items-center justify-center text-text-secondary hover:text-primary transition-colors"><i class="fas fa-ellipsis-v"></i></button></div></div>`; item.querySelector('[data-action="more"]').addEventListener('click', e => { e.stopPropagation(); showContextMenu(e.currentTarget, itemData); }); item.addEventListener('click', e => { if (!e.target.closest('[data-action="more"]')) { navigateTo(newPath); } }); listContainer.appendChild(item); } else { const versions = itemData.data; const latestVersion = versions[0]; const obj = latestVersion; const item = document.createElement('div'); const relativePath = obj.key.substring(currentPath.length); const { icon, color } = getFileIcon(relativePath); const isPending = obj.status === 'Pending'; let versionTag = versions.length > 1 ? `<span class="ml-2 bg-blue-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">${versions.length} versions</span>` : ''; let statusIcon = isPending ? `<i class="fas fa-clock text-yellow-400 ml-2" title="Pending"></i>` : ''; item.className = `file-item flex items-center px-4 py-3 hover:bg-surface-1 rounded-lg transition-colors cursor-pointer group ${isPending ? 'status-pending' : ''}`; item.innerHTML = `<div class="flex items-center w-full sm:w-1/2" title="${relativePath}"><i class="far ${icon} text-xl ${color} w-8 text-center"></i><span class="font-medium text-text-primary truncate ml-4">${relativePath}</span>${versionTag}${statusIcon}</div><div class="hidden sm:block w-1/4 text-sm text-text-secondary">${new Date(Number(obj.last_modified.$date.$numberLong)).toLocaleDateString()}</div><div class="hidden sm:block w-1/4 text-sm text-text-secondary">${formatBytes(obj.size_bytes)}</div><div class="w-20 flex justify-end ml-auto"><div class="file-actions opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center gap-1"><button data-action="more" title="More actions" class="w-8 h-8 rounded-full hover:bg-surface-2 flex items-center justify-center text-text-secondary hover:text-primary transition-colors"><i class="fas fa-ellipsis-v"></i></button></div></div>`; item.querySelector('[data-action="more"]').addEventListener('click', e => { e.stopPropagation(); showContextMenu(e.currentTarget, { type: 'file', data: obj }); }); item.addEventListener('click', e => { if (!e.target.closest('[data-action="more"]')) { handleObjectAction('view', obj.fragment, obj.key); } }); listContainer.appendChild(item); } }); }
-        async function listObjects(fragment) { currentAppView = 'browser'; clientSideFolders = []; if (!fragment) { document.getElementById('objectList').innerHTML = '<div class="text-center py-16 text-text-secondary col-span-full"><i class="fas fa-exclamation-circle text-4xl mb-4"></i><p>No fragments found. Please upload a file to create one.</p></div>'; return; } document.getElementById('browserSpinner').style.display = 'flex'; document.getElementById('objectList').innerHTML = ''; try { const response = await fetch(`${serverLink}/v4/fragment/object/metadata/${fragment}?show_all=true`, { headers: { authorization: `Bearer ${token}` } }); if (!response.ok) throw new Error(`Server responded with ${response.status}`); const objects = await response.json(); currentObjectList = objects; renderObjects(objects); } catch (err) { showToast(`Failed to list objects: ${err.message}`, 'error'); document.getElementById('objectList').innerHTML = `<div class="text-center py-16 text-red-500 col-span-full"><i class="fas fa-exclamation-triangle text-4xl mb-4"></i><p>Error loading objects.</p></div>`; } finally { document.getElementById('browserSpinner').style.display = 'none'; } }
-        async function loadFragments() { const fragmentList = document.getElementById('fragmentList'); if (!fragmentList) { console.error("Fatal: fragmentList element not found."); return; } try { const response = await fetch(`${serverLink}/v4/fragment/metadata`, { headers: { authorization: `Bearer ${token}` } }); if (!response.ok) throw new Error(`Server responded with ${response.status}`); const fragments = await response.json(); fragmentList.innerHTML = ''; if (fragments.length > 0) { if (!fragments.includes(activeFragment)) { activeFragment = fragments[0]; currentPath = ''; } fragments.forEach((fragment) => { const item = document.createElement('a'); item.href = '#'; item.className = `fragment-item nav-item flex items-center px-2 py-2 font-medium rounded-md`; if (fragment === activeFragment) { item.classList.add('active'); } else { item.classList.add('text-text-secondary', 'hover:bg-surface-1', 'hover:text-text-primary'); } item.innerHTML = `<i class="fas fa-database w-6 mr-2"></i><span>${fragment}</span>`; fragmentList.appendChild(item); }); listObjects(activeFragment); } else { activeFragment = ''; currentPath = ''; listObjects(null); } } catch (err) { showToast(`Failed to load fragments: ${err.message}`, 'error'); fragmentList.innerHTML = `<div class="p-4 text-xs text-red-500">Could not load fragments.</div>`; listObjects(null); } }
-        function filterObjects() { const query = document.getElementById('searchInput').value.toLowerCase(); const breadcrumb = document.getElementById('breadcrumb'); if (!query) { renderObjects(currentObjectList); return; } breadcrumb.innerHTML = `<span class="text-xl font-bold">Search Results</span>`; const filtered = currentObjectList.filter(obj => obj.key.toLowerCase().includes(query)); renderFlatList(filtered); }
-        function renderFlatList(objects) { const listContainer = document.getElementById('objectList'); listContainer.innerHTML = ''; if (objects.length === 0) { listContainer.className = 'w-full'; listContainer.innerHTML = '<div class="text-center py-16 text-text-secondary col-span-full"><i class="fas fa-search text-4xl mb-4"></i><p>No objects found.</p></div>'; return; } listContainer.className = 'space-y-1'; const header = document.createElement('div'); header.className = 'hidden sm:flex items-center px-4 py-2 text-xs text-text-secondary border-b border-border font-semibold sticky top-0 bg-background z-10'; header.innerHTML = `<div class="w-1/2 flex items-center">Name</div><div class="w-1/4">Last Modified</div><div class="w-1/4">File Size</div><div class="w-20"></div>`; listContainer.appendChild(header); objects.forEach(obj => { const item = document.createElement('div'); const isPending = obj.status === 'Pending'; item.className = `file-item flex items-center px-4 py-3 hover:bg-surface-1 rounded-lg transition-colors cursor-pointer group ${isPending ? 'status-pending' : ''}`; const { icon, color } = getFileIcon(obj.key); let statusIcon = isPending ? `<i class="fas fa-clock text-yellow-400 ml-2" title="Pending"></i>` : ''; item.innerHTML = ` <div class="flex items-center w-full sm:w-1/2" title="${obj.key}"> <i class="far ${icon} text-xl ${color} w-8 text-center"></i> <span class="font-medium text-text-primary truncate ml-4">${obj.key}</span> ${statusIcon} </div> <div class="hidden sm:block w-1/4 text-sm text-text-secondary">${new Date(Number(obj.last_modified.$date.$numberLong)).toLocaleDateString()}</div> <div class="hidden sm:block w-1/4 text-sm text-text-secondary">${formatBytes(obj.size_bytes)}</div> <div class="w-20 flex justify-end ml-auto"> <div class="file-actions opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center gap-1"> <button data-action="more" title="More actions" class="w-8 h-8 rounded-full hover:bg-surface-2 flex items-center justify-center text-text-secondary hover:text-primary transition-colors"><i class="fas fa-ellipsis-v"></i></button> </div> </div> `; item.querySelector('[data-action="more"]').addEventListener('click', e => { e.stopPropagation(); showContextMenu(e.currentTarget, { type: 'file', data: obj }); }); item.addEventListener('click', e => { if (!e.target.closest('[data-action="more"]')) { handleObjectAction('view', obj.fragment, obj.key); } }); listContainer.appendChild(item); }); }
-        async function getShareableUrl(fragment, key, disposition = 'view', expiresIn = 3600) { try { const response = await fetch(`${serverLink}/v4/fragment/object/share`, { method: 'POST', headers: { 'Content-Type': 'application/json', authorization: `Bearer ${token}` }, body: JSON.stringify({ fragment, object_key: key, expires_in: expiresIn, disposition }) }); if (!response.ok) { const errorText = await response.text(); throw new Error(errorText || `Server responded with ${response.status}`); } const data = await response.json(); return data.url; } catch (err) { console.error(`Failed to generate shareable URL: ${err.message}`); throw err; } }
-        async function handleObjectAction(action, fragment, key, type = 'file') { try { switch (action) { case 'view': { showFileViewerModal(key); const extension = key.split('.').pop().toLowerCase(); const isVideo = ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv'].includes(extension); const disposition = isVideo ? 'stream' : 'view'; const viewUrl = await getShareableUrl(fragment, key, disposition); if (viewUrl) { await renderFileViewerContent(viewUrl, key); } else { throw new Error("Could not generate a viewable link."); } break; } case 'download': { showToast('Preparing download...', 'info', 3000); const downloadUrl = await getShareableUrl(fragment, key, 'download'); if (downloadUrl) { const a = document.createElement('a'); a.href = downloadUrl; a.download = key.split('/').pop() || 'download'; document.body.appendChild(a); a.click(); document.body.removeChild(a); } else { throw new Error("Could not generate a download link."); } break; } case 'delete': showDeleteModal(fragment, key, type); break; case 'rename': showRenameModal(fragment, key); break; case 'share': showShareModal(fragment, key); break; } } catch (err) { showToast(`Action failed: ${err.message}`, 'error'); if (action === 'view') { closeFileViewerModal(); } } }
-        function showContextMenu(button, itemData) { const menu = document.getElementById('contextMenu'); if (itemData.type === 'file') { const object = itemData.data; menu.innerHTML = `<a href="#" data-action="view" class="flex items-center px-4 py-2 hover:bg-surface-1"><i class="fas fa-eye w-6 mr-2"></i>View</a><a href="#" data-action="share" class="flex items-center px-4 py-2 hover:bg-surface-1"><i class="fas fa-share-alt w-6 mr-2"></i>Share</a><a href="#" data-action="rename" class="flex items-center px-4 py-2 hover:bg-surface-1"><i class="fas fa-pencil-alt w-6 mr-2"></i>Rename</a><a href="#" data-action="download" class="flex items-center px-4 py-2 hover:bg-surface-1"><i class="fas fa-download w-6 mr-2"></i>Download</a><div class="my-1 border-t border-border"></div><a href="#" data-action="delete" class="flex items-center px-4 py-2 text-red-500 hover:bg-surface-1"><i class="fas fa-trash w-6 mr-2"></i>Delete</a>`; menu.onclick = (e) => { e.preventDefault(); const target = e.target.closest('a'); if (target) { const action = target.dataset.action; handleObjectAction(action, object.fragment, object.key, 'file'); menu.classList.add('hidden'); } }; } else if (itemData.type === 'folder') { const folderPrefix = currentPath + itemData.name + '/'; menu.innerHTML = `<a href="#" data-action="delete" class="flex items-center px-4 py-2 text-red-500 hover:bg-surface-1"><i class="fas fa-trash w-6 mr-2"></i>Delete Folder</a>`; menu.onclick = (e) => { e.preventDefault(); const target = e.target.closest('a'); if (target) { const action = target.dataset.action; handleObjectAction(action, activeFragment, folderPrefix, 'folder'); menu.classList.add('hidden'); } }; } const rect = button.getBoundingClientRect(); menu.classList.remove('hidden'); const menuWidth = menu.offsetWidth; const menuHeight = menu.offsetHeight; let top = rect.bottom + window.scrollY; let left = rect.right + window.scrollX - menuWidth; if (left < 8) { left = 8; } if (left + menuWidth > document.documentElement.clientWidth) { left = document.documentElement.clientWidth - menuWidth - 8; } if (top + menuHeight > document.documentElement.clientHeight + window.scrollY) { top = rect.top + window.scrollY - menuHeight; } if (top < window.scrollY) { top = window.scrollY + 8; } menu.style.top = `${top}px`; menu.style.left = `${left}px`; }
-        function showDeleteModal(fragment, keyOrPrefix, type) { const modal = document.getElementById('deleteModal'); const modalText = document.getElementById('deleteModalText'); if (type === 'folder') { modalText.textContent = `Are you sure you want to delete this folder and all its contents? This action cannot be undone.`; } else { modalText.textContent = 'Are you sure you want to delete this object? This action cannot be undone.'; } modal.classList.remove('hidden'); modal.classList.add('flex'); document.getElementById('confirmDeleteBtn').onclick = async () => { try { let response; if (type === 'folder') { response = await fetch(`${serverLink}/v4/fragment/object/delete/prefix`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', authorization: `Bearer ${token}` }, body: JSON.stringify({ fragment: fragment, prefix: keyOrPrefix }) }); } else { response = await fetch(`${serverLink}/v4/fragment/object/delete/${fragment}/${keyOrPrefix}`, { method: 'DELETE', headers: { authorization: `Bearer ${token}` } }); } if (!response.ok) throw new Error(`Server responded with ${response.status}`); showToast('Object(s) deleted successfully.', 'success'); listObjects(fragment); } catch (err) { showToast(`Failed to delete: ${err.message}`, 'error'); } finally { modal.classList.add('hidden'); } }; document.getElementById('cancelDeleteBtn').onclick = () => modal.classList.add('hidden'); }
-        function showRenameModal(fragment, key) { const modal = document.getElementById('renameModal'); const input = document.getElementById('newObjectKeyInput'); input.value = key; modal.classList.remove('hidden'); modal.classList.add('flex'); document.getElementById('confirmRenameBtn').onclick = async () => { const newKey = input.value.trim(); if (!newKey || newKey === key) { showToast('Please enter a new, valid object key.', 'error'); return; } try { const response = await fetch(`${serverLink}/v4/fragment/object/rename`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', authorization: `Bearer ${token}` }, body: JSON.stringify({ source_fragment: fragment, source_key: key, destination_fragment: fragment, destination_key: newKey }) }); if (!response.ok) { const errorText = await response.text(); throw new Error(errorText || `Server responded with ${response.status}`); } showToast('Object renamed successfully.', 'success'); listObjects(fragment); } catch (err) { showToast(`Failed to rename object: ${err.message}`, 'error'); } finally { modal.classList.add('hidden'); } }; document.getElementById('cancelRenameBtn').onclick = () => modal.classList.add('hidden'); }
-        function showShareModal(fragment, key) { const modal = document.getElementById('shareModal'); const urlInput = document.getElementById('shareUrl'); urlInput.value = ''; modal.classList.remove('hidden'); modal.classList.add('flex'); document.getElementById('generateShareBtn').onclick = async () => { const disposition = document.getElementById('shareDisposition').value; const expires_in = parseInt(document.getElementById('shareExpiry').value, 10) || 3600; try { const url = await getShareableUrl(fragment, key, disposition, expires_in); urlInput.value = url; } catch (err) { showToast(`Failed to generate link: ${err.message}`, 'error'); } }; document.getElementById('copyShareUrlBtn').onclick = () => { if (urlInput.value) { navigator.clipboard.writeText(urlInput.value); showToast('URL copied to clipboard!', 'success'); } else { showToast('Generate a URL first!', 'error'); } }; document.getElementById('closeShareBtn').onclick = () => modal.classList.add('hidden'); }
+        function clearSession(key) {
+            localStorage.removeItem(key);
+        }
 
-        const fileViewerModal = document.getElementById('fileViewerModal'); const fileViewerTitle = document.getElementById('fileViewerTitle'); const fileViewerContent = document.getElementById('fileViewerContent'); const fileViewerSpinner = document.getElementById('fileViewerSpinner');
+        function showUploadPanel() {
+            const panel = document.getElementById('upload-progress-panel');
+            panel.classList.remove('translate-y-[calc(100%+2rem)]', 'opacity-0');
+        }
+
+        function updateUploadPanelTitle() {
+            const title = document.getElementById('upload-panel-title');
+            const completed = uploadQueue.filter(item => item.status === 'complete').length;
+            const total = uploadQueue.length;
+            if (activeUploads === 0 && uploadQueue.every(item => item.status === 'complete' || item.status === 'error' || item.status === 'cancelled')) {
+                title.textContent = `${completed} of ${total} uploads complete`;
+            } else {
+                const remaining = uploadQueue.filter(item => item.status === 'pending' || item.status === 'uploading').length;
+                title.textContent = `Uploading ${activeUploads} of ${remaining} files...`;
+            }
+        }
+
+        function createUploadItemUI(uploadItem) {
+            const container = document.getElementById('upload-items-container');
+            const itemEl = document.createElement('div');
+            itemEl.id = `upload-${uploadItem.id}`;
+            itemEl.className = 'flex items-center p-2 bg-surface-2 rounded-md';
+            const {
+                icon,
+                color
+            } = getFileIcon(uploadItem.file.name);
+            itemEl.innerHTML = `<div class="flex-shrink-0 w-8 flex items-center justify-center"><i class="far ${icon} text-lg ${color}"></i></div><div class="flex-1 overflow-hidden ml-3"><p class="text-sm font-medium truncate text-text-primary" title="${uploadItem.objectKey}">${uploadItem.objectKey}</p><p class="status-text text-xs text-text-secondary mt-0.5">Waiting...</p></div><div class="status-icon text-lg ml-3 w-6 h-6 flex items-center justify-center"><button class="cancel-btn w-6 h-6 rounded-full hover:bg-surface-1 flex items-center justify-center"><i class="fas fa-times text-xs"></i></button></div>`;
+            container.appendChild(itemEl);
+            itemEl.querySelector('.cancel-btn').onclick = () => {
+                if (uploadItem.controller) {
+                    uploadItem.controller.abort();
+                }
+                uploadItem.status = 'cancelled';
+                const itemUI = document.getElementById(`upload-${uploadItem.id}`);
+                itemUI.querySelector('.status-text').textContent = 'Cancelled';
+                itemUI.querySelector('.status-icon').innerHTML = `<i class="fas fa-ban text-red-500"></i>`;
+                if (activeUploads > 0) {
+                    activeUploads--;
+                }
+                processUploadQueue();
+            };
+        }
+
+        function processUploadQueue() {
+            updateUploadPanelTitle();
+            while (activeUploads < MAX_CONCURRENT_UPLOADS && uploadQueue.some(item => item.status === 'pending')) {
+                const nextUpload = uploadQueue.find(item => item.status === 'pending');
+                if (nextUpload) {
+                    activeUploads++;
+                    nextUpload.status = 'uploading';
+                    startUpload(nextUpload);
+                }
+            }
+        }
+        async function handleFileUploadRequest() {
+            const files = filesToUpload;
+            const fragment = document.getElementById('fragmentInput').value.trim();
+            let basePath = document.getElementById('pathPrefixInput').value.trim();
+            const uploadMethod = document.getElementById('uploadMethodSelect').value;
+            if (basePath && !basePath.endsWith('/')) {
+                basePath += '/';
+            }
+            if (!files || files.length === 0) {
+                showToast('Please select files or a folder to upload.', 'error');
+                return;
+            }
+            if (!fragment) {
+                showToast('Please provide a fragment name.', 'error');
+                return;
+            }
+            if (!token) {
+                showToast('Authentication details are missing.', 'error');
+                return;
+            }
+            showUploadPanel();
+            for (const file of files) {
+                const objectKey = basePath + (file.webkitRelativePath || file.name);
+                const uploadItem = {
+                    id: crypto.randomUUID(),
+                    file: file,
+                    fragment: fragment,
+                    objectKey: objectKey,
+                    status: 'pending',
+                    controller: new AbortController(),
+                    uploadMethod: uploadMethod
+                };
+                uploadQueue.push(uploadItem);
+                createUploadItemUI(uploadItem);
+            }
+            processUploadQueue();
+            document.getElementById('uploadModal').classList.add('hidden');
+            resetUploadModal();
+        }
+        async function startUpload(uploadItem) {
+            const {
+                file,
+                id,
+                objectKey
+            } = uploadItem;
+            const sessionKey = `upload-session-${objectKey}-${file.size}-${file.lastModified}`;
+            const ui = {
+                statusText: document.querySelector(`#upload-${id} .status-text`),
+                statusIcon: document.querySelector(`#upload-${id} .status-icon`),
+            };
+            ui.statusText.textContent = 'Starting...';
+            ui.statusIcon.innerHTML = `<svg class="progress-ring w-full h-full" viewBox="0 0 36 36"><circle stroke-width="3" stroke="var(--surface-1)" fill="transparent" r="15.9155" cx="18" cy="18"/><circle class="progress-ring__bar" stroke-width="3" stroke="var(--primary)" fill="transparent" r="15.9155" cx="18" cy="18" style="stroke-dasharray: 100, 100; stroke-dashoffset: 100; transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke-dashoffset 0.3s;"/></svg>`;
+            ui.progressBar = ui.statusIcon.querySelector('.progress-ring__bar');
+            try {
+                const existingSession = getSession(sessionKey);
+                if (existingSession && existingSession.file_id) {
+                    ui.statusText.textContent = 'Resuming...';
+                    await resumeChunkedFile(uploadItem, existingSession.file_id, sessionKey, ui);
+                } else {
+                    await uploadChunkedFile(uploadItem, sessionKey, ui);
+                }
+                uploadItem.status = 'complete';
+                if (ui.progressBar) ui.progressBar.style.strokeDashoffset = 0;
+                ui.statusText.textContent = 'Completed';
+                ui.statusIcon.innerHTML = `<i class="fas fa-check-circle text-green-500"></i>`;
+                clearSession(sessionKey);
+                await updateCapacityDisplay();
+                if (uploadItem.fragment === activeFragment) {
+                    await listObjects(activeFragment);
+                }
+            } catch (err) {
+                if (err.name !== 'AbortError' && uploadItem.status !== 'cancelled') {
+                    console.error('Upload failed:', err);
+                    uploadItem.status = 'error';
+                    ui.statusText.textContent = `Error: ${err.message.substring(0, 30)}...`;
+                    ui.statusIcon.innerHTML = `<i class="fas fa-exclamation-circle text-red-500"></i>`;
+                    clearSession(sessionKey);
+                }
+            } finally {
+                activeUploads--;
+                processUploadQueue();
+            }
+        }
+        async function uploadChunkedFile(uploadItem, sessionKey, ui) {
+            const {
+                file,
+                fragment,
+                objectKey,
+                controller,
+                uploadMethod
+            } = uploadItem;
+            const fileSize = file.size;
+            const chunkSize = getOptimalChunkSize(fileSize);
+            const totalChunks = Math.ceil(fileSize / chunkSize);
+            const initiateResponse = await fetch(`${serverLink}/v4/fragment/object/upload/init/${fragment}/${objectKey}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    content_type: file.type || 'application/octet-stream',
+                    total_size_bytes: fileSize,
+                    total_chunks: totalChunks,
+                }),
+                signal: controller.signal
+            });
+            if (!initiateResponse.ok) throw new Error(`${await initiateResponse.text()}`);
+            const {
+                file_id
+            } = await initiateResponse.json();
+
+            const sessionData = {
+                file_id: file_id,
+                name: file.name,
+                size: file.size,
+                lastModified: file.lastModified,
+                fragment: fragment,
+                objectKey: objectKey,
+                uploadMethod: uploadMethod
+            };
+            saveSession(sessionKey, sessionData);
+            const allChunks = Array.from({
+                length: totalChunks
+            }, (_, i) => i);
+            await processAndFinalizeChunks(uploadItem, file_id, allChunks, 0, ui);
+        }
+        async function resumeChunkedFile(uploadItem, file_id, sessionKey, ui) {
+            const {
+                file,
+                controller
+            } = uploadItem;
+            const statusResponse = await fetch(`${serverLink}/v4/fragment/object/upload/status/${file_id}`, {
+                headers: {
+                    authorization: `Bearer ${token}`
+                },
+                signal: controller.signal
+            });
+            if (!statusResponse.ok) {
+                showToast('Could not resume. Starting a new upload.', 'warning');
+                clearSession(sessionKey);
+                await uploadChunkedFile(uploadItem, sessionKey, ui);
+                return;
+            }
+            const status = await statusResponse.json();
+            const chunkSize = getOptimalChunkSize(file.size);
+            const uploadedChunks = new Set(status.uploaded_chunks);
+            const allChunks = Array.from({
+                length: status.total_chunks
+            }, (_, i) => i);
+            const chunksToUpload = allChunks.filter(i => !uploadedChunks.has(i));
+            const alreadyUploadedBytes = uploadedChunks.size * chunkSize;
+            await processAndFinalizeChunks(uploadItem, file_id, chunksToUpload, alreadyUploadedBytes, ui);
+        }
+        async function processAndFinalizeChunks(uploadItem, file_id, chunkQueue, initialUploadedBytes, ui) {
+            const {
+                file,
+                controller,
+                uploadMethod
+            } = uploadItem;
+            const fileSize = file.size;
+            const chunkSize = getOptimalChunkSize(fileSize);
+            let uploadedBytes = initialUploadedBytes;
+            let lastUploadedBytes = initialUploadedBytes;
+            let lastTime = performance.now();
+            let speeds = [];
+            let maxWorkers = Math.min(navigator.hardwareConcurrency || 4, 8);
+            const MAX_WORKERS_CAP = 16;
+            const updateProgress = () => {
+                const progress = Math.round((uploadedBytes / fileSize) * 100);
+                if (ui.progressBar) {
+                    const offset = 100 - progress;
+                    ui.progressBar.style.strokeDashoffset = offset;
+                }
+                const now = performance.now();
+                const timeDiff = (now - lastTime) / 1000;
+                if (timeDiff > 0.5) {
+                    const bytesDiff = uploadedBytes - lastUploadedBytes;
+                    const currentSpeed = bytesDiff / timeDiff;
+                    if (currentSpeed > 0) {
+                        speeds.push(currentSpeed);
+                        if (speeds.length > 10) speeds.shift();
+                    }
+                    const avgSpeed = speeds.length > 0 ? speeds.reduce((a, b) => a + b, 0) / speeds.length : 0;
+                    const remainingBytes = fileSize - uploadedBytes;
+                    const estTime = avgSpeed > 0 ? remainingBytes / avgSpeed : 0;
+                    ui.statusText.textContent = `Uploading... ${formatBytes(avgSpeed)}/s, ETA: ${formatTime(estTime)}`;
+                    lastTime = now;
+                    lastUploadedBytes = uploadedBytes;
+                    if (avgSpeed > 2 * MB && maxWorkers < MAX_WORKERS_CAP) {
+                        maxWorkers = Math.min(maxWorkers + 1, MAX_WORKERS_CAP);
+                    }
+                }
+            };
+            updateProgress();
+            const uploadChunk = async (chunkIndex) => {
+                const start = chunkIndex * chunkSize;
+                const end = Math.min(start + chunkSize, fileSize);
+                const blob = file.slice(start, end);
+                for (let retries = 3; retries > 0; retries--) {
+                    if (controller.signal.aborted) throw new Error('Upload cancelled');
+                    try {
+                        let response;
+                        if (uploadMethod === 'binary') {
+                            const hexChecksum = await calculateChecksumWithWorker(blob);
+                            console.log(`Sending Chunk ${chunkIndex}: Size=${blob.size}, Method=Binary, Checksum=${hexChecksum}`);
+                            const url = `${serverLink}/v4/fragment/object/upload/chunk/raw/${file_id}/${chunkIndex}`;
+                            response = await fetch(url, {
+                                method: 'PUT',
+                                headers: {
+                                    'authorization': `Bearer ${token}`,
+                                    'Content-Type': 'application/octet-stream',
+                                    'Digest': `sha256=${hexChecksum}`
+                                },
+                                body: blob,
+                                signal: controller.signal
+                            });
+                        } else {
+                            const hexChecksum = await calculateChecksumHex(blob);
+                            console.log(`Sending Chunk ${chunkIndex}: Size=${blob.size}, Method=Multipart, Checksum=${hexChecksum}`);
+                            const formData = new FormData();
+                            formData.append('chunk', blob);
+                            const url = `${serverLink}/v4/fragment/object/upload/chunk/${file_id}/${chunkIndex}?checksum=${hexChecksum}`;
+                            response = await fetch(url, {
+                                method: 'PUT',
+                                headers: {
+                                    authorization: `Bearer ${token}`
+                                },
+                                body: formData,
+                                signal: controller.signal
+                            });
+                        }
+                        if (!response.ok) throw new Error(`Chunk ${chunkIndex} failed: ${await response.text()}`);
+                        uploadedBytes += blob.size;
+                        updateProgress();
+                        return;
+                    } catch (err) {
+                        if (err.name === 'AbortError') throw err;
+                        if (retries === 1) throw err;
+                        maxWorkers = Math.max(2, maxWorkers - 1);
+                        await new Promise(r => setTimeout(r, 2000));
+                    }
+                }
+            };
+            await new Promise((resolve, reject) => {
+                let activeWorkersCount = 0;
+                let uploadFailedError = null;
+                const processSingleChunk = async () => {
+                    if (uploadFailedError) return;
+                    activeWorkersCount++;
+                    while (chunkQueue.length > 0) {
+                        if (uploadFailedError) break;
+                        const chunkIndex = chunkQueue.shift();
+                        if (chunkIndex === undefined) break;
+                        try {
+                            await uploadChunk(chunkIndex);
+                        } catch (err) {
+                            uploadFailedError = err;
+                            reject(err);
+                            break;
+                        }
+                    }
+                    activeWorkersCount--;
+                    if (activeWorkersCount === 0 && chunkQueue.length === 0) {
+                        uploadFailedError ? reject(uploadFailedError) : resolve();
+                    }
+                };
+                const workerManager = setInterval(() => {
+                    if (chunkQueue.length === 0 || uploadFailedError) {
+                        clearInterval(workerManager);
+                        return;
+                    }
+                    while (activeWorkersCount < maxWorkers && chunkQueue.length > 0) {
+                        processSingleChunk();
+                    }
+                }, 100);
+                const initialWorkers = Math.min(maxWorkers, chunkQueue.length);
+                for (let i = 0; i < initialWorkers; i++) {
+                    processSingleChunk();
+                }
+            });
+            const finalizeResponse = await fetch(`${serverLink}/v4/fragment/object/upload/finalize/${file_id}`, {
+                method: 'POST',
+                headers: {
+                    authorization: `Bearer ${token}`
+                },
+                signal: controller.signal
+            });
+            if (!finalizeResponse.ok) throw new Error('Failed to finalize upload.');
+        }
+
+        function createResumableUploadItemUI(sessionKey, sessionData) {
+            const container = document.getElementById('upload-items-container');
+            const itemEl = document.createElement('div');
+            const itemId = `resume-${sessionKey.replace(/[^a-zA-Z0-9]/g, '')}`;
+            itemEl.id = itemId;
+            itemEl.className = 'flex items-center p-2 bg-surface-2 rounded-md';
+            const {
+                icon,
+                color
+            } = getFileIcon(sessionData.name);
+
+            itemEl.innerHTML = ` <div class="flex-shrink-0 w-8 flex items-center justify-center"> <i class="far ${icon} text-lg ${color}"></i> </div> <div class="flex-1 overflow-hidden ml-3"> <p class="text-sm font-medium truncate text-text-primary" title="${sessionData.objectKey}">${sessionData.objectKey}</p> <p class="status-text text-xs text-yellow-400 mt-0.5">Interrupted</p> </div> <div class="status-icon text-lg ml-3 flex items-center justify-center gap-2"> <button class="resume-btn w-8 h-6 rounded-md bg-green-600 hover:bg-green-700 flex items-center justify-center" title="Resume Upload"> <i class="fas fa-play text-xs"></i> </button> <button class="remove-session-btn w-8 h-6 rounded-md bg-red-600 hover:bg-red-700 flex items-center justify-center" title="Cancel Upload"> <i class="fas fa-times text-xs"></i> </button> </div> `;
+            container.appendChild(itemEl);
+            showUploadPanel();
+            itemEl.querySelector('.resume-btn').onclick = () => {
+                const resumeInput = document.getElementById('resumeFileInput');
+                resumeInput.dataset.sessionKey = sessionKey;
+                resumeInput.click();
+            };
+            itemEl.querySelector('.remove-session-btn').onclick = () => {
+                clearSession(sessionKey);
+                itemEl.remove();
+                showToast('Upload cancelled and removed.', 'info');
+                updateUploadPanelTitle();
+            };
+        }
+
+        function loadUnfinishedUploads() {
+            const resumeInput = document.getElementById('resumeFileInput');
+            let hasUnfinished = false;
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('upload-session-')) {
+                    const sessionData = getSession(key);
+                    if (sessionData && sessionData.name && sessionData.size) {
+                        if (!uploadQueue.some(item => getSessionKey(item.file) === key)) {
+                            createResumableUploadItemUI(key, sessionData);
+                            hasUnfinished = true;
+                        }
+                    }
+                }
+            }
+            if (hasUnfinished) {
+                document.getElementById('upload-panel-title').textContent = 'Unfinished uploads found';
+            }
+            resumeInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                const sessionKey = e.target.dataset.sessionKey;
+                if (!file || !sessionKey) return;
+                const sessionData = getSession(sessionKey);
+                if (!sessionData) {
+                    showToast('Upload session not found.', 'error');
+                    return;
+                }
+                if (file.name === sessionData.name && file.size === sessionData.size && file.lastModified === sessionData.lastModified) {
+                    const itemId = `resume-${sessionKey.replace(/[^a-zA-Z0-9]/g, '')}`;
+                    document.getElementById(itemId)?.remove();
+                    const uploadItem = {
+                        id: crypto.randomUUID(),
+                        file: file,
+                        fragment: sessionData.fragment,
+                        objectKey: sessionData.objectKey,
+                        status: 'pending',
+                        controller: new AbortController(),
+                        uploadMethod: sessionData.uploadMethod || 'binary'
+                    };
+                    uploadQueue.push(uploadItem);
+                    createUploadItemUI(uploadItem);
+                    processUploadQueue();
+                    showToast(`Resuming upload for ${file.name}`, 'success');
+                } else {
+                    showToast('Incorrect file selected. Please choose the original file.', 'error');
+                }
+                e.target.value = '';
+                delete e.target.dataset.sessionKey;
+            });
+        }
+
+        function navigateBack() {
+            if (currentPath === '') return;
+            let pathParts = currentPath.split('/').filter(p => p);
+            pathParts.pop();
+            let newPath = pathParts.join('/') + (pathParts.length > 0 ? '/' : '');
+            navigateTo(newPath);
+        }
+
+        function navigateTo(path) {
+            currentAppView = 'browser';
+            currentPath = path;
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput.value) {
+                searchInput.value = '';
+            }
+            renderObjects(currentObjectList);
+        }
+
+        function renderObjects(objects) {
+            const listContainer = document.getElementById('objectList');
+            const breadcrumbContainer = document.getElementById('breadcrumb');
+            const backBtn = document.getElementById('back-btn');
+            listContainer.innerHTML = '';
+            breadcrumbContainer.innerHTML = '';
+            document.getElementById('load-more-container').innerHTML = '';
+            if (currentPath) {
+                backBtn.classList.remove('hidden');
+            } else {
+                backBtn.classList.add('hidden');
+            }
+            const pathParts = currentPath.split('/').filter(p => p);
+            let pathAccumulator = '';
+            const rootCrumb = document.createElement('a');
+            rootCrumb.href = '#';
+            rootCrumb.className = 'text-text-primary hover:text-primary transition-colors';
+            rootCrumb.textContent = activeFragment ? (activeFragment.charAt(0).toUpperCase() + activeFragment.slice(1)) : 'Files';
+            rootCrumb.onclick = (e) => {
+                e.preventDefault();
+                navigateTo('');
+            };
+            breadcrumbContainer.appendChild(rootCrumb);
+            pathParts.forEach(part => {
+                pathAccumulator += part + '/';
+                const separator = document.createElement('span');
+                separator.className = 'mx-2 text-text-secondary';
+                separator.textContent = '/';
+                breadcrumbContainer.appendChild(separator);
+                const partCrumb = document.createElement('a');
+                partCrumb.href = '#';
+                partCrumb.className = 'text-text-primary hover:text-primary transition-colors';
+                partCrumb.textContent = part;
+                const finalPath = pathAccumulator;
+                partCrumb.onclick = (e) => {
+                    e.preventDefault();
+                    navigateTo(finalPath);
+                };
+                breadcrumbContainer.appendChild(partCrumb);
+            });
+            document.getElementById('main-title').textContent = pathParts.length > 0 ? pathParts[pathParts.length - 1] : 'My Files';
+            const folders = new Set();
+            const fileGroups = new Map();
+            objects.forEach(obj => {
+                if (obj.key.startsWith(currentPath)) {
+                    const relativePath = obj.key.substring(currentPath.length);
+                    const slashIndex = relativePath.indexOf('/');
+                    if (slashIndex !== -1 && slashIndex > 0) {
+                        folders.add(relativePath.substring(0, slashIndex));
+                    } else if (slashIndex === -1 && relativePath.length > 0) {
+                        if (!fileGroups.has(obj.key)) {
+                            fileGroups.set(obj.key, []);
+                        }
+                        fileGroups.get(obj.key).push(obj);
+                    }
+                }
+            });
+            fileGroups.forEach(versions => {
+                versions.sort((a, b) => new Date(Number(b.last_modified.$date.$numberLong)) - new Date(Number(a.last_modified.$date.$numberLong)));
+            });
+            if (folders.size === 0 && fileGroups.size === 0 && clientSideFolders.filter(f => f.path === currentPath).length === 0) {
+                listContainer.className = 'w-full';
+                listContainer.innerHTML = '<div class="text-center py-16 text-text-secondary col-span-full"><i class="fas fa-folder-open text-4xl mb-4"></i><p>This folder is empty.</p></div>';
+                return;
+            }
+            const sortedFolders = Array.from(folders).sort();
+            const sortedFileGroups = Array.from(fileGroups.values()).sort((a, b) => {
+                const dateA = new Date(Number(a[0].last_modified.$date.$numberLong));
+                const dateB = new Date(Number(b[0].last_modified.$date.$numberLong));
+                return dateB - dateA;
+            });
+            const currentVirtualFolders = clientSideFolders.filter(f => f.path === currentPath).sort((a, b) => a.name.localeCompare(b.name));
+            allRenderableItems = [...currentVirtualFolders.map(f => ({
+                type: 'folder',
+                name: f.name
+            })), ...sortedFolders.map(name => ({
+                type: 'folder',
+                name
+            })), ...sortedFileGroups.map(versions => ({
+                type: 'file',
+                data: versions
+            }))];
+            currentlyDisplayedCount = 0;
+            if (currentView === 'tiles') {
+                listContainer.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4';
+            } else {
+                listContainer.className = 'space-y-1';
+                const header = document.createElement('div');
+                header.className = 'hidden sm:flex items-center px-4 py-2 text-xs text-text-secondary border-b border-border font-semibold sticky top-0 bg-background z-10';
+                header.innerHTML = `<div class="w-1/2 flex items-center">Name</div><div class="w-1/4">Last Modified</div><div class="w-1/4">File Size</div><div class="w-20"></div>`;
+                listContainer.appendChild(header);
+            }
+            loadMoreItems();
+        }
+
+        function loadMoreItems() {
+            const nextBatch = allRenderableItems.slice(currentlyDisplayedCount, currentlyDisplayedCount + RENDER_BATCH_SIZE);
+            if (nextBatch.length === 0) return;
+            if (currentView === 'tiles') {
+                appendTiles(nextBatch);
+            } else {
+                appendListItems(nextBatch);
+            }
+            currentlyDisplayedCount += nextBatch.length;
+            updateLoadMoreButton();
+        }
+
+        function updateLoadMoreButton() {
+            const container = document.getElementById('load-more-container');
+            container.innerHTML = '';
+            if (currentlyDisplayedCount < allRenderableItems.length) {
+                const button = document.createElement('button');
+                button.textContent = 'Load More';
+                button.className = 'bg-surface-1 hover:bg-surface-2 text-text-primary font-semibold py-2 px-4 rounded-lg transition-colors';
+                button.onclick = loadMoreItems;
+                container.appendChild(button);
+            }
+        }
+
+        function appendTiles(items) {
+            const listContainer = document.getElementById('objectList');
+            items.forEach(itemData => {
+                if (itemData.type === 'folder') {
+                    const item = document.createElement('div');
+                    const newPath = currentPath + itemData.name + '/';
+                    item.className = 'relative group bg-surface-1 rounded-lg cursor-pointer transition-all border border-border hover:border-primary flex flex-col overflow-hidden';
+                    item.innerHTML = ` <div class="h-32 flex items-center justify-center bg-surface-1 rounded-t-lg"> <i class="fas fa-folder text-5xl text-primary"></i> </div> <div class="p-3 border-t border-border"> <p class="font-semibold text-text-primary truncate" title="${itemData.name}">${itemData.name}</p> <p class="text-xs text-text-secondary mt-1">Folder</p> </div><button data-action="more" title="More actions" class="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 hover:bg-surface-2 flex items-center justify-center text-text-secondary hover:text-primary transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0"><i class="fas fa-ellipsis-h"></i></button> `;
+                    item.querySelector('[data-action="more"]').addEventListener('click', e => {
+                        e.stopPropagation();
+                        showContextMenu(e.currentTarget, itemData);
+                    });
+                    item.addEventListener('click', (e) => {
+                        if (!e.target.closest('[data-action="more"]')) {
+                            navigateTo(newPath);
+                        }
+                    });
+                    listContainer.appendChild(item);
+                } else {
+                    const versions = itemData.data;
+                    const latestVersion = versions[0];
+                    const obj = latestVersion;
+                    const item = document.createElement('div');
+                    const relativePath = obj.key.substring(currentPath.length);
+                    const extension = relativePath.split('.').pop().toLowerCase();
+                    const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension);
+                    const isPending = obj.status === 'Pending';
+                    item.className = `relative group bg-surface-1 rounded-lg cursor-pointer transition-all border border-border hover:border-primary flex flex-col overflow-hidden ${isPending ? 'status-pending' : ''}`;
+                    let thumbnailHTML;
+                    if (isImage) {
+                        thumbnailHTML = `<div class="w-full h-32 flex items-center justify-center bg-black rounded-t-lg overflow-hidden"><i class="far fa-file-image text-4xl text-text-secondary image-placeholder"></i><img data-key="${obj.key}" class="image-preview w-full h-full object-cover hidden" src="" alt="${relativePath}"></div>`;
+                    } else {
+                        const {
+                            icon,
+                            color
+                        } = getFileIcon(obj.key);
+                        thumbnailHTML = `<div class="w-full h-32 flex items-center justify-center bg-surface-1 rounded-t-lg"><i class="far ${icon} text-5xl ${color}"></i></div>`;
+                    }
+                    let versionTag = versions.length > 1 ? `<span class="absolute top-2 left-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full">${versions.length} versions</span>` : '';
+                    let statusIcon = isPending ? `<span class="absolute bottom-2 right-2 text-yellow-400" title="Pending"><i class="fas fa-clock"></i></span>` : '';
+                    item.innerHTML = `${thumbnailHTML}<div class="p-3 border-t border-border">${versionTag}<p class="font-semibold text-text-primary truncate" title="${relativePath}">${relativePath}</p><p class="text-xs text-text-secondary mt-1">${new Date(Number(obj.last_modified.$date.$numberLong)).toLocaleDateString()} &middot; ${formatBytes(obj.size_bytes)}</p>${statusIcon}</div><button data-action="more" title="More actions" class="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 hover:bg-surface-2 flex items-center justify-center text-text-secondary hover:text-primary transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0"><i class="fas fa-ellipsis-h"></i></button>`;
+                    item.querySelector('[data-action="more"]').addEventListener('click', e => {
+                        e.stopPropagation();
+                        showContextMenu(e.currentTarget, {
+                            type: 'file',
+                            data: obj
+                        });
+                    });
+                    item.addEventListener('click', (e) => {
+                        if (!e.target.closest('[data-action="more"]')) {
+                            handleObjectAction('view', obj.fragment, obj.key);
+                        }
+                    });
+                    listContainer.appendChild(item);
+                    if (isImage && !isPending) {
+                        getShareableUrl(obj.fragment, obj.key, 'view', 3600).then(url => {
+                            const imgElement = item.querySelector(`img[data-key="${obj.key}"]`);
+                            const placeholderElement = item.querySelector('.image-placeholder');
+                            if (imgElement) {
+                                imgElement.src = url;
+                                imgElement.onload = () => {
+                                    imgElement.classList.remove('hidden');
+                                    if (placeholderElement) placeholderElement.classList.add('hidden');
+                                };
+                            }
+                        }).catch(err => console.error(`Failed to load thumbnail for ${obj.key}:`, err));
+                    }
+                }
+            });
+        }
+
+        function appendListItems(items) {
+            const listContainer = document.getElementById('objectList');
+            items.forEach(itemData => {
+                if (itemData.type === 'folder') {
+                    const item = document.createElement('div');
+                    const newPath = currentPath + itemData.name + '/';
+                    item.className = 'file-item flex items-center px-4 py-3 hover:bg-surface-1 rounded-lg transition-colors cursor-pointer group';
+                    item.innerHTML = `<div class="flex items-center w-full sm:w-1/2"><i class="fas fa-folder text-xl text-primary w-8 text-center"></i><span class="font-medium text-text-primary truncate ml-4">${itemData.name}</span></div><div class="hidden sm:block w-1/4 text-sm text-text-secondary">--</div><div class="hidden sm:block w-1/4 text-sm text-text-secondary">--</div><div class="w-20 flex justify-end ml-auto"><div class="file-actions opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center gap-1"><button data-action="more" title="More actions" class="w-8 h-8 rounded-full hover:bg-surface-2 flex items-center justify-center text-text-secondary hover:text-primary transition-colors"><i class="fas fa-ellipsis-v"></i></button></div></div>`;
+                    item.querySelector('[data-action="more"]').addEventListener('click', e => {
+                        e.stopPropagation();
+                        showContextMenu(e.currentTarget, itemData);
+                    });
+                    item.addEventListener('click', e => {
+                        if (!e.target.closest('[data-action="more"]')) {
+                            navigateTo(newPath);
+                        }
+                    });
+                    listContainer.appendChild(item);
+                } else {
+                    const versions = itemData.data;
+                    const latestVersion = versions[0];
+                    const obj = latestVersion;
+                    const item = document.createElement('div');
+                    const relativePath = obj.key.substring(currentPath.length);
+                    const {
+                        icon,
+                        color
+                    } = getFileIcon(relativePath);
+                    const isPending = obj.status === 'Pending';
+                    let versionTag = versions.length > 1 ? `<span class="ml-2 bg-blue-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">${versions.length} versions</span>` : '';
+                    let statusIcon = isPending ? `<i class="fas fa-clock text-yellow-400 ml-2" title="Pending"></i>` : '';
+                    item.className = `file-item flex items-center px-4 py-3 hover:bg-surface-1 rounded-lg transition-colors cursor-pointer group ${isPending ? 'status-pending' : ''}`;
+                    item.innerHTML = `<div class="flex items-center w-full sm:w-1/2" title="${relativePath}"><i class="far ${icon} text-xl ${color} w-8 text-center"></i><span class="font-medium text-text-primary truncate ml-4">${relativePath}</span>${versionTag}${statusIcon}</div><div class="hidden sm:block w-1/4 text-sm text-text-secondary">${new Date(Number(obj.last_modified.$date.$numberLong)).toLocaleDateString()}</div><div class="hidden sm:block w-1/4 text-sm text-text-secondary">${formatBytes(obj.size_bytes)}</div><div class="w-20 flex justify-end ml-auto"><div class="file-actions opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center gap-1"><button data-action="more" title="More actions" class="w-8 h-8 rounded-full hover:bg-surface-2 flex items-center justify-center text-text-secondary hover:text-primary transition-colors"><i class="fas fa-ellipsis-v"></i></button></div></div>`;
+                    item.querySelector('[data-action="more"]').addEventListener('click', e => {
+                        e.stopPropagation();
+                        showContextMenu(e.currentTarget, {
+                            type: 'file',
+                            data: obj
+                        });
+                    });
+                    item.addEventListener('click', e => {
+                        if (!e.target.closest('[data-action="more"]')) {
+                            handleObjectAction('view', obj.fragment, obj.key);
+                        }
+                    });
+                    listContainer.appendChild(item);
+                }
+            });
+        }
+        async function listObjects(fragment) {
+            currentAppView = 'browser';
+            clientSideFolders = [];
+
+            if (!fragment) {
+                document.getElementById('objectList').innerHTML = '<div class="text-center py-16 text-text-secondary col-span-full"><i class="fas fa-exclamation-circle text-4xl mb-4"></i><p>No fragments found. Please upload a file to create one.</p></div>';
+                return;
+            }
+
+            document.getElementById('browserSpinner').style.display = 'flex';
+            document.getElementById('objectList').innerHTML = '';
+
+            try {
+                let allObjects = [];
+                let marker = null;
+                const limit = 100;
+
+                while (true) {
+                    let url = `${serverLink}/v4/fragment/object/metadata/${fragment}?show_all=true&limit=${limit}`;
+                    if (marker) {
+                        url += `&marker=${encodeURIComponent(marker)}`;
+                    }
+
+                    const response = await fetch(url, {
+                        headers: {
+                            authorization: `Bearer ${token}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Server responded with ${response.status}`);
+                    }
+
+                    const pageOfObjects = await response.json();
+
+                    if (pageOfObjects.length > 0) {
+                        allObjects.push(...pageOfObjects);
+                        marker = pageOfObjects[pageOfObjects.length - 1].key;
+                    }
+                    if (pageOfObjects.length < limit) {
+                        break;
+                    }
+                }
+
+                currentObjectList = allObjects;
+                renderObjects(allObjects);
+
+            } catch (err) {
+                showToast(`Failed to list objects: ${err.message}`, 'error');
+                document.getElementById('objectList').innerHTML = `<div class="text-center py-16 text-red-500 col-span-full"><i class="fas fa-exclamation-triangle text-4xl mb-4"></i><p>Error loading objects.</p></div>`;
+            } finally {
+                document.getElementById('browserSpinner').style.display = 'none';
+            }
+        }
+        async function loadFragments() {
+            const fragmentList = document.getElementById('fragmentList');
+            if (!fragmentList) {
+                console.error("Fatal: fragmentList element not found.");
+                return;
+            }
+            try {
+                const response = await fetch(`${serverLink}/v4/fragment/metadata`, {
+                    headers: {
+                        authorization: `Bearer ${token}`
+                    }
+                });
+                if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+                const fragments = await response.json();
+                fragmentList.innerHTML = '';
+                if (fragments.length > 0) {
+                    if (!fragments.includes(activeFragment)) {
+                        activeFragment = fragments[0];
+                        currentPath = '';
+                    }
+                    fragments.forEach((fragment) => {
+                        const item = document.createElement('a');
+                        item.href = '#';
+                        item.className = `fragment-item nav-item flex items-center px-2 py-2 font-medium rounded-md`;
+                        if (fragment === activeFragment) {
+                            item.classList.add('active');
+                        } else {
+                            item.classList.add('text-text-secondary', 'hover:bg-surface-1', 'hover:text-text-primary');
+                        }
+                        item.innerHTML = `<i class="fas fa-database w-6 mr-2"></i><span>${fragment}</span>`;
+                        fragmentList.appendChild(item);
+                    });
+                    listObjects(activeFragment);
+                } else {
+                    activeFragment = '';
+                    currentPath = '';
+                    listObjects(null);
+                }
+            } catch (err) {
+                showToast(`Failed to load fragments: ${err.message}`, 'error');
+                fragmentList.innerHTML = `<div class="p-4 text-xs text-red-500">Could not load fragments.</div>`;
+                listObjects(null);
+            }
+        }
+
+        function filterObjects() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const breadcrumb = document.getElementById('breadcrumb');
+            if (!query) {
+                renderObjects(currentObjectList);
+                return;
+            }
+            breadcrumb.innerHTML = `<span class="text-xl font-bold">Search Results</span>`;
+            const filtered = currentObjectList.filter(obj => obj.key.toLowerCase().includes(query));
+            renderFlatList(filtered);
+        }
+
+        function renderFlatList(objects) {
+            const listContainer = document.getElementById('objectList');
+            listContainer.innerHTML = '';
+            if (objects.length === 0) {
+                listContainer.className = 'w-full';
+                listContainer.innerHTML = '<div class="text-center py-16 text-text-secondary col-span-full"><i class="fas fa-search text-4xl mb-4"></i><p>No objects found.</p></div>';
+                return;
+            }
+            listContainer.className = 'space-y-1';
+            const header = document.createElement('div');
+            header.className = 'hidden sm:flex items-center px-4 py-2 text-xs text-text-secondary border-b border-border font-semibold sticky top-0 bg-background z-10';
+            header.innerHTML = `<div class="w-1/2 flex items-center">Name</div><div class="w-1/4">Last Modified</div><div class="w-1/4">File Size</div><div class="w-20"></div>`;
+            listContainer.appendChild(header);
+            objects.forEach(obj => {
+                const item = document.createElement('div');
+                const isPending = obj.status === 'Pending';
+                item.className = `file-item flex items-center px-4 py-3 hover:bg-surface-1 rounded-lg transition-colors cursor-pointer group ${isPending ? 'status-pending' : ''}`;
+                const {
+                    icon,
+                    color
+                } = getFileIcon(obj.key);
+                let statusIcon = isPending ? `<i class="fas fa-clock text-yellow-400 ml-2" title="Pending"></i>` : '';
+                item.innerHTML = ` <div class="flex items-center w-full sm:w-1/2" title="${obj.key}"> <i class="far ${icon} text-xl ${color} w-8 text-center"></i> <span class="font-medium text-text-primary truncate ml-4">${obj.key}</span> ${statusIcon} </div> <div class="hidden sm:block w-1/4 text-sm text-text-secondary">${new Date(Number(obj.last_modified.$date.$numberLong)).toLocaleDateString()}</div> <div class="hidden sm:block w-1/4 text-sm text-text-secondary">${formatBytes(obj.size_bytes)}</div> <div class="w-20 flex justify-end ml-auto"> <div class="file-actions opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center gap-1"> <button data-action="more" title="More actions" class="w-8 h-8 rounded-full hover:bg-surface-2 flex items-center justify-center text-text-secondary hover:text-primary transition-colors"><i class="fas fa-ellipsis-v"></i></button> </div> </div> `;
+                item.querySelector('[data-action="more"]').addEventListener('click', e => {
+                    e.stopPropagation();
+                    showContextMenu(e.currentTarget, {
+                        type: 'file',
+                        data: obj
+                    });
+                });
+                item.addEventListener('click', e => {
+                    if (!e.target.closest('[data-action="more"]')) {
+                        handleObjectAction('view', obj.fragment, obj.key);
+                    }
+                });
+                listContainer.appendChild(item);
+            });
+        }
+        async function getShareableUrl(fragment, key, disposition = 'view', expiresIn = 3600) {
+            try {
+                const response = await fetch(`${serverLink}/v4/fragment/object/share`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        fragment,
+                        object_key: key,
+                        expires_in: expiresIn,
+                        disposition
+                    })
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || `Server responded with ${response.status}`);
+                }
+                const data = await response.json();
+                return data.url;
+            } catch (err) {
+                console.error(`Failed to generate shareable URL: ${err.message}`);
+                throw err;
+            }
+        }
+        async function handleObjectAction(action, fragment, key, type = 'file') {
+            try {
+                switch (action) {
+                    case 'view':
+                        {
+                            showFileViewerModal(key);
+                            const extension = key.split('.').pop().toLowerCase();
+                            const isVideo = ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv'].includes(extension);
+                            const disposition = isVideo ? 'stream' : 'view';
+                            const viewUrl = await getShareableUrl(fragment, key, disposition);
+                            if (viewUrl) {
+                                await renderFileViewerContent(viewUrl, key);
+                            } else {
+                                throw new Error("Could not generate a viewable link.");
+                            }
+                            break;
+                        }
+                    case 'download':
+                        {
+                            showToast('Preparing download...', 'info', 3000);
+                            const downloadUrl = await getShareableUrl(fragment, key, 'download');
+                            if (downloadUrl) {
+                                const a = document.createElement('a');
+                                a.href = downloadUrl;
+                                a.download = key.split('/').pop() || 'download';
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                            } else {
+                                throw new Error("Could not generate a download link.");
+                            }
+                            break;
+                        }
+                    case 'delete':
+                        showDeleteModal(fragment, key, type);
+                        break;
+                    case 'rename':
+                        showRenameModal(fragment, key);
+                        break;
+                    case 'share':
+                        showShareModal(fragment, key);
+                        break;
+                }
+            } catch (err) {
+                showToast(`Action failed: ${err.message}`, 'error');
+                if (action === 'view') {
+                    closeFileViewerModal();
+                }
+            }
+        }
+
+        function showContextMenu(button, itemData) {
+            const menu = document.getElementById('contextMenu');
+            if (itemData.type === 'file') {
+                const object = itemData.data;
+                menu.innerHTML = `<a href="#" data-action="view" class="flex items-center px-4 py-2 hover:bg-surface-1"><i class="fas fa-eye w-6 mr-2"></i>View</a><a href="#" data-action="share" class="flex items-center px-4 py-2 hover:bg-surface-1"><i class="fas fa-share-alt w-6 mr-2"></i>Share</a><a href="#" data-action="rename" class="flex items-center px-4 py-2 hover:bg-surface-1"><i class="fas fa-pencil-alt w-6 mr-2"></i>Rename</a><a href="#" data-action="download" class="flex items-center px-4 py-2 hover:bg-surface-1"><i class="fas fa-download w-6 mr-2"></i>Download</a><div class="my-1 border-t border-border"></div><a href="#" data-action="delete" class="flex items-center px-4 py-2 text-red-500 hover:bg-surface-1"><i class="fas fa-trash w-6 mr-2"></i>Delete</a>`;
+                menu.onclick = (e) => {
+                    e.preventDefault();
+                    const target = e.target.closest('a');
+                    if (target) {
+                        const action = target.dataset.action;
+                        handleObjectAction(action, object.fragment, object.key, 'file');
+                        menu.classList.add('hidden');
+                    }
+                };
+            } else if (itemData.type === 'folder') {
+                const folderPrefix = currentPath + itemData.name + '/';
+                menu.innerHTML = `<a href="#" data-action="delete" class="flex items-center px-4 py-2 text-red-500 hover:bg-surface-1"><i class="fas fa-trash w-6 mr-2"></i>Delete Folder</a>`;
+                menu.onclick = (e) => {
+                    e.preventDefault();
+                    const target = e.target.closest('a');
+                    if (target) {
+                        const action = target.dataset.action;
+                        handleObjectAction(action, activeFragment, folderPrefix, 'folder');
+                        menu.classList.add('hidden');
+                    }
+                };
+            }
+            const rect = button.getBoundingClientRect();
+            menu.classList.remove('hidden');
+            const menuWidth = menu.offsetWidth;
+            const menuHeight = menu.offsetHeight;
+            let top = rect.bottom + window.scrollY;
+            let left = rect.right + window.scrollX - menuWidth;
+            if (left < 8) {
+                left = 8;
+            }
+            if (left + menuWidth > document.documentElement.clientWidth) {
+                left = document.documentElement.clientWidth - menuWidth - 8;
+            }
+            if (top + menuHeight > document.documentElement.clientHeight + window.scrollY) {
+                top = rect.top + window.scrollY - menuHeight;
+            }
+            if (top < window.scrollY) {
+                top = window.scrollY + 8;
+            }
+            menu.style.top = `${top}px`;
+            menu.style.left = `${left}px`;
+        }
+
+        function showDeleteModal(fragment, keyOrPrefix, type) {
+            const modal = document.getElementById('deleteModal');
+            const modalText = document.getElementById('deleteModalText');
+            if (type === 'folder') {
+                modalText.textContent = `Are you sure you want to delete this folder and all its contents? This action cannot be undone.`;
+            } else {
+                modalText.textContent = 'Are you sure you want to delete this object? This action cannot be undone.';
+            }
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.getElementById('confirmDeleteBtn').onclick = async () => {
+                try {
+                    let response;
+                    if (type === 'folder') {
+                        response = await fetch(`${serverLink}/v4/fragment/object/delete/prefix`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                authorization: `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                                fragment: fragment,
+                                prefix: keyOrPrefix
+                            })
+                        });
+                    } else {
+                        response = await fetch(`${serverLink}/v4/fragment/object/delete/${fragment}/${keyOrPrefix}`, {
+                            method: 'DELETE',
+                            headers: {
+                                authorization: `Bearer ${token}`
+                            }
+                        });
+                    }
+                    if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+                    showToast('Object(s) deleted successfully.', 'success');
+                    listObjects(fragment);
+                } catch (err) {
+                    showToast(`Failed to delete: ${err.message}`, 'error');
+                } finally {
+                    modal.classList.add('hidden');
+                }
+            };
+            document.getElementById('cancelDeleteBtn').onclick = () => modal.classList.add('hidden');
+        }
+
+        function showRenameModal(fragment, key) {
+            const modal = document.getElementById('renameModal');
+            const input = document.getElementById('newObjectKeyInput');
+            input.value = key;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.getElementById('confirmRenameBtn').onclick = async () => {
+                const newKey = input.value.trim();
+                if (!newKey || newKey === key) {
+                    showToast('Please enter a new, valid object key.', 'error');
+                    return;
+                }
+                try {
+                    const response = await fetch(`${serverLink}/v4/fragment/object/rename`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            authorization: `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            source_fragment: fragment,
+                            source_key: key,
+                            destination_fragment: fragment,
+                            destination_key: newKey
+                        })
+                    });
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(errorText || `Server responded with ${response.status}`);
+                    }
+                    showToast('Object renamed successfully.', 'success');
+                    listObjects(fragment);
+                } catch (err) {
+                    showToast(`Failed to rename object: ${err.message}`, 'error');
+                } finally {
+                    modal.classList.add('hidden');
+                }
+            };
+            document.getElementById('cancelRenameBtn').onclick = () => modal.classList.add('hidden');
+        }
+
+        function showShareModal(fragment, key) {
+            const modal = document.getElementById('shareModal');
+            const urlInput = document.getElementById('shareUrl');
+            urlInput.value = '';
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.getElementById('generateShareBtn').onclick = async () => {
+                const disposition = document.getElementById('shareDisposition').value;
+                const expires_in = parseInt(document.getElementById('shareExpiry').value, 10) || 3600;
+                try {
+                    const url = await getShareableUrl(fragment, key, disposition, expires_in);
+                    urlInput.value = url;
+                } catch (err) {
+                    showToast(`Failed to generate link: ${err.message}`, 'error');
+                }
+            };
+            document.getElementById('copyShareUrlBtn').onclick = () => {
+                if (urlInput.value) {
+                    navigator.clipboard.writeText(urlInput.value);
+                    showToast('URL copied to clipboard!', 'success');
+                } else {
+                    showToast('Generate a URL first!', 'error');
+                }
+            };
+            document.getElementById('closeShareBtn').onclick = () => modal.classList.add('hidden');
+        }
+
+        const fileViewerModal = document.getElementById('fileViewerModal');
+        const fileViewerTitle = document.getElementById('fileViewerTitle');
+        const fileViewerContent = document.getElementById('fileViewerContent');
+        const fileViewerSpinner = document.getElementById('fileViewerSpinner');
+
         function closeFileViewerModal() {
             destroyCustomPlayer();
             fileViewerModal.classList.add('hidden');
             fileViewerContent.innerHTML = '';
             fileViewerContent.appendChild(fileViewerSpinner);
         }
+
         function showFileViewerModal(objectKey) {
             const fileName = objectKey.split('/').pop();
             fileViewerTitle.textContent = fileName;
@@ -1026,7 +2300,31 @@
         async function renderFileViewerContent(url, objectKey) {
             const fileName = objectKey.split('/').pop();
             const extension = fileName.split('.').pop().toLowerCase();
-            const typeMap = { 'jpg': 'image', 'jpeg': 'image', 'png': 'image', 'gif': 'image', 'svg': 'image', 'webp': 'image', 'mp4': 'video', 'mov': 'video', 'avi': 'video', 'webm': 'video', 'mkv': 'video', 'flv': 'video', 'wmv': 'video', 'mp3': 'audio', 'wav': 'audio', 'ogg': 'audio', 'pdf': 'pdf', 'txt': 'text', 'md': 'text', 'js': 'text', 'css': 'text', 'html': 'text', 'json': 'text' };
+            const typeMap = {
+                'jpg': 'image',
+                'jpeg': 'image',
+                'png': 'image',
+                'gif': 'image',
+                'svg': 'image',
+                'webp': 'image',
+                'mp4': 'video',
+                'mov': 'video',
+                'avi': 'video',
+                'webm': 'video',
+                'mkv': 'video',
+                'flv': 'video',
+                'wmv': 'video',
+                'mp3': 'audio',
+                'wav': 'audio',
+                'ogg': 'audio',
+                'pdf': 'pdf',
+                'txt': 'text',
+                'md': 'text',
+                'js': 'text',
+                'css': 'text',
+                'html': 'text',
+                'json': 'text'
+            };
             const fileType = typeMap[extension] || 'unknown';
 
             fileViewerContent.innerHTML = '';
@@ -1052,7 +2350,10 @@
             } else {
                 const contentElement = document.createElement('div');
                 contentElement.className = 'text-center my-auto';
-                const { icon, color } = getFileIcon(fileName);
+                const {
+                    icon,
+                    color
+                } = getFileIcon(fileName);
                 contentElement.innerHTML = `<i class="far ${icon} text-6xl ${color} mb-4"></i><p class="text-text-primary">Preview not available for this file type.</p><p class="text-sm text-text-secondary">${fileName}</p>`;
                 fileViewerContent.appendChild(contentElement);
             }
@@ -1126,7 +2427,9 @@
             const autoQualityBtn = document.getElementById('autoQualityBtn');
             const currentQualityIndicator = fileViewerContent.querySelector('.current-quality-indicator');
 
-            let controlsTimeout, isScrubbing = false, isAutoMode = true, lastVolume = 1;
+            let controlsTimeout, isScrubbing = false,
+                isAutoMode = true,
+                lastVolume = 1;
 
             document.getElementById('videoHeader').textContent = title;
             document.getElementById('videoDescription').textContent = 'Now Playing';
@@ -1138,17 +2441,40 @@
                 hlsInstance.loadSource(videoUrl);
                 hlsInstance.attachMedia(video);
                 hlsInstance.on(Hls.Events.MANIFEST_PARSED, (e, data) => populateQualityMenu(data.levels));
-                hlsInstance.on(Hls.Events.LEVEL_SWITCHED, (e, data) => { isAutoMode = hlsInstance.autoLevelEnabled; updateActiveQualityButton(); });
+                hlsInstance.on(Hls.Events.LEVEL_SWITCHED, (e, data) => {
+                    isAutoMode = hlsInstance.autoLevelEnabled;
+                    updateActiveQualityButton();
+                });
             } else {
                 video.src = videoUrl;
             }
             video.play().catch(e => console.log("Autoplay was prevented."));
 
-            const formatTime = (timeInSeconds) => { if (isNaN(timeInSeconds)) return "00:00"; const date = new Date(null); date.setSeconds(timeInSeconds); const supportsHours = date.toISOString().substr(11, 2) !== "00"; return date.toISOString().substr(supportsHours ? 11 : 14, supportsHours ? 8 : 5); };
+            const formatVideoTime = (timeInSeconds) => {
+                if (isNaN(timeInSeconds)) return "00:00";
+                const date = new Date(null);
+                date.setSeconds(timeInSeconds);
+                const supportsHours = date.toISOString().substr(11, 2) !== "00";
+                return date.toISOString().substr(supportsHours ? 11 : 14, supportsHours ? 8 : 5);
+            };
             const togglePlay = () => video.paused ? video.play() : video.pause();
-            const toggleFullscreen = () => { if (!document.fullscreenElement) { videoWrapper.requestFullscreen().catch(err => console.error(err)); } else { document.exitFullscreen(); } };
-            const togglePip = () => { if (document.pictureInPictureElement) { document.exitPictureInPicture(); } else if (document.pictureInPictureEnabled) { video.requestPictureInPicture(); } };
-            const toggleMute = () => { video.muted = !video.muted; };
+            const toggleFullscreen = () => {
+                if (!document.fullscreenElement) {
+                    videoWrapper.requestFullscreen().catch(err => console.error(err));
+                } else {
+                    document.exitFullscreen();
+                }
+            };
+            const togglePip = () => {
+                if (document.pictureInPictureElement) {
+                    document.exitPictureInPicture();
+                } else if (document.pictureInPictureEnabled) {
+                    video.requestPictureInPicture();
+                }
+            };
+            const toggleMute = () => {
+                video.muted = !video.muted;
+            };
 
             const handleKeyboardShortcuts = (e) => {
                 const tagName = document.activeElement.tagName.toLowerCase();
@@ -1156,12 +2482,25 @@
                 if (document.activeElement !== document.body && !videoWrapper.contains(document.activeElement)) return;
                 e.preventDefault();
                 switch (e.key.toLowerCase()) {
-                    case " ": case "k": togglePlay(); break;
-                    case "f": toggleFullscreen(); break;
-                    case "i": togglePip(); break;
-                    case "m": toggleMute(); break;
-                    case "arrowleft": video.currentTime -= 5; break;
-                    case "arrowright": video.currentTime += 5; break;
+                    case " ":
+                    case "k":
+                        togglePlay();
+                        break;
+                    case "f":
+                        toggleFullscreen();
+                        break;
+                    case "i":
+                        togglePip();
+                        break;
+                    case "m":
+                        toggleMute();
+                        break;
+                    case "arrowleft":
+                        video.currentTime -= 5;
+                        break;
+                    case "arrowright":
+                        video.currentTime += 5;
+                        break;
                 }
             };
 
@@ -1174,21 +2513,36 @@
                     const progressPercent = (video.currentTime / video.duration) * 100;
                     progressBar.style.width = `${progressPercent}%`;
                     progressScrubber.style.left = `${progressPercent}%`;
-                    timeIndicator.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+                    timeIndicator.textContent = `${formatVideoTime(video.currentTime)} / ${formatVideoTime(video.duration)}`;
                 }
                 const isMuted = video.muted || video.volume === 0;
                 volumeHighIcon.style.display = isMuted ? 'none' : 'block';
                 volumeMuteIcon.style.display = isMuted ? 'block' : 'none';
-                if (!isScrubbing) { volumeSlider.value = isMuted ? 0 : video.volume; }
+                if (!isScrubbing) {
+                    volumeSlider.value = isMuted ? 0 : video.volume;
+                }
                 const isFullscreen = !!document.fullscreenElement;
                 videoWrapper.classList.toggle('fullscreen', isFullscreen);
                 fullscreenOpenIcon.style.display = isFullscreen ? 'none' : 'block';
                 fullscreenCloseIcon.style.display = isFullscreen ? 'block' : 'none';
             };
 
-            const hideControls = () => { if (video.paused || settingsMenu.classList.contains('active') || isScrubbing) return; videoWrapper.classList.remove('active'); };
-            const showControls = () => { videoWrapper.classList.add('active'); clearTimeout(controlsTimeout); if (!video.paused) { controlsTimeout = setTimeout(hideControls, 3000); } };
-            const toggleControls = () => { const isActive = videoWrapper.classList.toggle('active'); if (isActive) showControls(); else clearTimeout(controlsTimeout); };
+            const hideControls = () => {
+                if (video.paused || settingsMenu.classList.contains('active') || isScrubbing) return;
+                videoWrapper.classList.remove('active');
+            };
+            const showControls = () => {
+                videoWrapper.classList.add('active');
+                clearTimeout(controlsTimeout);
+                if (!video.paused) {
+                    controlsTimeout = setTimeout(hideControls, 3000);
+                }
+            };
+            const toggleControls = () => {
+                const isActive = videoWrapper.classList.toggle('active');
+                if (isActive) showControls();
+                else clearTimeout(controlsTimeout);
+            };
 
             const populateQualityMenu = (levels) => {
                 qualityList.innerHTML = '';
@@ -1197,13 +2551,26 @@
                     return;
                 }
                 qualityMenuItem.style.display = 'flex';
-                const sortedLevels = levels.map((level, index) => ({ ...level, originalIndex: index })).sort((a, b) => b.height - a.height);
+                const sortedLevels = levels.map((level, index) => ({
+                    ...level,
+                    originalIndex: index
+                })).sort((a, b) => b.height - a.height);
                 sortedLevels.forEach((level) => {
                     const button = document.createElement('button');
                     button.className = 'quality-button';
                     button.dataset.level = level.originalIndex;
                     button.innerHTML = `<svg class="check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg><span>${level.height}p</span>`;
-                    button.onclick = () => { if (hlsInstance) { isAutoMode = false; hlsInstance.currentLevel = level.originalIndex; updateActiveQualityButton(); setTimeout(() => { qualitySettingsView.style.display = 'none'; mainSettingsView.style.display = 'block'; }, 150); } };
+                    button.onclick = () => {
+                        if (hlsInstance) {
+                            isAutoMode = false;
+                            hlsInstance.currentLevel = level.originalIndex;
+                            updateActiveQualityButton();
+                            setTimeout(() => {
+                                qualitySettingsView.style.display = 'none';
+                                mainSettingsView.style.display = 'block';
+                            }, 150);
+                        }
+                    };
                     qualityList.appendChild(button);
                 });
                 updateActiveQualityButton();
@@ -1213,67 +2580,184 @@
                 if (!hlsInstance || !hlsInstance.levels || hlsInstance.levels.length === 0) return;
                 const currentLevelData = hlsInstance.levels[hlsInstance.currentLevel];
                 if (!currentLevelData) return;
-                if (isAutoMode) { currentQualityIndicator.textContent = `Auto (${currentLevelData.height}p)`; } else { currentQualityIndicator.textContent = `${currentLevelData.height}p`; }
+                if (isAutoMode) {
+                    currentQualityIndicator.textContent = `Auto (${currentLevelData.height}p)`;
+                } else {
+                    currentQualityIndicator.textContent = `${currentLevelData.height}p`;
+                }
                 autoQualityBtn.classList.toggle('active', isAutoMode);
-                qualityList.querySelectorAll('.quality-button').forEach(btn => { const btnLevel = parseInt(btn.dataset.level); btn.classList.toggle('active', !isAutoMode && btnLevel === hlsInstance.currentLevel); });
+                qualityList.querySelectorAll('.quality-button').forEach(btn => {
+                    const btnLevel = parseInt(btn.dataset.level);
+                    btn.classList.toggle('active', !isAutoMode && btnLevel === hlsInstance.currentLevel);
+                });
             };
 
-            const handleScrub = (e) => { const rect = progressBarContainer.getBoundingClientRect(); const clientX = e.touches ? e.touches[0].clientX : e.clientX; const percent = Math.min(Math.max(0, clientX - rect.left), rect.width) / rect.width; if (isFinite(video.duration)) { video.currentTime = percent * video.duration; progressBar.style.width = `${percent * 100}%`; progressScrubber.style.left = `${percent * 100}%`; } };
-            const startScrubbing = (e) => { isScrubbing = true; videoWrapper.classList.add('scrubbing'); handleScrub(e); };
-            const stopScrubbing = () => { isScrubbing = false; videoWrapper.classList.remove('scrubbing'); };
+            const handleScrub = (e) => {
+                const rect = progressBarContainer.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const percent = Math.min(Math.max(0, clientX - rect.left), rect.width) / rect.width;
+                if (isFinite(video.duration)) {
+                    video.currentTime = percent * video.duration;
+                    progressBar.style.width = `${percent * 100}%`;
+                    progressScrubber.style.left = `${percent * 100}%`;
+                }
+            };
+            const startScrubbing = (e) => {
+                isScrubbing = true;
+                videoWrapper.classList.add('scrubbing');
+                handleScrub(e);
+            };
+            const stopScrubbing = () => {
+                isScrubbing = false;
+                videoWrapper.classList.remove('scrubbing');
+            };
 
             // 4. Add Event Listeners and store them for cleanup
             const addListener = (element, event, handler, options) => {
                 element.addEventListener(event, handler, options);
-                playerEventListeners.push({ element, event, handler, options });
+                playerEventListeners.push({
+                    element,
+                    event,
+                    handler,
+                    options
+                });
             };
 
             const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
             if (isTouchDevice) {
-                let lastTap = 0, tapTimeout;
+                let lastTap = 0,
+                    tapTimeout;
                 addListener(videoWrapper, 'touchend', (e) => {
                     if (e.target.closest('.controls-overlay')) return;
                     const currentTime = new Date().getTime();
                     const tapLength = currentTime - lastTap;
                     clearTimeout(tapTimeout);
-                    if (tapLength < 300 && tapLength > 0) { e.preventDefault(); togglePlay(); }
-                    else { tapTimeout = setTimeout(() => { toggleControls(); }, 300); }
+                    if (tapLength < 300 && tapLength > 0) {
+                        e.preventDefault();
+                        togglePlay();
+                    } else {
+                        tapTimeout = setTimeout(() => {
+                            toggleControls();
+                        }, 300);
+                    }
                     lastTap = currentTime;
                 });
             } else {
                 addListener(videoWrapper, 'mousemove', showControls);
                 addListener(videoWrapper, 'mouseleave', hideControls);
-                addListener(videoWrapper, 'click', (e) => { if (!e.target.closest('.controls-overlay')) togglePlay(); });
-                addListener(videoWrapper, 'dblclick', (e) => { if (!e.target.closest('.controls-overlay')) toggleFullscreen(); });
+                addListener(videoWrapper, 'click', (e) => {
+                    if (!e.target.closest('.controls-overlay')) togglePlay();
+                });
+                addListener(videoWrapper, 'dblclick', (e) => {
+                    if (!e.target.closest('.controls-overlay')) toggleFullscreen();
+                });
             }
 
-            addListener(bigPlayBtn, 'click', (e) => { e.stopPropagation(); togglePlay(); });
+            addListener(bigPlayBtn, 'click', (e) => {
+                e.stopPropagation();
+                togglePlay();
+            });
             addListener(playPauseBtn, 'click', togglePlay);
             addListener(fullscreenBtn, 'click', toggleFullscreen);
             addListener(pipBtn, 'click', togglePip);
-            addListener(settingsBtn, 'click', (e) => { e.stopPropagation(); settingsMenu.classList.toggle('active'); qualitySettingsView.style.display = 'none'; mainSettingsView.style.display = 'block'; showControls(); });
-            addListener(qualityMenuItem, 'click', () => { mainSettingsView.style.display = 'none'; qualitySettingsView.style.display = 'block'; });
-            addListener(qualityBackBtn, 'click', () => { qualitySettingsView.style.display = 'none'; mainSettingsView.style.display = 'block'; });
-            addListener(autoQualityBtn, 'click', () => { if (hlsInstance) { isAutoMode = true; hlsInstance.currentLevel = -1; updateActiveQualityButton(); setTimeout(() => { qualitySettingsView.style.display = 'none'; mainSettingsView.style.display = 'block'; }, 150); } });
-            addListener(document, 'click', (e) => { if (!settingsBtn.contains(e.target) && !settingsMenu.contains(e.target)) { settingsMenu.classList.remove('active'); } });
-            addListener(video, 'play', () => { updateUI(); showControls(); });
-            addListener(video, 'pause', () => { updateUI(); clearTimeout(controlsTimeout); videoWrapper.classList.add('active'); });
+            addListener(settingsBtn, 'click', (e) => {
+                e.stopPropagation();
+                settingsMenu.classList.toggle('active');
+                qualitySettingsView.style.display = 'none';
+                mainSettingsView.style.display = 'block';
+                showControls();
+            });
+            addListener(qualityMenuItem, 'click', () => {
+                mainSettingsView.style.display = 'none';
+                qualitySettingsView.style.display = 'block';
+            });
+            addListener(qualityBackBtn, 'click', () => {
+                qualitySettingsView.style.display = 'none';
+                mainSettingsView.style.display = 'block';
+            });
+            addListener(autoQualityBtn, 'click', () => {
+                if (hlsInstance) {
+                    isAutoMode = true;
+                    hlsInstance.currentLevel = -1;
+                    updateActiveQualityButton();
+                    setTimeout(() => {
+                        qualitySettingsView.style.display = 'none';
+                        mainSettingsView.style.display = 'block';
+                    }, 150);
+                }
+            });
+            addListener(document, 'click', (e) => {
+                if (!settingsBtn.contains(e.target) && !settingsMenu.contains(e.target)) {
+                    settingsMenu.classList.remove('active');
+                }
+            });
+            addListener(video, 'play', () => {
+                updateUI();
+                showControls();
+            });
+            addListener(video, 'pause', () => {
+                updateUI();
+                clearTimeout(controlsTimeout);
+                videoWrapper.classList.add('active');
+            });
             addListener(video, 'timeupdate', updateUI);
             addListener(video, 'loadedmetadata', updateUI);
-            addListener(video, 'volumechange', () => { if (!isScrubbing) { volumeSlider.value = video.muted ? 0 : video.volume; } updateUI(); });
+            addListener(video, 'volumechange', () => {
+                if (!isScrubbing) {
+                    volumeSlider.value = video.muted ? 0 : video.volume;
+                }
+                updateUI();
+            });
             addListener(video, 'waiting', () => videoWrapper.classList.add('buffering'));
             addListener(video, 'playing', () => videoWrapper.classList.remove('buffering'));
-            addListener(video, 'progress', () => { if (video.buffered.length > 0 && video.duration > 0) { bufferedProgressBar.style.width = `${(video.buffered.end(video.buffered.length - 1) / video.duration) * 100}%`; } });
+            addListener(video, 'progress', () => {
+                if (video.buffered.length > 0 && video.duration > 0) {
+                    bufferedProgressBar.style.width = `${(video.buffered.end(video.buffered.length - 1) / video.duration) * 100}%`;
+                }
+            });
             addListener(document, 'fullscreenchange', updateUI);
             addListener(document, 'keydown', handleKeyboardShortcuts);
             addListener(progressBarContainer, 'mousedown', startScrubbing);
-            addListener(document, 'mousemove', (e) => { if (isScrubbing) { handleScrub(e); } const rect = progressBarContainer.getBoundingClientRect(); const clientX = e.clientX; if (clientX >= rect.left && clientX <= rect.right && isFinite(video.duration)) { const percent = (clientX - rect.left) / rect.width; seekTooltip.style.left = `${percent * 100}%`; seekTooltip.textContent = formatTime(percent * video.duration); } });
+            addListener(document, 'mousemove', (e) => {
+                if (isScrubbing) {
+                    handleScrub(e);
+                }
+                const rect = progressBarContainer.getBoundingClientRect();
+                const clientX = e.clientX;
+                if (clientX >= rect.left && clientX <= rect.right && isFinite(video.duration)) {
+                    const percent = (clientX - rect.left) / rect.width;
+                    seekTooltip.style.left = `${percent * 100}%`;
+                    seekTooltip.textContent = formatVideoTime(percent * video.duration);
+                }
+            });
             addListener(document, 'mouseup', stopScrubbing);
-            addListener(progressBarContainer, 'touchstart', startScrubbing, { passive: true });
-            addListener(document, 'touchmove', (e) => { if (isScrubbing) handleScrub(e); }, { passive: true });
+            addListener(progressBarContainer, 'touchstart', startScrubbing, {
+                passive: true
+            });
+            addListener(document, 'touchmove', (e) => {
+                if (isScrubbing) handleScrub(e);
+            }, {
+                passive: true
+            });
             addListener(document, 'touchend', stopScrubbing);
-            addListener(volumeBtn, 'click', () => { if (video.muted) { video.muted = false; video.volume = lastVolume; } else { lastVolume = video.volume; video.muted = true; video.volume = 0; } });
-            addListener(volumeSlider, 'input', (e) => { const newVolume = parseFloat(e.target.value); video.volume = newVolume; video.muted = newVolume === 0; if (!video.muted) { lastVolume = newVolume; } });
+            addListener(volumeBtn, 'click', () => {
+                if (video.muted) {
+                    video.muted = false;
+                    video.volume = lastVolume;
+                } else {
+                    lastVolume = video.volume;
+                    video.muted = true;
+                    video.volume = 0;
+                }
+            });
+            addListener(volumeSlider, 'input', (e) => {
+                const newVolume = parseFloat(e.target.value);
+                video.volume = newVolume;
+                video.muted = newVolume === 0;
+                if (!video.muted) {
+                    lastVolume = newVolume;
+                }
+            });
 
             showControls();
         }
@@ -1285,7 +2769,12 @@
                 hlsInstance = null;
             }
             // Remove all dynamically added event listeners
-            playerEventListeners.forEach(({ element, event, handler, options }) => {
+            playerEventListeners.forEach(({
+                element,
+                event,
+                handler,
+                options
+            }) => {
                 element.removeEventListener(event, handler, options);
             });
             playerEventListeners = []; // Clear the array
@@ -1324,12 +2813,42 @@
             listContainer.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4';
 
             const categories = {
-                Videos: { size: 0, count: 0, extensions: ['mp4', 'mov', 'avi', 'mkv', 'webm', 'flv', 'wmv'], color: 'bg-purple-500' },
-                Images: { size: 0, count: 0, extensions: ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'], color: 'bg-green-500' },
-                Audio: { size: 0, count: 0, extensions: ['mp3', 'wav', 'ogg'], color: 'bg-pink-500' },
-                Documents: { size: 0, count: 0, extensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt'], color: 'bg-blue-500' },
-                Archives: { size: 0, count: 0, extensions: ['zip', 'rar', '7z'], color: 'bg-yellow-500' },
-                Other: { size: 0, count: 0, extensions: [], color: 'bg-gray-500' }
+                Videos: {
+                    size: 0,
+                    count: 0,
+                    extensions: ['mp4', 'mov', 'avi', 'mkv', 'webm', 'flv', 'wmv'],
+                    color: 'bg-purple-500'
+                },
+                Images: {
+                    size: 0,
+                    count: 0,
+                    extensions: ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'],
+                    color: 'bg-green-500'
+                },
+                Audio: {
+                    size: 0,
+                    count: 0,
+                    extensions: ['mp3', 'wav', 'ogg'],
+                    color: 'bg-pink-500'
+                },
+                Documents: {
+                    size: 0,
+                    count: 0,
+                    extensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt'],
+                    color: 'bg-blue-500'
+                },
+                Archives: {
+                    size: 0,
+                    count: 0,
+                    extensions: ['zip', 'rar', '7z'],
+                    color: 'bg-yellow-500'
+                },
+                Other: {
+                    size: 0,
+                    count: 0,
+                    extensions: [],
+                    color: 'bg-gray-500'
+                }
             };
 
             let totalUsed = 0;
@@ -1376,15 +2895,95 @@
             updateCapacityDisplay();
             loadFragments();
             loadUnfinishedUploads();
-            const browserEl = document.getElementById('browser'); let dragCounter = 0; browserEl.addEventListener('dragenter', (e) => { e.preventDefault(); e.stopPropagation(); dragCounter++; if (e.dataTransfer.types && e.dataTransfer.types.includes('Files')) { browserEl.classList.add('dragover'); } }); browserEl.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); }); browserEl.addEventListener('dragleave', (e) => { e.preventDefault(); e.stopPropagation(); dragCounter--; if (dragCounter === 0) { browserEl.classList.remove('dragover'); } }); browserEl.addEventListener('drop', (e) => { e.preventDefault(); e.stopPropagation(); dragCounter = 0; browserEl.classList.remove('dragover'); if (e.dataTransfer.files.length) { filesToUpload = e.dataTransfer.files; document.getElementById('uploadModalBtn').click(); } });
-            const sidebar = document.getElementById('sidebar'); const sidebarOverlay = document.getElementById('sidebar-overlay'); const menuToggleBtn = document.getElementById('menu-toggle-btn'); const closeSidebarBtn = document.getElementById('close-sidebar-btn'); function openSidebar() { sidebar.classList.remove('-translate-x-full'); sidebarOverlay.classList.remove('hidden'); } function closeSidebar() { sidebar.classList.add('-translate-x-full'); sidebarOverlay.classList.add('hidden'); }
-            menuToggleBtn.addEventListener('click', openSidebar); closeSidebarBtn.addEventListener('click', closeSidebar); sidebarOverlay.addEventListener('click', closeSidebar);
+            const browserEl = document.getElementById('browser');
+            let dragCounter = 0;
+            browserEl.addEventListener('dragenter', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dragCounter++;
+                if (e.dataTransfer.types && e.dataTransfer.types.includes('Files')) {
+                    browserEl.classList.add('dragover');
+                }
+            });
+            browserEl.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            browserEl.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dragCounter--;
+                if (dragCounter === 0) {
+                    browserEl.classList.remove('dragover');
+                }
+            });
+            browserEl.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dragCounter = 0;
+                browserEl.classList.remove('dragover');
+                if (e.dataTransfer.files.length) {
+                    filesToUpload = e.dataTransfer.files;
+                    document.getElementById('uploadModalBtn').click();
+                }
+            });
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+
+            function openSidebar() {
+                sidebar.classList.remove('-translate-x-full');
+                sidebarOverlay.classList.remove('hidden');
+            }
+
+            function closeSidebar() {
+                sidebar.classList.add('-translate-x-full');
+                sidebarOverlay.classList.add('hidden');
+            }
+            menuToggleBtn.addEventListener('click', openSidebar);
+            closeSidebarBtn.addEventListener('click', closeSidebar);
+            sidebarOverlay.addEventListener('click', closeSidebar);
             document.getElementById('back-btn').addEventListener('click', navigateBack);
-            document.addEventListener('click', () => { document.getElementById('contextMenu').classList.add('hidden'); });
-            document.getElementById('recent-btn').addEventListener('click', (e) => { e.preventDefault(); setActiveNavItem(e.currentTarget); showRecentFiles(); });
-            document.getElementById('storage-btn').addEventListener('click', (e) => { e.preventDefault(); setActiveNavItem(e.currentTarget); showStorageStats(); });
-            document.getElementById('reload-btn').addEventListener('click', (e) => { e.preventDefault(); showToast('Reloading data...', 'info'); loadFragments(); });
-            document.getElementById('fragmentList').addEventListener('click', (e) => { e.preventDefault(); const target = e.target.closest('.fragment-item'); if (target) { setActiveNavItem(target); if (!target.classList.contains('bg-surface-1')) { document.querySelectorAll('.fragment-item').forEach(item => { item.classList.remove('bg-surface-1', 'text-text-primary'); item.classList.add('text-text-secondary', 'hover:bg-surface-1', 'hover:text-text-primary'); }); target.classList.add('bg-surface-1', 'text-text-primary'); target.classList.remove('text-text-secondary', 'hover:bg-surface-1', 'hover:text-text-primary'); activeFragment = target.querySelector('span').textContent.trim(); currentPath = ''; listObjects(activeFragment); if (window.innerWidth < 768) { closeSidebar(); } } } });
+            document.addEventListener('click', () => {
+                document.getElementById('contextMenu').classList.add('hidden');
+            });
+            document.getElementById('recent-btn').addEventListener('click', (e) => {
+                e.preventDefault();
+                setActiveNavItem(e.currentTarget);
+                showRecentFiles();
+            });
+            document.getElementById('storage-btn').addEventListener('click', (e) => {
+                e.preventDefault();
+                setActiveNavItem(e.currentTarget);
+                showStorageStats();
+            });
+            document.getElementById('reload-btn').addEventListener('click', (e) => {
+                e.preventDefault();
+                showToast('Reloading data...', 'info');
+                loadFragments();
+            });
+            document.getElementById('fragmentList').addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = e.target.closest('.fragment-item');
+                if (target) {
+                    setActiveNavItem(target);
+                    if (!target.classList.contains('bg-surface-1')) {
+                        document.querySelectorAll('.fragment-item').forEach(item => {
+                            item.classList.remove('bg-surface-1', 'text-text-primary');
+                            item.classList.add('text-text-secondary', 'hover:bg-surface-1', 'hover:text-text-primary');
+                        });
+                        target.classList.add('bg-surface-1', 'text-text-primary');
+                        target.classList.remove('text-text-secondary', 'hover:bg-surface-1', 'hover:text-text-primary');
+                        activeFragment = target.querySelector('span').textContent.trim();
+                        currentPath = '';
+                        listObjects(activeFragment);
+                        if (window.innerWidth < 768) {
+                            closeSidebar();
+                        }
+                    }
+                }
+            });
 
             const uploadModal = document.getElementById('uploadModal');
             const selectFilesBtn = document.getElementById('selectFilesBtn');
@@ -1428,7 +3027,10 @@
                 const folderName = newFolderNameInput.value.trim();
                 if (folderName && !folderName.includes('/')) {
                     // Add to a temporary client-side list
-                    clientSideFolders.push({ name: folderName, path: currentPath });
+                    clientSideFolders.push({
+                        name: folderName,
+                        path: currentPath
+                    });
                     // Re-render the current view to show the new folder
                     renderObjects(currentObjectList);
                     newFolderModal.classList.add('hidden');
@@ -1447,11 +3049,42 @@
                 uploadModal.classList.remove('hidden');
             });
             document.getElementById('closeUploadModalBtn').addEventListener('click', () => uploadModal.classList.add('hidden'));
-            document.getElementById('toggle-upload-panel-btn').addEventListener('click', () => { const panel = document.getElementById('upload-progress-panel'); const container = document.getElementById('upload-items-container'); container.classList.toggle('hidden'); panel.querySelector('i').classList.toggle('fa-chevron-down'); panel.querySelector('i').classList.toggle('fa-chevron-up'); });
-            document.getElementById('closeFileViewerBtn').addEventListener('click', closeFileViewerModal); fileViewerModal.addEventListener('click', (e) => { if (e.target === fileViewerModal) { closeFileViewerModal(); } }); document.addEventListener('keydown', (e) => { if (e.key === "Escape" && !fileViewerModal.classList.contains('hidden')) { closeFileViewerModal(); } });
-            const tilesViewBtn = document.getElementById('tiles-view-btn'); const listViewBtn = document.getElementById('list-view-btn');
-            tilesViewBtn.addEventListener('click', () => { currentView = 'tiles'; tilesViewBtn.classList.add('bg-primary', 'text-white'); tilesViewBtn.classList.remove('text-text-secondary', 'hover:bg-surface-2'); listViewBtn.classList.remove('bg-primary', 'text-white'); listViewBtn.classList.add('text-text-secondary', 'hover:bg-surface-2'); if (currentAppView === 'browser') renderObjects(currentObjectList); });
-            listViewBtn.addEventListener('click', () => { currentView = 'list'; listViewBtn.classList.add('bg-primary', 'text-white'); listViewBtn.classList.remove('text-text-secondary', 'hover:bg-surface-2'); tilesViewBtn.classList.remove('bg-primary', 'text-white'); tilesViewBtn.classList.add('text-text-secondary', 'hover:bg-surface-2'); if (currentAppView === 'browser') renderObjects(currentObjectList); });
+            document.getElementById('toggle-upload-panel-btn').addEventListener('click', () => {
+                const panel = document.getElementById('upload-progress-panel');
+                const container = document.getElementById('upload-items-container');
+                container.classList.toggle('hidden');
+                panel.querySelector('i').classList.toggle('fa-chevron-down');
+                panel.querySelector('i').classList.toggle('fa-chevron-up');
+            });
+            document.getElementById('closeFileViewerBtn').addEventListener('click', closeFileViewerModal);
+            fileViewerModal.addEventListener('click', (e) => {
+                if (e.target === fileViewerModal) {
+                    closeFileViewerModal();
+                }
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === "Escape" && !fileViewerModal.classList.contains('hidden')) {
+                    closeFileViewerModal();
+                }
+            });
+            const tilesViewBtn = document.getElementById('tiles-view-btn');
+            const listViewBtn = document.getElementById('list-view-btn');
+            tilesViewBtn.addEventListener('click', () => {
+                currentView = 'tiles';
+                tilesViewBtn.classList.add('bg-primary', 'text-white');
+                tilesViewBtn.classList.remove('text-text-secondary', 'hover:bg-surface-2');
+                listViewBtn.classList.remove('bg-primary', 'text-white');
+                listViewBtn.classList.add('text-text-secondary', 'hover:bg-surface-2');
+                if (currentAppView === 'browser') renderObjects(currentObjectList);
+            });
+            listViewBtn.addEventListener('click', () => {
+                currentView = 'list';
+                listViewBtn.classList.add('bg-primary', 'text-white');
+                listViewBtn.classList.remove('text-text-secondary', 'hover:bg-surface-2');
+                tilesViewBtn.classList.remove('bg-primary', 'text-white');
+                tilesViewBtn.classList.add('text-text-secondary', 'hover:bg-surface-2');
+                if (currentAppView === 'browser') renderObjects(currentObjectList);
+            });
         });
     </script>
 </body>
