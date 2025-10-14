@@ -2,321 +2,278 @@
 <html lang="en">
 
 <head>
-  <link rel="icon" type="image/png" href="images/litiaina_icon.png" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login</title>
+  <title>Litiaina - Login</title>
+  <link rel="icon" type="image/png" href="images/litiaina_icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 0;
+    html {
+      background-color: #000;
     }
 
     body {
-      background-color: #000;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
+      visibility: hidden;
+      font-family: 'Inter', sans-serif;
     }
 
-    .auth-box {
-      background-color: #111;
-      border-radius: 12px;
-      padding: 30px;
-      width: 100%;
-      max-width: 400px;
-      position: relative;
-      transition: all 0.3s ease;
+    .modal-enter {
+      animation: fadeIn 0.3s ease-out;
     }
 
-    .top-banner {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-
-    .top-banner img {
-      max-width: 100px;
-      margin-bottom: 10px;
-    }
-
-    .top-banner h1 {
-      font-size: 1.5rem;
-      font-weight: bold;
-    }
-
-    .top-banner p {
-      color: #ccc;
-      font-size: 0.9rem;
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .input-group {
-      position: relative;
-      margin-bottom: 20px;
-    }
-
-    .input-group input {
-      width: 100%;
-      padding: 14px 14px 14px 44px;
-      border: none;
-      border-radius: 8px;
-      background-color: #222;
-      color: #fff;
-      font-size: 1rem;
-    }
-
-    .input-group input::placeholder {
-      color: #888;
-    }
-
-    .input-group .icon {
-      position: absolute;
-      top: 50%;
-      left: 14px;
-      transform: translateY(-50%);
-      color: #ccc;
-    }
-
-    .error-message {
-      color: red;
-      font-size: 0.85rem;
-      margin-top: -16px;
-      margin-bottom: 10px;
-      text-align: left;
-      padding-left: 10px;
-    }
-
-    .auth-btn {
-      width: 100%;
-      padding: 14px;
-      background-color: #222;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-
-    .auth-btn:hover {
-      background-color: #333;
-    }
-
-    .switch-text {
-      margin-top: 20px;
-      text-align: center;
-      font-size: 0.9rem;
-    }
-
-    .switch-text span {
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .forgot-password {
-      text-align: center;
-      color: red;
-      font-size: 0.9rem;
-      margin-bottom: 20px;
-      cursor: pointer;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .loading-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: rgba(0, 0, 0, 0.8);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      color: white;
-      font-size: 1.2rem;
-      flex-direction: column;
-    }
-
-    .loader {
-      border: 6px solid #222;
-      border-top: 6px solid #888;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin-bottom: 10px;
-    }
-
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
       }
 
-      100% {
-        transform: rotate(360deg);
+      to {
+        opacity: 1;
+        transform: scale(1);
       }
     }
   </style>
 </head>
 
-<body>
+<body class="bg-black text-white flex flex-col items-center justify-center min-h-screen p-4">
 
-  <div class="top-banner">
-    <img src="images/litiaina_icon.png" alt="User Icon" />
-    <h1 id="banner-title">Login to your Account</h1>
-    <p id="banner-desc">Login to access your account</p>
+  <div class="w-full max-w-md">
+    <div class="text-center mb-8">
+      <div class="mx-auto bg-gray-800 h-20 w-20 rounded-full flex items-center justify-center mb-4">
+        <img src="images/litiaina_icon.png" alt="https://placehold.co/60x60/374151/FFFFFF?text=Logo" class="rounded-full">
+      </div>
+      <h1 class="text-3xl font-bold text-white">Welcome Back!</h1>
+      <p class="text-gray-400 mt-2">Login to access your account</p>
+    </div>
+
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 md:p-8">
+      <form id="loginForm" class="space-y-6">
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+              fill="currentColor">
+              <path
+                d="M2.003 5.884L10 2.5l7.997 3.384A2 2 0 0119 7.616V16a2 2 0 01-2 2H3a2 2 0 01-2-2V7.616a2 2 0 011.003-1.732zM10 13a3 3 0 100-6 3 3 0 000 6z" />
+            </svg>
+          </div>
+          <input type="email" id="loginEmail" placeholder="Email" required
+            class="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 transition duration-200" />
+        </div>
+
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+              fill="currentColor">
+              <path fill-rule="evenodd"
+                d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z"
+                clip-rule="evenodd" />
+            </svg>
+          </div>
+          <input type="password" id="loginPassword" placeholder="Password" required
+            class="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 transition duration-200" />
+        </div>
+
+        <div class="relative hidden" id="otpGroup">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+              stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+            </svg>
+          </div>
+          <input type="text" id="loginOtp" placeholder="Enter OTP"
+            class="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 transition duration-200" />
+        </div>
+
+        <div class="text-right">
+          <span id="forgotPassword" class="text-sm text-red-400 hover:text-red-300 cursor-pointer">Forgot
+            password?</span>
+        </div>
+
+        <button type="submit" id="authBtn"
+          class="w-full flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 disabled:bg-red-400 disabled:cursor-not-allowed">
+          <span id="btnText">LOGIN</span>
+          <svg id="btnSpinner" class="animate-spin h-5 w-5 text-white ml-3 hidden" xmlns="http://www.w3.org/2000/svg"
+            fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+            </path>
+          </svg>
+        </button>
+
+        <div class="text-center text-gray-400">
+          Don't have an account?
+          <span id="signup" class="font-semibold text-red-400 hover:text-red-300 cursor-pointer">
+            Sign Up
+          </span>
+        </div>
+      </form>
+    </div>
   </div>
 
-  <div class="auth-box" id="authBox">
-    <h2 id="formTitle">Welcome Back!</h2>
-    <form id="loginForm">
-      <div class="input-group">
-        <span class="icon">📧</span>
-        <input type="email" id="loginEmail" placeholder="Email" required />
-      </div>
-      <div class="input-group">
-        <span class="icon">🔒</span>
-        <input type="password" id="loginPassword" placeholder="Password" required />
-      </div>
-      <div class="input-group hidden" id="otpGroup">
-        <span class="icon">🔑</span>
-        <input type="text" id="loginOtp" placeholder="Enter OTP" />
-      </div>
-      <div class="forgot-password">Forgot password?</div>
-      <div class="error-message" id="loginError"></div>
-      <button type="submit" class="auth-btn">LOGIN</button>
-      <div class="switch-text" id="signup">
-        <span>Don't have an account? SIGN UP</span>
-      </div>
-    </form>
-  </div>
-
-  <div class="loading-overlay hidden" id="loadingOverlay">
-    <div class="loader"></div>
-    <div>Authenticating...</div>
+  <div id="modalContainer"
+    class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 hidden">
+    <div id="modal"
+      class="modal-enter w-full max-w-sm bg-gray-900 border border-gray-800 rounded-2xl shadow-lg p-6 text-center">
+      <h3 id="modalTitle" class="text-xl font-bold mb-3">Modal Title</h3>
+      <p id="modalMessage" class="text-gray-300 mb-6">This is a sample message.</p>
+      <button id="modalCloseBtn"
+        class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-lg transition duration-200">
+        CLOSE
+      </button>
+    </div>
   </div>
 
   <script>
-    const serverLink = `https://api.litiaina.com`;
-    const loginForm = document.getElementById('loginForm');
-    const error = document.getElementById('loginError');
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    const otpGroup = document.getElementById('otpGroup');
-    const otpInput = document.getElementById('loginOtp');
-    loadingOverlay.classList.add("hidden");
+    document.addEventListener('DOMContentLoaded', function () {
+      document.body.style.visibility = 'visible';
 
-    document.getElementById("signup").onclick = () => {
-      window.location.href = "signup.html";
-    };
+      const serverLink = `https://api.litiaina.com`;
+      const loginForm = document.getElementById('loginForm');
+      const otpGroup = document.getElementById('otpGroup');
+      const otpInput = document.getElementById('loginOtp');
+      const authBtn = document.getElementById('authBtn');
+      const btnText = document.getElementById('btnText');
+      const btnSpinner = document.getElementById('btnSpinner');
+      const modalContainer = document.getElementById('modalContainer');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalMessage = document.getElementById('modalMessage');
+      const modalCloseBtn = document.getElementById('modalCloseBtn');
+      const modal = document.getElementById('modal');
 
-    loginForm.addEventListener('submit', async function (e) {
-      e.preventDefault();
-      error.textContent = "";
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value;
-      const otp = otpInput.value.trim();
-      loadingOverlay.classList.remove("hidden");
-
-      if (!email || !password) {
-        error.textContent = "Please fill in all fields.";
-        loadingOverlay.classList.add("hidden");
-        return;
-      }
-
-      try {
-        const twoFaCheck = await fetch(`${serverLink}/auth/account/2fa`, {
-          method: 'POST',
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password })
-        });
-
-        let otpRequired = false;
-        if (twoFaCheck.ok) {
-          const result = await twoFaCheck.json();
-          otpRequired = result.enabled === true;
-        }
-
-        if (otpRequired) {
-          otpGroup.classList.remove('hidden');
-
-          if (!otp) {
-            error.textContent = "OTP required for 2FA-enabled account.";
-            loadingOverlay.classList.add("hidden");
-            return;
-          }
-        }
-
-        const data = {
-          email: email,
-          password: password,
-          otp: otp || ""
-        };
-
-        const response = await fetch(`${serverLink}/auth/login`, {
-          method: 'POST',
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data)
-        });
-
-        if (response.ok) {
-          const loginResponse = await response.json();
-          if (loginResponse.response === true) {
-            let token = loginResponse.token;
-            localStorage.setItem("current-account-email", email);
-            localStorage.setItem("current-account-password", password);
-            localStorage.setItem("current-token", token);
-
-            const found = await fetch(`${serverLink}/auth/account`, {
-              method: 'POST',
-              headers: {
-                "Content-Type": "application/json",
-                "authorization": `Bearer ${token}`,
-              },
-              body: JSON.stringify(data)
-            });
-
-            if (found.ok) {
-              const valid = await found.json();
-              localStorage.setItem("current-account-uid", valid.uid);
-              localStorage.setItem("current-account-name", valid.name);
-              localStorage.setItem("current-capacity", valid.allocated_storage);
-              loadingOverlay.classList.add("hidden");
-              window.location.href = "storage.html";
-            } else {
-              loadingOverlay.classList.add("hidden");
-              error.textContent = "Server is not responding or error occurred";
-            }
-          } else {
-            loadingOverlay.classList.add("hidden");
-            error.textContent = "Email or password incorrect";
-          }
+      const setLoading = (isLoading) => {
+        authBtn.disabled = isLoading;
+        if (isLoading) {
+          btnText.classList.add('hidden');
+          btnSpinner.classList.remove('hidden');
         } else {
-          loadingOverlay.classList.add("hidden");
-          error.textContent = "Server is not responding or error occurred";
+          btnText.classList.remove('hidden');
+          btnSpinner.classList.add('hidden');
+        }
+      };
+
+      const showModal = (title, message, isError = true) => {
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+        modalTitle.classList.remove('text-red-400', 'text-green-400');
+        if (isError) {
+          modalTitle.classList.add('text-red-400');
+        } else {
+          modalTitle.classList.add('text-green-400');
+        }
+        modalContainer.classList.remove('hidden');
+      };
+
+      const hideModal = () => {
+        modalContainer.classList.add('hidden');
+      };
+
+      document.getElementById("signup").onclick = () => {
+        window.location.href = "signup.html";
+      };
+
+      document.getElementById("forgotPassword").onclick = () => {
+        showModal("Forgot Password", "Password recovery is not implemented yet. Please contact support if you need assistance.");
+      };
+
+      modalCloseBtn.addEventListener('click', hideModal);
+      modalContainer.addEventListener('click', (e) => {
+        if (e.target === modalContainer) {
+          hideModal();
+        }
+      });
+
+      loginForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        setLoading(true);
+
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        const otp = otpInput.value.trim();
+
+        if (!email || !password) {
+          showModal("Validation Error", "Please fill in both email and password fields.");
+          setLoading(false);
+          return;
         }
 
-      } catch (err) {
-        error.textContent = err.message || "Login failed. Please try again.";
-      } finally {
-        loadingOverlay.classList.add("hidden");
-      }
+        try {
+          let otpRequired = false;
+          try {
+            const twoFaCheckResponse = await fetch(`${serverLink}/auth/account/2fa`, {
+              method: 'POST',
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, password })
+            });
+            if (twoFaCheckResponse.ok) {
+              const result = await twoFaCheckResponse.json();
+              otpRequired = result.enabled === true;
+            }
+          } catch (checkError) {
+            console.warn("2FA check failed, proceeding without it.", checkError);
+          }
+
+          if (otpRequired) {
+            otpGroup.classList.remove('hidden');
+            if (!otp) {
+              showModal("Authentication Required", "This account has 2FA enabled. Please enter your OTP to continue.");
+              setLoading(false);
+              return;
+            }
+          }
+
+          const loginPayload = { email, password, otp: otp || "" };
+          const loginResponse = await fetch(`${serverLink}/auth/login`, {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(loginPayload)
+          });
+
+          const loginResult = await loginResponse.json();
+
+          if (!loginResponse.ok || !loginResult.response) {
+            const errorMessage = loginResult.message || "Email, password, or OTP is incorrect.";
+            throw new Error(errorMessage);
+          }
+
+          const token = loginResult.token;
+          const accountResponse = await fetch(`${serverLink}/auth/account`, {
+            method: 'POST',
+            headers: {
+              "Content-Type": "application/json",
+              "authorization": `Bearer ${token}`,
+            },
+            body: JSON.stringify({ email })
+          });
+
+          if (!accountResponse.ok) {
+            throw new Error("Could not retrieve account details after login.");
+          }
+
+          const accountDetails = await accountResponse.json();
+
+          localStorage.setItem("current-account-email", email);
+          localStorage.setItem("current-token", token);
+          localStorage.setItem("current-account-uid", accountDetails.uid);
+          localStorage.setItem("current-account-name", accountDetails.name);
+          localStorage.setItem("current-capacity", accountDetails.allocated_storage);
+
+          showModal("Login Successful!", "You will be redirected to your storage.", false);
+
+          setTimeout(() => {
+            window.location.href = "N1.html";
+          }, 1000);
+
+        } catch (err) {
+          showModal("Login Failed", err.message || "An unknown error occurred. Please try again.");
+        } finally {
+          setLoading(false);
+        }
+      });
     });
   </script>
 </body>

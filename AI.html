@@ -123,7 +123,7 @@
         }
 
         /* Universal selector for consistent spacing between elements */
-        .bubble-content > * + * {
+        .bubble-content>*+* {
             margin-top: 1rem;
         }
 
@@ -174,7 +174,7 @@
             height: 1px;
             background-color: #3a3a3a;
         }
-        
+
         /* --- Responsive Table Wrapper --- */
         .table-responsive-wrapper {
             overflow-x: auto;
@@ -199,7 +199,7 @@
             color: #F3F4F6;
             font-weight: 600;
         }
-        
+
         .bubble-content tr:nth-child(even) {
             background-color: #161616;
         }
@@ -271,8 +271,10 @@
                 </button>
                 <div id="model-dropdown-content"
                     class="dropdown-content absolute top-full left-0 mt-2 w-48 bg-[#1A1A1A] border border-gray-700 rounded-lg shadow-xl z-10">
-                    <a href="#" class="model-option block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50" data-model="Light" data-url="https://ai.litiaina.com/v2/api/stream/chat">Light (Default)</a>
-                    <a href="#" class="model-option block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50" data-model="Line" data-url="https://ai.litiaina.com/v1/api/stream/chat">Line</a>
+                    <a href="#" class="model-option block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50"
+                        data-model="Light" data-url="https://ai.litiaina.com/v2/api/stream/chat">Light (Default)</a>
+                    <a href="#" class="model-option block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50"
+                        data-model="Line" data-url="https://ai.litiaina.com/v1/api/stream/chat">Line</a>
                 </div>
             </div>
             <div id="cancel-btn-container" class="h-10"></div>
@@ -282,7 +284,8 @@
             <div id="welcome-screen" class="h-full flex flex-col items-center justify-center text-center">
                 <div class="relative w-20 h-20 mb-4">
                     <div class="absolute inset-0 bg-red-600 rounded-3xl blur-lg opacity-30"></div>
-                    <img src="https://placehold.co/100x100/B91C1C/ffffff?text=AI" alt="Line AI Logo" class="relative w-20 h-20 rounded-3xl"
+                    <img src="https://placehold.co/100x100/B91C1C/ffffff?text=AI" alt="Line AI Logo"
+                        class="relative w-20 h-20 rounded-3xl"
                         onerror="this.onerror=null;this.src='https://placehold.co/100x100/B91C1C/ffffff?text=AI';">
                 </div>
                 <h2 class="text-2xl font-bold text-gray-200">How can I help you today?</h2>
@@ -368,7 +371,7 @@
                 modelDropdownContent.style.display = 'none';
                 modelDropdownBtn.querySelector('svg').style.transform = 'rotate(0deg)';
             });
-            
+
             // --- Model Selection ---
             modelDropdownContent.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -413,7 +416,7 @@
                             navigator.clipboard.writeText(textToCopy).then(() => {
                                 copyButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Copied!</span>`;
                             }).catch(err => {
-                                 copyButton.querySelector('span').textContent = 'Error';
+                                copyButton.querySelector('span').textContent = 'Error';
                             });
                         } catch (err) {
                             const textArea = document.createElement("textarea");
@@ -429,7 +432,7 @@
                             }
                             document.body.removeChild(textArea);
                         }
-                        
+
                         setTimeout(() => {
                             copyButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg><span>Copy</span>`;
                         }, 2000);
@@ -472,9 +475,9 @@
 
                 const bubbleContent = document.createElement('div');
                 bubbleContent.className = `bubble-content p-4 rounded-xl ${role === 'user' ? 'bg-[#262626] text-white rounded-br-none' : 'bg-[#1C1C1C] text-gray-200 rounded-bl-none'}`;
-                
+
                 bubbleContent.innerHTML = marked.parse(content);
-                
+
                 bubbleContent.querySelectorAll("pre code").forEach(el => hljs.highlightElement(el));
                 enhanceMarkup(bubbleContent);
 
@@ -514,7 +517,7 @@
                 chatScrollArea.scrollTop = chatScrollArea.scrollHeight;
 
                 let detailsContent = null;
-                
+
                 const switchToThinkingState = () => {
                     if (container.querySelector('.thinking-header')) return; // Already switched
 
@@ -529,7 +532,7 @@
                                 <span>Show work</span>
                             </button>
                         </div>`;
-                    
+
                     detailsContent = document.createElement('div');
                     detailsContent.className = 'thinking-details hidden bg-[#0D0D0D] p-3 rounded-md border border-gray-700 mt-3';
                     detailsContent.innerHTML = '<pre class="!p-0 !bg-transparent !border-none max-h-32 custom-scrollbar" style="white-space: pre-wrap; overflow-wrap: break-word;"><code class="language-text"></code></pre>';
@@ -583,7 +586,7 @@
 
                 appendMessage("user", userMsg);
                 messages.push({ role: "user", content: userMsg });
-                
+
                 userInput.value = "";
                 userInput.style.height = 'auto';
                 chatScrollArea.scrollTop = chatScrollArea.scrollHeight;
@@ -699,4 +702,5 @@
         });
     </script>
 </body>
+
 </html>
