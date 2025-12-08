@@ -417,6 +417,13 @@
             overflow-y: auto;
             padding: 12px;
             position: relative;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        
+        /* Drag and Drop Active State */
+        #browser.drag-active {
+            background-color: rgba(59, 130, 246, 0.1) !important;
+            border: 2px dashed #3b82f6 !important;
         }
 
         /* Grid Items */
@@ -2263,8 +2270,14 @@
         }
 
         function toggleStar(key) {
-            if (starredItems.includes(key)) starredItems = starredItems.filter(k => k !== key);
-            else starredItems.push(key);
+            if (starredItems.includes(key)) {
+                starredItems = starredItems.filter(k => k !== key);
+                showToast('Removed from Important', 'info'); // Feedback
+            }
+            else {
+                starredItems.push(key);
+                showToast('Added to Important', 'success'); // Feedback
+            }
             localStorage.setItem('starredItems', JSON.stringify(starredItems));
 
             // Refresh view
@@ -2285,14 +2298,52 @@
 
         async function emptyTrash() {
             showGenericModal('Empty Recycle Bin', 'Delete all items permanently?', async () => {
-                for (const item of trashedItems) {
-                    await fetch(`${serverLink}/v4/fragment/object/delete/${item.fragment}/${item.key}`, {
-                        method: 'DELETE', headers: { authorization: `Bearer ${token}` }
-                    });
+                // Hide generic modal immediately to prevent conflict
+                $('#genericModal').addClass('hidden').removeClass('flex');
+
+                const total = trashedItems.length;
+                if (total === 0) return;
+
+                // Create Progress Modal if not exists
+                const progressId = 'trash-progress-modal';
+                if (!$('#' + progressId).length) {
+                    $('body').append(`
+                <div id="${progressId}" class="fixed inset-0 bg-black/80 z-[6000] flex flex-col items-center justify-center hidden">
+                    <div class="bg-[#242424] p-6 rounded-lg shadow-2xl border border-[#404040] w-96 text-center">
+                        <h3 class="text-white font-bold mb-4">Emptying Recycle Bin...</h3>
+                        <div class="w-full bg-[#111] rounded-full h-4 mb-2 overflow-hidden border border-[#333]">
+                            <div id="trash-progress-bar" class="bg-red-600 h-full transition-all duration-200" style="width: 0%"></div>
+                        </div>
+                        <p id="trash-progress-text" class="text-xs text-gray-400">0 / ${total}</p>
+                    </div>
+                </div>
+            `);
                 }
+
+                $(`#${progressId}`).removeClass('hidden').addClass('flex');
+
+                let deleted = 0;
+                for (const item of trashedItems) {
+                    try {
+                        await fetch(`${serverLink}/v4/fragment/object/delete/${item.fragment}/${item.key}`, {
+                            method: 'DELETE', headers: { authorization: `Bearer ${token}` }
+                        });
+                    } catch (e) { console.error(e); }
+
+                    deleted++;
+                    const pct = Math.round((deleted / total) * 100);
+                    $('#trash-progress-bar').css('width', `${pct}%`);
+                    $('#trash-progress-text').text(`${deleted} / ${total}`);
+                }
+
                 trashedItems = [];
                 localStorage.setItem('trashedItems', '[]');
                 showTrash();
+
+                setTimeout(() => {
+                    $(`#${progressId}`).addClass('hidden').removeClass('flex');
+                    showToast('Recycle Bin emptied.', 'success');
+                }, 500);
             });
         }
 
@@ -2661,10 +2712,98 @@
             }
         };
 
+        function setupLogoutWithConfirmation(logoutId, redirectPage) {
+            const logoutBtn = document.getElementById(logoutId);
+            if (!logoutBtn) return;
+
+            const modal = document.createElement("div");
+            modal.id = "logout-modal";
+            modal.className = "fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[7000] hidden";
+            
+            // REDESIGNED MODAL CONTENT
+            // Matches 'index.html' glass card + screenshot layout
+            modal.innerHTML = `
+                <div class="bg-[#242424]/95 backdrop-blur-xl p-6 rounded-xl shadow-2xl w-[90%] max-w-sm border border-[#383838] transform scale-100 transition-all">
+                    <h2 class="text-lg font-medium text-white mb-2">Confirm Logout</h2>
+                    <p class="text-sm text-gray-400 mb-6 leading-relaxed">Are you sure you want to log out?</p>
+                    <div class="flex justify-end gap-3">
+                        <button id="cancel-logout" class="px-4 py-2 rounded-lg bg-[#333] hover:bg-[#444] text-gray-200 text-xs font-medium border border-[#444] transition-colors">Cancel</button>
+                        <button id="confirm-logout" class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-medium shadow-lg shadow-red-900/20 transition-all">Logout</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            logoutBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                modal.classList.remove("hidden");
+            });
+
+            modal.querySelector("#cancel-logout").addEventListener("click", () => {
+                modal.classList.add("hidden");
+            });
+
+            modal.querySelector("#confirm-logout").addEventListener("click", () => {
+                localStorage.removeItem("current-account-email");
+                localStorage.removeItem("current-token");
+                localStorage.removeItem("current-account-uid");
+                localStorage.removeItem("current-account-name");
+                localStorage.removeItem("current-capacity");
+
+                modal.querySelector("#confirm-logout").textContent = "Logging out...";
+                setTimeout(() => {
+                    window.location.href = redirectPage;
+                }, 700);
+            });
+        }
+
         // --- Init ---
         $(document).ready(() => {
             // *** VIRTUAL SCROLLER INITIALIZATION (FIX FOR BLANK FILE SYSTEM) ***
             VirtualScroller.init('browser', 'objectList');
+
+            setupLogoutWithConfirmation("user-profile-btn", "index.html");
+
+            // --- DRAG AND DROP HANDLERS ---
+            const dropZone = document.getElementById('browser');
+            if (dropZone) {
+                // Use a counter or simple add/remove approach
+                // To keep it robust, we can add class on dragenter, remove on dragleave/drop
+                // But dragleave fires when entering children, so we must be careful.
+                
+                // Simple approach: dragover adds class, dragleave removes. 
+                // But since dragover fires continuously, let's optimize.
+                
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    dropZone.addEventListener(eventName, (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }, false);
+                });
+                
+                // Visual Cues
+                let dragCounter = 0; // Robust method for nested children
+                
+                dropZone.addEventListener('dragenter', (e) => {
+                    dragCounter++;
+                    dropZone.classList.add('drag-active');
+                });
+                
+                dropZone.addEventListener('dragleave', (e) => {
+                    dragCounter--;
+                    if (dragCounter === 0) {
+                        dropZone.classList.remove('drag-active');
+                    }
+                });
+                
+                dropZone.addEventListener('drop', (e) => {
+                    dragCounter = 0;
+                    dropZone.classList.remove('drag-active');
+                    const dt = e.dataTransfer;
+                    const files = dt.files;
+                    handleUploads(files);
+                });
+            }
 
             $(".window").draggable({ handle: ".window-header", containment: "#windows-container", start: function () { WindowManager.focus($(this).attr('id').replace('win-', '')); } }).resizable({ minHeight: 200, minWidth: 300 });
             $(".window").on('mousedown', function () { WindowManager.focus($(this).attr('id').replace('win-', '')); });
