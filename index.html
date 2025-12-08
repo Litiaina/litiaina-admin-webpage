@@ -4,134 +4,177 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Litiaina - Login</title>
+  <title>N1 Cloud - Login</title>
   <link rel="icon" type="image/png" href="images/litiaina_icon.png">
+  
+  <!-- Tailwind & Fonts -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
-    html {
-      background-color: #000;
+    :root {
+      --bg-desktop: #1b2028;
+      --bg-window: #242424;
+      --border-color: #383838;
+      --accent-color: #3b82f6;
+      --text-primary: #e5e5e5;
     }
 
     body {
-      visibility: hidden;
       font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at 50% 50%, #20252e 0%, #111418 100%);
+      background-size: cover;
+      color: var(--text-primary);
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .modal-enter {
-      animation: fadeIn 0.3s ease-out;
+    /* Glass Card Style */
+    .login-card {
+      background-color: rgba(36, 36, 36, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     }
 
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: scale(0.95);
-      }
+    /* Input Styling */
+    .n1-input {
+      background-color: #111;
+      border: 1px solid #333;
+      color: #fff;
+      transition: all 0.2s;
+    }
 
+    .n1-input:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+      outline: none;
+    }
+
+    /* Animation */
+    .fade-in-up {
+      animation: fadeInUp 0.5s ease-out forwards;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    @keyframes fadeInUp {
       to {
         opacity: 1;
-        transform: scale(1);
+        transform: translateY(0);
       }
+    }
+
+    /* Custom Scrollbar for Modal content if needed */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #444;
+      border-radius: 4px;
     }
   </style>
 </head>
 
-<body class="bg-black text-white flex flex-col items-center justify-center min-h-screen p-4">
+<body>
 
-  <div class="w-full max-w-md">
-    <div class="text-center mb-8">
-      <div class="mx-auto bg-gray-800 h-20 w-20 rounded-full flex items-center justify-center mb-4">
-        <img src="images/litiaina_icon.png" alt="https://placehold.co/60x60/374151/FFFFFF?text=Logo" class="rounded-full">
+  <!-- Background Wallpaper Effect -->
+  <div class="absolute inset-0 z-0 pointer-events-none" 
+       style="background-image: url('images/n1-cloud-professional-wallpaper.jpg'); background-size: cover; opacity: 0.1;"></div>
+
+  <!-- Login Container -->
+  <div class="w-full max-w-md p-6 relative z-10 fade-in-up">
+    
+    <!-- OS-Like User Profile Header -->
+    <div class="text-center mb-8 flex flex-col items-center">
+      <div class="w-24 h-24 rounded-full bg-[#1f1f1f] border-2 border-[#383838] p-1 shadow-2xl mb-4 relative group">
+        <div class="w-full h-full rounded-full bg-[#111] flex items-center justify-center overflow-hidden relative">
+          <img src="images/litiaina_icon.png" onerror="this.src='https://placehold.co/100x100/333/888?text=N1'" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity">
+        </div>
+        <!-- Status Indicator -->
+        <div class="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#1f1f1f]"></div>
       </div>
-      <h1 class="text-3xl font-bold text-white">Welcome Back!</h1>
-      <p class="text-gray-400 mt-2">Login to access your account</p>
+      <h1 class="text-2xl font-light tracking-wide text-white">N1 Cloud</h1>
+      <p class="text-xs text-gray-500 mt-1 uppercase tracking-widest">Professional Environment</p>
     </div>
 
-    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 md:p-8">
-      <form id="loginForm" class="space-y-6">
-        <div class="relative">
-          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-              fill="currentColor">
-              <path
-                d="M2.003 5.884L10 2.5l7.997 3.384A2 2 0 0119 7.616V16a2 2 0 01-2 2H3a2 2 0 01-2-2V7.616a2 2 0 011.003-1.732zM10 13a3 3 0 100-6 3 3 0 000 6z" />
-            </svg>
+    <div class="login-card rounded-xl p-8">
+      <form id="loginForm" class="space-y-5">
+        
+        <!-- Email Input -->
+        <div class="relative group">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-user text-gray-500 group-focus-within:text-blue-500 transition-colors"></i>
           </div>
-          <input type="email" id="loginEmail" placeholder="Email" required
-            class="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 transition duration-200" />
+          <input type="email" id="loginEmail" placeholder="Username / Email" required
+            class="n1-input w-full pl-10 pr-4 py-3 rounded-lg text-sm placeholder-gray-600" />
         </div>
 
-        <div class="relative">
-          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-              fill="currentColor">
-              <path fill-rule="evenodd"
-                d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z"
-                clip-rule="evenodd" />
-            </svg>
+        <!-- Password Input -->
+        <div class="relative group">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-lock text-gray-500 group-focus-within:text-blue-500 transition-colors"></i>
           </div>
           <input type="password" id="loginPassword" placeholder="Password" required
-            class="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 transition duration-200" />
+            class="n1-input w-full pl-10 pr-4 py-3 rounded-lg text-sm placeholder-gray-600" />
         </div>
 
+        <!-- OTP Group (Hidden by default) -->
         <div class="relative hidden" id="otpGroup">
-          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-              stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
-            </svg>
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-shield-alt text-gray-500 transition-colors"></i>
           </div>
-          <input type="text" id="loginOtp" placeholder="Enter OTP"
-            class="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 transition duration-200" />
+          <input type="text" id="loginOtp" placeholder="Authentication Code (2FA)"
+            class="n1-input w-full pl-10 pr-4 py-3 rounded-lg text-sm placeholder-gray-600" />
         </div>
 
-        <div class="text-right">
-          <span id="forgotPassword" class="text-sm text-red-400 hover:text-red-300 cursor-pointer">Forgot
-            password?</span>
+        <div class="flex justify-between items-center text-xs text-gray-400">
+            <label class="flex items-center hover:text-gray-300 cursor-pointer">
+                <input type="checkbox" class="mr-2 rounded bg-[#111] border-[#333] text-blue-600 focus:ring-0"> Remember me
+            </label>
+            <span id="forgotPassword" class="hover:text-blue-400 cursor-pointer transition-colors">Forgot password?</span>
         </div>
 
+        <!-- Action Button -->
         <button type="submit" id="authBtn"
-          class="w-full flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 disabled:bg-red-400 disabled:cursor-not-allowed">
-          <span id="btnText">LOGIN</span>
-          <svg id="btnSpinner" class="animate-spin h-5 w-5 text-white ml-3 hidden" xmlns="http://www.w3.org/2000/svg"
-            fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-            </path>
-          </svg>
+          class="w-full flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
+          <span id="btnText">SIGN IN</span>
+          <i id="btnSpinner" class="fas fa-circle-notch fa-spin ml-2 hidden"></i>
         </button>
 
-        <div class="text-center text-gray-400">
-          Don't have an account?
-          <span id="signup" class="font-semibold text-red-400 hover:text-red-300 cursor-pointer">
-            Sign Up
-          </span>
+        <div class="text-center mt-6 pt-4 border-t border-[#333]">
+          <p class="text-xs text-gray-500">Don't have an account?</p>
+          <button type="button" id="signup" class="text-sm font-medium text-gray-300 hover:text-white mt-2 flex items-center justify-center w-full gap-2 transition-colors">
+            Create System Account <i class="fas fa-arrow-right text-xs"></i>
+          </button>
         </div>
       </form>
     </div>
+    
+    <div class="text-center mt-8 text-[10px] text-gray-600 font-mono">
+        SYSTEM VERSION 0.0.1 • SECURE CONNECTION
+    </div>
   </div>
 
-  <div id="modalContainer"
-    class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 hidden">
-    <div id="modal"
-      class="modal-enter w-full max-w-sm bg-gray-900 border border-gray-800 rounded-2xl shadow-lg p-6 text-center">
-      <h3 id="modalTitle" class="text-xl font-bold mb-3">Modal Title</h3>
-      <p id="modalMessage" class="text-gray-300 mb-6">This is a sample message.</p>
-      <button id="modalCloseBtn"
-        class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-lg transition duration-200">
-        CLOSE
+  <!-- Modal (Styled for N1 Cloud) -->
+  <div id="modalContainer" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div id="modal" class="bg-[#242424] border border-[#383838] rounded-lg shadow-2xl p-6 max-w-sm w-full transform transition-all scale-100">
+      <h3 id="modalTitle" class="text-lg font-medium text-white mb-2 flex items-center gap-2">
+        <i class="fas fa-info-circle"></i> <span>Notification</span>
+      </h3>
+      <p id="modalMessage" class="text-sm text-gray-400 mb-6 leading-relaxed">Message content goes here.</p>
+      <button id="modalCloseBtn" class="w-full bg-[#333] hover:bg-[#444] text-white font-medium py-2 px-4 rounded transition duration-200 text-sm border border-[#444]">
+        DISMISS
       </button>
     </div>
   </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      document.body.style.visibility = 'visible';
-
       const serverLink = `https://api.litiaina.com`;
       const loginForm = document.getElementById('loginForm');
       const otpGroup = document.getElementById('otpGroup');
@@ -143,27 +186,31 @@
       const modalTitle = document.getElementById('modalTitle');
       const modalMessage = document.getElementById('modalMessage');
       const modalCloseBtn = document.getElementById('modalCloseBtn');
-      const modal = document.getElementById('modal');
 
       const setLoading = (isLoading) => {
         authBtn.disabled = isLoading;
         if (isLoading) {
-          btnText.classList.add('hidden');
+          btnText.textContent = 'AUTHENTICATING...';
           btnSpinner.classList.remove('hidden');
         } else {
-          btnText.classList.remove('hidden');
+          btnText.textContent = 'SIGN IN';
           btnSpinner.classList.add('hidden');
         }
       };
 
       const showModal = (title, message, isError = true) => {
-        modalTitle.textContent = title;
+        modalTitle.querySelector('span').textContent = title;
         modalMessage.textContent = message;
-        modalTitle.classList.remove('text-red-400', 'text-green-400');
+        
+        const icon = modalTitle.querySelector('i');
+        modalTitle.className = "text-lg font-medium mb-2 flex items-center gap-2"; // Reset
+        
         if (isError) {
-          modalTitle.classList.add('text-red-400');
+            modalTitle.classList.add('text-red-400');
+            icon.className = "fas fa-exclamation-triangle";
         } else {
-          modalTitle.classList.add('text-green-400');
+            modalTitle.classList.add('text-green-400');
+            icon.className = "fas fa-check-circle";
         }
         modalContainer.classList.remove('hidden');
       };
@@ -172,19 +219,15 @@
         modalContainer.classList.add('hidden');
       };
 
-      document.getElementById("signup").onclick = () => {
-        window.location.href = "signup.html";
-      };
+      document.getElementById("signup").onclick = () => window.location.href = "signup.html";
 
       document.getElementById("forgotPassword").onclick = () => {
-        showModal("Forgot Password", "Password recovery is not implemented yet. Please contact support if you need assistance.");
+        showModal("System Notice", "Password recovery protocols are offline. Contact the administrator.");
       };
 
       modalCloseBtn.addEventListener('click', hideModal);
       modalContainer.addEventListener('click', (e) => {
-        if (e.target === modalContainer) {
-          hideModal();
-        }
+        if (e.target === modalContainer) hideModal();
       });
 
       loginForm.addEventListener('submit', async function (e) {
@@ -196,52 +239,52 @@
         const otp = otpInput.value.trim();
 
         if (!email || !password) {
-          showModal("Validation Error", "Please fill in both email and password fields.");
+          showModal("Input Error", "User identity and credential key are required.");
           setLoading(false);
           return;
         }
 
         try {
+          // Check 2FA
           let otpRequired = false;
           try {
-            const twoFaCheckResponse = await fetch(`${serverLink}/auth/account/2fa`, {
+            const checkRes = await fetch(`${serverLink}/auth/account/2fa`, {
               method: 'POST',
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ email, password })
             });
-            if (twoFaCheckResponse.ok) {
-              const result = await twoFaCheckResponse.json();
+            if (checkRes.ok) {
+              const result = await checkRes.json();
               otpRequired = result.enabled === true;
             }
-          } catch (checkError) {
-            console.warn("2FA check failed, proceeding without it.", checkError);
-          }
+          } catch (e) { console.warn("2FA check skipped", e); }
 
           if (otpRequired) {
             otpGroup.classList.remove('hidden');
             if (!otp) {
-              showModal("Authentication Required", "This account has 2FA enabled. Please enter your OTP to continue.");
+              showModal("Security Challenge", "Two-Factor Authentication is active for this account. Please provide your token.");
               setLoading(false);
               return;
             }
           }
 
-          const loginPayload = { email, password, otp: otp || "" };
-          const loginResponse = await fetch(`${serverLink}/auth/login`, {
+          // Login
+          const loginRes = await fetch(`${serverLink}/auth/login`, {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(loginPayload)
+            body: JSON.stringify({ email, password, otp: otp || "" })
           });
 
-          const loginResult = await loginResponse.json();
+          const loginResult = await loginRes.json();
 
-          if (!loginResponse.ok || !loginResult.response) {
-            const errorMessage = loginResult.message || "Email, password, or OTP is incorrect.";
-            throw new Error(errorMessage);
+          if (!loginRes.ok || !loginResult.response) {
+            throw new Error(loginResult.message || "Invalid credentials provided.");
           }
 
           const token = loginResult.token;
-          const accountResponse = await fetch(`${serverLink}/auth/account`, {
+          
+          // Get Account Details
+          const accRes = await fetch(`${serverLink}/auth/account`, {
             method: 'POST',
             headers: {
               "Content-Type": "application/json",
@@ -250,11 +293,9 @@
             body: JSON.stringify({ email })
           });
 
-          if (!accountResponse.ok) {
-            throw new Error("Could not retrieve account details after login.");
-          }
+          if (!accRes.ok) throw new Error("Failed to retrieve user profile.");
 
-          const accountDetails = await accountResponse.json();
+          const accountDetails = await accRes.json();
 
           localStorage.setItem("current-account-email", email);
           localStorage.setItem("current-token", token);
@@ -262,14 +303,14 @@
           localStorage.setItem("current-account-name", accountDetails.name);
           localStorage.setItem("current-capacity", accountDetails.allocated_storage);
 
-          showModal("Login Successful!", "You will be redirected to your storage.", false);
+          showModal("Access Granted", "Initializing desktop environment...", false);
 
           setTimeout(() => {
-            window.location.href = "N1.html";
-          }, 1000);
+            window.location.href = "n1-cloud-professional.html";
+          }, 1500);
 
         } catch (err) {
-          showModal("Login Failed", err.message || "An unknown error occurred. Please try again.");
+          showModal("Access Denied", err.message);
         } finally {
           setLoading(false);
         }
@@ -277,5 +318,4 @@
     });
   </script>
 </body>
-
 </html>

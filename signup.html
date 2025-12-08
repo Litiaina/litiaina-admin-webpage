@@ -2,234 +2,204 @@
 <html lang="en">
 
 <head>
-  <link rel="icon" type="image/png" href="images/litiaina_icon.png" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign Up</title>
+  <title>N1 Cloud - Registration</title>
+  <link rel="icon" type="image/png" href="images/litiaina_icon.png">
+  
+  <!-- Tailwind & Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 0;
+    :root {
+      --bg-desktop: #1b2028;
+      --text-primary: #e5e5e5;
     }
 
     body {
-      background-color: #000;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
-    }
-
-    .auth-box {
-      background-color: #111;
-      border-radius: 12px;
-      padding: 30px;
-      width: 100%;
-      max-width: 400px;
-      position: relative;
-      transition: all 0.3s ease;
-      z-index: 1;
-    }
-
-    .top-banner {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-
-    .top-banner img {
-      max-width: 100px;
-      margin-bottom: 10px;
-    }
-
-    .top-banner h1 {
-      font-size: 1.5rem;
-      font-weight: bold;
-    }
-
-    .top-banner p {
-      color: #ccc;
-      font-size: 0.9rem;
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .input-group {
-      position: relative;
-      margin-bottom: 20px;
-    }
-
-    .input-group input {
-      width: 100%;
-      padding: 14px 14px 14px 44px;
-      border: none;
-      border-radius: 8px;
-      background-color: #222;
-      color: #fff;
-      font-size: 1rem;
-    }
-
-    .input-group input::placeholder {
-      color: #888;
-    }
-
-    .input-group .icon {
-      position: absolute;
-      top: 50%;
-      left: 14px;
-      transform: translateY(-50%);
-      color: #ccc;
-    }
-
-    .error-message {
-      color: red;
-      font-size: 0.85rem;
-      margin-top: -16px;
-      margin-bottom: 10px;
-      text-align: left;
-      padding-left: 10px;
-    }
-
-    .auth-btn {
-      width: 100%;
-      padding: 14px;
-      background-color: #222;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-
-    .auth-btn:hover {
-      background-color: #333;
-    }
-
-    .switch-text {
-      margin-top: 20px;
-      text-align: center;
-      font-size: 0.9rem;
-    }
-
-    .switch-text span {
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .forgot-password {
-      text-align: center;
-      color: red;
-      font-size: 0.9rem;
-      margin-bottom: 20px;
-      cursor: pointer;
-    }
-
-    .extra-space {
-      margin-bottom: 40px;
-    }
-
-    .loading-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at 50% 50%, #20252e 0%, #111418 100%);
+      background-size: cover;
+      color: var(--text-primary);
       height: 100vh;
-      background-color: rgba(0, 0, 0, 0.8);
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 999;
+      overflow: hidden;
+    }
+
+    /* Floating Panel Style (Matches File Explorer in OS) */
+    .register-window {
+      width: 100%;
+      max-width: 440px;
+      background-color: #242424;
+      border: 1px solid #383838;
+      border-radius: 8px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+      display: flex;
       flex-direction: column;
-      color: white;
-      font-size: 1.2rem;
+      overflow: hidden;
     }
 
-    .loader {
-      border: 6px solid #f3f3f3;
-      border-top: 6px solid #555;
-      border-radius: 50%;
-      width: 40px;
+    .window-header {
       height: 40px;
+      background-color: #2d2d2d;
+      border-bottom: 1px solid #383838;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+    }
+
+    .window-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #e5e5e5;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .window-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .win-btn {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    /* Input Styles */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 11px;
+      color: #a3a3a3;
+      margin-bottom: 6px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .n1-input {
+      width: 100%;
+      background-color: #111;
+      border: 1px solid #333;
+      color: white;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+
+    .n1-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      background-color: #161616;
+    }
+
+    /* Loader */
+    .loader {
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top: 3px solid #3b82f6;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
       animation: spin 1s linear infinite;
-      margin-bottom: 10px;
     }
 
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .hidden {
-      display: none !important;
-    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 
 <body>
-  <div class="top-banner">
-    <img src="images/litiaina_icon.png" alt="User Icon" />
-    <h1 id="banner-title">Register your Account</h1>
-    <p id="banner-desc">Sign up for admin access</p>
-  </div>
 
-  <div class="auth-box" id="authBox">
-    <form id="signupForm">
-      <div class="input-group">
-        <span class="icon">👤</span>
-        <input type="text" id="signupName" placeholder="Name" required />
+  <!-- Window Container -->
+  <div class="register-window fade-in-up">
+    <!-- OS Window Header -->
+    <div class="window-header">
+      <div class="window-title">
+        <i class="fas fa-user-plus text-blue-500"></i> New User Setup
       </div>
-      <div class="input-group">
-        <span class="icon">📧</span>
-        <input type="email" id="signupEmail" placeholder="Email" required />
+      <div class="window-controls">
+        <div class="win-btn bg-gray-600"></div>
+        <div class="win-btn bg-gray-600"></div>
+        <div class="win-btn bg-red-500 cursor-pointer" onclick="window.location.href='/'"></div>
       </div>
-      <div class="input-group">
-        <span class="icon">🔒</span>
-        <input type="password" id="signupPassword" placeholder="Password" required />
+    </div>
+
+    <!-- Window Body -->
+    <div class="p-8 bg-[#242424]">
+      
+      <div class="flex items-start gap-4 mb-6">
+        <div class="w-12 h-12 rounded bg-[#333] flex items-center justify-center text-gray-500 text-xl border border-[#444]">
+            <i class="fas fa-id-card"></i>
+        </div>
+        <div>
+            <h2 class="text-white font-medium">Create Account</h2>
+            <p class="text-xs text-gray-500 mt-1">Configure your profile to access the N1 Cloud environment.</p>
+        </div>
       </div>
-      <div class="input-group">
-        <span class="icon">🔒</span>
-        <input type="password" id="signupConfirmPassword" placeholder="Confirm Password" required />
-      </div>
-      <div class="input-group extra-space">
-        <span class="icon">🔑</span>
-        <input type="text" id="signupAuthKey" placeholder="Auth Key" required />
-      </div>
-      <div class="error-message" id="signupError"></div>
-      <button type="submit" class="auth-btn">SIGN UP</button>
-      <div class="switch-text" id="login">
-        <span>Already have an account? LOGIN</span>
-      </div>
-    </form>
+
+      <form id="signupForm">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" id="signupName" class="n1-input" placeholder="e.g. John Doe" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="signupEmail" class="n1-input" placeholder="user@litiaina.com" required />
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <input type="password" id="signupPassword" class="n1-input" placeholder="••••••••" required />
+            </div>
+    
+            <div class="form-group">
+              <label class="form-label">Confirm Password</label>
+              <input type="password" id="signupConfirmPassword" class="n1-input" placeholder="••••••••" required />
+            </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label flex justify-between">
+            <span>Authorization Key</span>
+            <span class="text-[10px] text-gray-600 cursor-pointer hover:text-blue-400" onclick="alert('Contact your system administrator for an Auth Key.')"><i class="fas fa-question-circle"></i> Help</span>
+          </label>
+          <input type="text" id="signupAuthKey" class="n1-input font-mono text-xs" placeholder="XXXX-XXXX-XXXX-XXXX" required />
+        </div>
+
+        <div class="text-xs text-red-400 mb-4 min-h-[16px]" id="signupError"></div>
+
+        <div class="flex items-center justify-end gap-3 mt-8 pt-4 border-t border-[#333]">
+            <button type="button" class="text-xs text-gray-400 hover:text-white px-3 py-2 transition-colors" onclick="window.location.href='/'">Cancel</button>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded text-xs font-medium transition-colors shadow-lg shadow-blue-900/20">CREATE ACCOUNT</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <!-- Loading Overlay -->
-  <div class="loading-overlay hidden" id="loadingOverlay">
-    <div class="loader"></div>
-    <div>Registering account...</div>
+  <div id="loadingOverlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center">
+    <div class="loader mb-4"></div>
+    <div class="text-sm font-medium text-gray-300">Registering User Profile...</div>
+    <div class="text-xs text-gray-600 mt-2 font-mono">WRITING TO DATABASE</div>
   </div>
 
   <script>
     const serverLink = "https://api.litiaina.com";
     const signupForm = document.getElementById('signupForm');
     const loadingOverlay = document.getElementById("loadingOverlay");
-
-    // Hide overlay on initial page load
-    window.addEventListener("load", () => {
-      loadingOverlay.classList.add("hidden");
-    });
-
-    document.getElementById("login").onclick = () => {
-      window.location.href = "/";
-    };
 
     signupForm.addEventListener('submit', async function (e) {
       e.preventDefault();
@@ -242,12 +212,12 @@
       error.textContent = "";
 
       if (!name || !email || !password || !confirm || !token) {
-        error.textContent = "Please fill in all fields.";
+        error.textContent = "All fields are required for profile creation.";
         return;
       }
 
       if (password.length < 6) {
-        error.textContent = "Password must be at least 6 characters.";
+        error.textContent = "Security Policy: Password must be 6+ chars.";
         return;
       }
 
@@ -276,18 +246,25 @@
         });
 
         if (response.ok) {
-          window.location.href = "/";
+          // Success Feedback
+          loadingOverlay.innerHTML = `
+            <div class="text-green-500 text-4xl mb-4"><i class="fas fa-check-circle"></i></div>
+            <div class="text-sm font-medium text-white">Profile Created</div>
+            <div class="text-xs text-gray-500 mt-2">Redirecting to login...</div>
+          `;
+          setTimeout(() => {
+            window.location.href = "index.html"; // Go back to login, not root, for clarity in file structure
+          }, 1500);
         } else {
-          error.textContent = "Register failed. Please try again.";
+          error.textContent = "Registration failed. Verify your Auth Key.";
+          loadingOverlay.classList.add("hidden");
         }
 
       } catch (err) {
-        error.textContent = err.message || "Server is not responding or error occurred";
-      } finally {
+        error.textContent = "Connection Error: Server unreachable.";
         loadingOverlay.classList.add("hidden");
       }
     });
   </script>
 </body>
-
 </html>

@@ -1,0 +1,2961 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>N1 Cloud - Professional</title>
+    <link rel="icon" type="image/png" href="images/litiaina_icon.png">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Fonts & Icons -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
+    <!-- Markdown & Highlight -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+
+    <style>
+        :root {
+            /* --- Synology-inspired Dark Theme --- */
+            --bg-desktop: #1b2028;
+            --bg-window: #242424;
+            /* Darker, Matte */
+            --bg-sidebar: #1f1f1f;
+            --header-bg: #2d2d2d;
+            --border-color: #383838;
+
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+
+            --text-primary: #e5e5e5;
+            --text-secondary: #a3a3a3;
+            --text-muted: #6b7280;
+
+            --item-hover: rgba(255, 255, 255, 0.04);
+            --item-active: rgba(59, 130, 246, 0.15);
+
+            /* AI Theme Colors (Gemini-like) */
+            --ai-bg: #0D0D0D;
+            --ai-surface: #1C1C1C;
+            --ai-accent: #B91C1C;
+        }
+
+        .status-pending {
+            opacity: 0.6;
+        }
+
+        /* Virtualization Fixed Heights */
+        /* Adjusted height for text wrapping */
+        .item-tile {
+            height: 155px; /* Slightly increased to prevent text cutoff */
+        }
+
+        .item-list {
+            height: 42px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-desktop);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            user-select: none;
+            color: var(--text-primary);
+        }
+
+        /* --- Desktop --- */
+        #desktop {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, #20252e 0%, #111418 100%);
+            background-size: cover;
+            background-image: url("images/n1-cloud-professional-wallpaper.jpg")
+        }
+
+        /* --- Bottom Taskbar (Windows Style) --- */
+        #taskbar {
+            position: absolute;
+            top: auto;
+            /* Remove top positioning */
+            bottom: 0;
+            /* Move to bottom */
+            left: 0;
+            right: 0;
+            height: 48px;
+            /* Slightly taller for Windows style */
+            background: rgba(30, 30, 30, 0.75);
+            /* More translucent */
+            backdrop-filter: blur(12px);
+            /* Glassmorphism effect */
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            /* Border on top */
+            border-bottom: none;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .start-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+            color: var(--text-primary);
+            margin-right: 8px;
+        }
+
+        .start-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        #taskbar-apps {
+            display: flex;
+            gap: 4px;
+            margin-left: 4px;
+            flex: 1;
+            height: 100%;
+            align-items: center;
+        }
+
+        .task-item {
+            height: 38px;
+            /* Fit inside 48px bar */
+            padding: 0 12px;
+            background: transparent;
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+            /* Indicator preparation */
+            max-width: 160px;
+        }
+
+        .task-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+        }
+
+        .task-item.active {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--accent-color);
+            /* Bottom indicator for active app */
+            box-shadow: none;
+        }
+
+        .task-item-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* --- Desktop Icons --- */
+        #desktop-icons {
+            position: absolute;
+            top: 20px;
+            /* Moved up since top bar is gone */
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .desktop-icon {
+            width: 96px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px 4px;
+            border-radius: 8px;
+            transition: background 0.2s, transform 0.1s;
+            text-align: center;
+
+            /* Box Indicator Style */
+            background-color: rgba(30, 30, 30, 0.45);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .desktop-icon:hover {
+            background-color: rgba(60, 60, 60, 0.6);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .desktop-icon:active {
+            transform: translateY(1px);
+        }
+
+        .desktop-icon-img {
+            font-size: 32px;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.4));
+        }
+
+        .desktop-icon-label {
+            color: #e5e5e5;
+            font-size: 11px;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            line-height: 1.3;
+        }
+
+        /* --- Windows Container & Layer --- */
+        #windows-container {
+            position: absolute;
+            top: 0;
+            /* Start at very top */
+            left: 0;
+            right: 0;
+            bottom: 48px;
+            /* End above the bottom taskbar */
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        .window {
+            position: absolute;
+            background-color: var(--bg-window);
+            border-radius: 6px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-width: 300px;
+            min-height: 200px;
+            opacity: 0;
+            transform: scale(0.98);
+            transition: opacity 0.15s, transform 0.15s;
+            pointer-events: auto;
+            /* Re-enable clicks on windows */
+        }
+
+        .window.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .window-header {
+            height: 36px;
+            background-color: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            cursor: move;
+            flex-shrink: 0;
+        }
+
+        .window-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 0.02em;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            max-width: 80%;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .win-btn {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .win-close {
+            background: #ff5f56;
+        }
+
+        .win-min {
+            background: #ffbd2e;
+        }
+
+        .win-max {
+            background: #27c93f;
+        }
+
+        .window-body {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            background: var(--bg-window);
+            position: relative;
+        }
+
+        /* File Explorer Sidebar */
+        .window-sidebar {
+            width: 200px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            padding: 10px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .nav-item {
+            padding: 6px 16px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.1s;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--item-hover);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: var(--item-active);
+            color: var(--accent-color);
+            border-left-color: var(--accent-color);
+            font-weight: 500;
+        }
+
+        /* File Explorer Content */
+        .window-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .toolbar {
+            height: 40px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            gap: 10px;
+            background: var(--bg-window);
+        }
+
+        .tool-btn {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--text-primary);
+            background: #333;
+            border: 1px solid #444;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.1s;
+        }
+
+        .tool-btn:hover {
+            background: #444;
+        }
+
+        .tool-btn.primary {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: white;
+        }
+
+        .tool-btn.primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            padding: 0 8px;
+        }
+
+        #browser {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            position: relative;
+        }
+
+        /* Grid Items */
+        .file-item {
+            border: 1px solid transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        .file-item:hover {
+            background: var(--item-hover);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Resource Monitor Specifics */
+        .res-sidebar {
+            width: 160px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            padding: 10px;
+        }
+
+        .res-tab {
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 2px;
+        }
+
+        .res-tab:hover {
+            background: var(--item-hover);
+            color: var(--text-primary);
+        }
+
+        .res-tab.active {
+            background: var(--item-active);
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        .res-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .res-card {
+            background: #2a2a2a;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .res-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .res-val {
+            font-size: 24px;
+            font-weight: 300;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Process Table - Fixed CSS error */
+        .proc-table {
+            width: 100%;
+            text-left: left;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .proc-table th {
+            padding: 8px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .proc-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #333;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .proc-row:hover td {
+            background: var(--item-hover);
+            color: var(--text-primary);
+        }
+
+        /* Utils */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-corner {
+            background: transparent;
+        }
+
+        #contextMenu {
+            background: #2d2d2d;
+            border: 1px solid #404040;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            z-index: 5000;
+        }
+
+        .ctx-item {
+            padding: 6px 16px;
+            cursor: pointer;
+            color: var(--text-primary);
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ctx-item:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .ctx-div {
+            border-top: 1px solid #404040;
+            margin: 4px 0;
+        }
+
+        /* Loader */
+        #boot-screen {
+            position: fixed;
+            inset: 0;
+            background: #111;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s;
+        }
+
+        /* Modal Backdrop */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(2px);
+        }
+
+        /* --- AI Cortex Specific (Gemini Style) --- */
+        .ai-message-bubble {
+            max-width: 85%;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .ai-user-bubble {
+            background-color: #262626;
+            color: white;
+            border-top-right-radius: 0;
+            margin-left: auto;
+        }
+
+        .ai-bot-bubble {
+            background-color: #1C1C1C;
+            color: #E5E5E5;
+            border-top-left-radius: 0;
+            margin-right: auto;
+        }
+
+        .ai-message-wrapper {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            animation: messageIn 0.3s ease-out forwards;
+        }
+
+        .ai-message-wrapper.user {
+            flex-direction: row-reverse;
+        }
+
+        @keyframes messageIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Syntax Highlighting overrides for AI */
+        .ai-bot-bubble pre {
+            background-color: #0d0d0d !important;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin-top: 0.5rem;
+            border: 1px solid #333;
+        }
+
+        .code-block-wrapper {
+            margin-top: 1rem;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+
+        .code-header {
+            background-color: #2a2b2e;
+            padding: 0.5rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: #a3a3a3;
+            border-bottom: 1px solid #333;
+        }
+
+        /* Markdown Styles for AI */
+        .bubble-content p {
+            margin-bottom: 0.75rem;
+        }
+
+        .bubble-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .bubble-content ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .bubble-content ol {
+            list-style-type: decimal;
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .bubble-content code {
+            background: #2d2d2d;
+            padding: 2px 4px;
+            rounded: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+        }
+
+        .bubble-content pre code {
+            background: transparent;
+            padding: 0;
+        }
+
+        .bubble-content strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .bubble-content a {
+            color: #F87171;
+            text-decoration: underline;
+        }
+
+        .suggestion-chip {
+            background-color: #1C1C1C;
+            border: 1px solid #333;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            color: #a3a3a3;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .suggestion-chip:hover {
+            background-color: #2a2b2e;
+            color: white;
+            border-color: #444;
+        }
+        
+        /* Zoom Viewer Styles */
+        .zoom-controls {
+            display: flex;
+            gap: 2px;
+            background: #1f1f1f;
+            border: 1px solid #383838;
+            border-radius: 4px;
+            padding: 2px;
+        }
+        
+        .grab-cursor {
+            cursor: grab;
+        }
+        
+        .grabbing-cursor {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+
+<body class="antialiased text-gray-200">
+
+    <!-- Boot Screen -->
+    <div id="boot-screen" class="flex flex-col items-center justify-center">
+        <img src="images/litiaina_icon_48x48.png" alt="logo" class="w-16 h-16 rounded-lg mb-4" />
+        <h1 class="text-lg font-medium tracking-wide text-gray-300">N1 Cloud</h1>
+        <p class="text-[10px] text-gray-600 mt-2 font-mono">
+            ENGINE VERSION 0.0.1 • LOADING SHELL
+        </p>
+    </div>
+
+    <div id="desktop">
+        <!-- Desktop Icons (Boxed for visibility) -->
+        <div id="desktop-icons">
+            <div class="desktop-icon" onclick="WindowManager.open('file-explorer')">
+                <div class="desktop-icon-img text-blue-500"><i class="fas fa-folder-tree"></i></div>
+                <div class="desktop-icon-label">File Station</div>
+            </div>
+            <div class="desktop-icon" onclick="WindowManager.open('dashboard')">
+                <div class="desktop-icon-img text-green-500"><i class="fas fa-chart-line"></i></div>
+                <div class="desktop-icon-label">Resource Monitor</div>
+            </div>
+            <div class="desktop-icon" onclick="WindowManager.open('recycle-bin')">
+                <div class="desktop-icon-img text-gray-400"><i class="fas fa-trash-can"></i></div>
+                <div class="desktop-icon-label">Recycle Bin</div>
+            </div>
+            <div class="desktop-icon" onclick="WindowManager.open('ai')">
+                <div class="desktop-icon-img text-red-600"><i class="fas fa-robot"></i></div>
+                <div class="desktop-icon-label">AI Cortex</div>
+            </div>
+        </div>
+
+        <!-- Taskbar -->
+        <div id="taskbar">
+            <div class="start-btn" id="start-btn">
+                <i class="fas fa-th text-lg"></i>
+            </div>
+            <div id="taskbar-apps">
+                <!-- App items injected here -->
+            </div>
+            <div class="ml-auto flex items-center gap-4 text-xs font-mono text-gray-400">
+                <div class="cursor-pointer hover:text-white flex items-center gap-2" title="Upload Status"
+                    onclick="WindowManager.open('uploads')">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <div id="clock">12:00 PM</div>
+                <div class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white cursor-pointer hover:bg-blue-500"
+                    id="user-profile-btn" title="Logout">
+                    <i class="fas fa-power-off text-[10px]"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Windows Layer -->
+        <div id="windows-container">
+
+            <!-- 1. FILE EXPLORER -->
+            <div id="win-file-explorer" class="window"
+                style="width: 1000px; height: 650px; top: 60px; left: 100px; display: none;">
+                <div class="window-header">
+                    <div class="window-title"><i class="fas fa-folder-tree text-blue-500"></i> File Station</div>
+                    <div class="window-controls">
+                        <div class="win-btn win-min" onclick="WindowManager.minimize('file-explorer')"></div>
+                        <div class="win-btn win-max" onclick="WindowManager.maximize('file-explorer')"></div>
+                        <div class="win-btn win-close" onclick="WindowManager.close('file-explorer')"></div>
+                    </div>
+                </div>
+                <div class="window-body">
+                    <div class="window-sidebar">
+                        <div class="text-[10px] font-bold text-gray-500 uppercase mb-2 px-4 mt-2">Access</div>
+                        <div class="nav-item active" id="nav-my-files" onclick="AppNav.navigate('my-files')"><i
+                                class="fas fa-hard-drive w-4 text-center"></i> Local Files</div>
+                        <div class="nav-item" id="nav-recent" onclick="AppNav.navigate('recent')"><i
+                                class="fas fa-clock w-4 text-center"></i> Recent</div>
+                        <div class="nav-item" id="nav-starred" onclick="AppNav.navigate('starred')"><i
+                                class="fas fa-star w-4 text-center text-yellow-500"></i> Important</div>
+
+                        <div class="text-[10px] font-bold text-gray-500 uppercase mb-2 px-4 mt-6">Mounts</div>
+                        <div id="fragmentList" class="flex flex-col gap-1 overflow-y-auto max-h-40 custom-scrollbar">
+                        </div>
+
+                        <!-- Storage Quota UI -->
+                        <div class="mt-auto p-4 border-t border-[#383838]">
+                            <div class="flex justify-between items-center mb-1 text-[10px] text-gray-400">
+                                <span>Storage</span>
+                                <span id="sidebar-storage-percent">0%</span>
+                            </div>
+                            <div class="w-full bg-[#333] rounded-full h-1.5 mb-2">
+                                <div id="sidebar-storage-bar"
+                                    class="bg-blue-500 h-1.5 rounded-full transition-all duration-500"
+                                    style="width: 0%"></div>
+                            </div>
+                            <div id="sidebar-gb-used" class="text-[10px] text-gray-500">0 GB used</div>
+                        </div>
+                    </div>
+                    <div class="window-content">
+                        <div class="toolbar">
+                            <div class="flex items-center gap-2">
+                                <button id="back-btn"
+                                    class="w-7 h-7 flex items-center justify-center rounded hover:bg-[#4a4a4a] text-gray-300 hidden"
+                                    onclick="navigateBack()">
+                                    <i class="fas fa-chevron-left text-xs"></i>
+                                </button>
+                                <button class="tool-btn hover:bg-[#444]" onclick="listObjects(activeFragment)"><i
+                                        class="fas fa-sync-alt"></i></button>
+                                <button class="tool-btn primary"
+                                    onclick="document.getElementById('fileInput').click()"><i class="fas fa-upload"></i>
+                                    Upload</button>
+                                <button class="tool-btn"
+                                    onclick="document.getElementById('newFolderBtnAction').click()"><i
+                                        class="fas fa-folder-plus"></i> New Folder</button>
+                            </div>
+                            <div class="flex-1 mx-4">
+                                <div
+                                    class="bg-[#1f1f1f] border border-[#383838] rounded flex items-center px-3 py-1 w-full max-w-md focus-within:border-blue-500 transition-colors">
+                                    <i class="fas fa-search text-gray-500 mr-2 text-xs"></i>
+                                    <input type="text" id="searchInput" placeholder="Search..."
+                                        class="bg-transparent border-none outline-none text-xs w-full text-white placeholder-gray-600 h-6">
+                                </div>
+                            </div>
+                            <div class="flex bg-[#1f1f1f] rounded border border-[#383838] p-0.5">
+                                <button id="tiles-view-btn"
+                                    class="p-1.5 rounded hover:bg-[#333] text-gray-400 text-xs"><i
+                                        class="fas fa-th-large"></i></button>
+                                <button id="list-view-btn"
+                                    class="p-1.5 rounded hover:bg-[#333] text-gray-400 text-xs"><i
+                                        class="fas fa-list"></i></button>
+                            </div>
+                        </div>
+                        <div class="h-8 border-b border-[#383838] flex items-center px-4 bg-[#242424]">
+                            <div id="breadcrumb" class="breadcrumb">Local Files</div>
+                        </div>
+                        <div id="browser" class="custom-scrollbar bg-[#1e1e1e]">
+                            <!-- Grid Updated for Dynamic Boxes -->
+                            <div id="objectList" class="grid gap-4"
+                                style="grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));"></div>
+                            <div id="browserSpinner"
+                                class="absolute inset-0 flex items-center justify-center bg-[#1e1e1e]/80 hidden z-10">
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-circle-notch fa-spin text-2xl text-blue-500 mb-2"></i>
+                                    <span class="text-xs text-gray-400 font-mono">ACCESSING DISK...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. RESOURCE MONITOR -->
+            <div id="win-dashboard" class="window"
+                style="width: 900px; height: 600px; top: 80px; left: 150px; display: none;">
+                <div class="window-header">
+                    <div class="window-title"><i class="fas fa-chart-line text-green-500"></i> Resource Monitor</div>
+                    <div class="window-controls">
+                        <div class="win-btn win-min" onclick="WindowManager.minimize('dashboard')"></div>
+                        <div class="win-btn win-close" onclick="WindowManager.close('dashboard')"></div>
+                    </div>
+                </div>
+                <div class="window-body">
+                    <div class="res-sidebar">
+                        <div class="res-tab active" onclick="ResMonitor.showTab('overview')"><i
+                                class="fas fa-tachometer-alt w-5 text-center mr-1"></i> Overview</div>
+                        <div class="res-tab" onclick="ResMonitor.showTab('cpu')"><i
+                                class="fas fa-microchip w-5 text-center mr-1"></i> CPU</div>
+                        <div class="res-tab" onclick="ResMonitor.showTab('memory')"><i
+                                class="fas fa-memory w-5 text-center mr-1"></i> Memory</div>
+                        <div class="res-tab" onclick="ResMonitor.showTab('network')"><i
+                                class="fas fa-network-wired w-5 text-center mr-1"></i> Network</div>
+                        <div class="res-tab" onclick="ResMonitor.showTab('process')"><i
+                                class="fas fa-list-ul w-5 text-center mr-1"></i> Processes</div>
+                    </div>
+                    <div class="res-content bg-[#1e1e1e] custom-scrollbar">
+                        <!-- Overview Tab -->
+                        <div id="res-tab-overview" class="block">
+                            <h2 class="text-lg font-light text-white mb-4">System Status: <span
+                                    class="text-green-500">Healthy</span></h2>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="res-card">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <div class="res-label">CPU Usage</div>
+                                            <div class="res-val text-blue-400" id="ov-cpu-val">0%</div>
+                                        </div>
+                                        <div class="h-16 w-32 relative"><canvas id="mini-cpu-chart"></canvas></div>
+                                    </div>
+                                </div>
+                                <div class="res-card">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <div class="res-label">Memory</div>
+                                            <div class="res-val text-purple-400" id="ov-mem-val">0 GB</div>
+                                            <div class="text-xs text-gray-500">of 16 GB</div>
+                                        </div>
+                                        <div class="h-16 w-32 relative"><canvas id="mini-mem-chart"></canvas></div>
+                                    </div>
+                                </div>
+                                <div class="res-card col-span-2">
+                                    <div class="res-label">Network I/O (Real-time)</div>
+                                    <div class="h-32 w-full relative"><canvas id="main-net-chart"></canvas></div>
+                                </div>
+                                <div class="res-card col-span-2 flex gap-8">
+                                    <div class="flex-1">
+                                        <div class="res-label">Storage Allocation</div>
+                                        <div class="flex items-center gap-4 mt-2">
+                                            <div class="relative w-20 h-20">
+                                                <svg class="w-full h-full" viewBox="0 0 36 36">
+                                                    <path class="text-[#333]"
+                                                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                                        fill="none" stroke="currentColor" stroke-width="3" />
+                                                    <path id="storage-circle-progress"
+                                                        class="text-green-500 transition-all duration-1000"
+                                                        stroke-dasharray="0, 100"
+                                                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                                        fill="none" stroke="currentColor" stroke-width="3" />
+                                                </svg>
+                                                <div id="storage-percentage"
+                                                    class="absolute inset-0 flex items-center justify-center font-bold text-xs">
+                                                    0%</div>
+                                            </div>
+                                            <div>
+                                                <div class="text-2xl text-white font-mono" id="gb-used">0 GB</div>
+                                                <div class="text-xs text-gray-500" id="storage-total-text">Used of 15 GB
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1 border-l border-[#333] pl-8">
+                                        <div class="res-label">Volume Health</div>
+                                        <div class="text-sm text-gray-300 mt-2"><i
+                                                class="fas fa-check-circle text-green-500 mr-2"></i> Volume 1 (Normal)
+                                        </div>
+                                        <div class="text-sm text-gray-300 mt-1"><i
+                                                class="fas fa-thermometer-half text-blue-500 mr-2"></i> 32°C / 89°F
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Process List Tab (Simulated Extreme Detail) -->
+                        <div id="res-tab-process" class="hidden">
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-lg font-light text-white">Environment Processes</h2>
+                                <input type="text" placeholder="Filter..."
+                                    class="bg-[#111] border border-[#333] rounded px-2 py-1 text-xs text-white">
+                            </div>
+                            <div class="border border-[#333] rounded overflow-hidden">
+                                <table class="proc-table w-full">
+                                    <thead class="bg-[#2a2a2a]">
+                                        <tr>
+                                            <th>Process Name</th>
+                                            <th class="w-20">Status</th>
+                                            <th class="w-16 text-right">CPU</th>
+                                            <th class="w-24 text-right">Memory</th>
+                                            <th class="w-24">User</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="proc-list-body" class="bg-[#1a1a1a]">
+                                        <!-- JS will populate -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- Other tabs placeholder -->
+                        <div id="res-tab-cpu" class="hidden">
+                            <div class="h-64 bg-[#111] border border-[#333] rounded relative"><canvas
+                                    id="cpu-detail-chart"></canvas></div>
+                        </div>
+                        <div id="res-tab-memory" class="hidden">
+                            <div class="h-64 bg-[#111] border border-[#333] rounded relative"><canvas
+                                    id="mem-detail-chart"></canvas></div>
+                        </div>
+                        <div id="res-tab-network" class="hidden">
+                            <div class="h-64 bg-[#111] border border-[#333] rounded relative"><canvas
+                                    id="net-detail-chart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. RECYCLE BIN (REDESIGNED) -->
+            <div id="win-recycle-bin" class="window"
+                style="width: 800px; height: 500px; top: 120px; left: 150px; display: none;">
+                <div class="window-header">
+                    <div class="window-title"><i class="fas fa-trash-can text-gray-400"></i> Recycle Bin</div>
+                    <div class="window-controls">
+                        <div class="win-btn win-min" onclick="WindowManager.minimize('recycle-bin')"></div>
+                        <div class="win-btn win-close" onclick="WindowManager.close('recycle-bin')"></div>
+                    </div>
+                </div>
+                <div class="window-body">
+                    <!-- Recycle Bin Sidebar (Consistent with File Explorer) -->
+                    <div class="window-sidebar">
+                        <div class="text-[10px] font-bold text-gray-500 uppercase mb-2 px-4 mt-2">Trash Can</div>
+                        <div class="nav-item active"><i class="fas fa-dumpster w-4 text-center"></i> Recycle Bin</div>
+                        <div class="mt-auto p-4 text-[10px] text-gray-500 text-center">
+                            Items are automatically deleted after 30 days.
+                        </div>
+                    </div>
+
+                    <!-- Recycle Bin Content Area -->
+                    <div class="window-content">
+                        <!-- Toolbar -->
+                        <div class="toolbar">
+                            <button id="empty-trash-btn"
+                                class="tool-btn hover:bg-red-900/50 hover:text-red-400 hover:border-red-900"><i
+                                    class="fas fa-dumpster-fire"></i> Empty Bin</button>
+                            <div class="flex-1"></div>
+                            <div class="flex bg-[#1f1f1f] rounded border border-[#383838] p-0.5">
+                                <button id="trash-tiles-btn"
+                                    class="p-1.5 rounded hover:bg-[#333] text-gray-400 text-xs"><i
+                                        class="fas fa-th-large"></i></button>
+                                <button id="trash-list-btn" class="p-1.5 rounded bg-blue-600 text-white text-xs"><i
+                                        class="fas fa-list"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Breadcrumbs -->
+                        <div
+                            class="h-8 border-b border-[#383838] flex items-center px-4 bg-[#242424] text-xs text-gray-400">
+                            <i class="fas fa-trash-can mr-2"></i> Recycle Bin
+                        </div>
+
+                        <!-- List Header (Only visible in list view) -->
+                        <div id="trash-list-header"
+                            class="hidden grid-cols-[1fr_150px_100px] gap-2 px-4 py-2 border-b border-[#383838] bg-[#2a2a2a] text-[10px] uppercase text-gray-500 font-bold tracking-wider">
+                            <div>Name</div>
+                            <div>Deleted Date</div>
+                            <div class="text-right">Actions</div>
+                        </div>
+
+                        <!-- Main Content -->
+                        <div id="recycle-bin-content"
+                            class="custom-scrollbar bg-[#1e1e1e] flex-1 overflow-y-auto content-start">
+                            <!-- Items injected here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. AI CORTEX (REDESIGNED) -->
+            <div id="win-ai" class="window" style="width: 480px; height: 680px; top: 60px; right: 40px; display: none;">
+                <div class="window-header" style="background-color: var(--ai-bg); border-bottom: 1px solid #333;">
+                    <div class="window-title"><i class="fas fa-robot text-red-600"></i> AI Cortex</div>
+                    <div class="window-controls">
+                        <div class="win-btn win-min" onclick="WindowManager.minimize('ai')"></div>
+                        <div class="win-btn win-close" onclick="WindowManager.close('ai')"></div>
+                    </div>
+                </div>
+                <div class="window-body flex-col" style="background-color: var(--ai-bg);">
+                    <!-- Chat Scroll Area -->
+                    <div id="ai-chat-scroll-area" class="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                        <div id="ai-welcome-screen"
+                            class="h-full flex flex-col items-center justify-center text-center">
+                            <div class="relative w-16 h-16 mb-4">
+                                <div class="absolute inset-0 bg-red-600 rounded-2xl blur-lg opacity-20"></div>
+                                <img src="https://placehold.co/100x100/B91C1C/ffffff?text=AI" alt="Logo"
+                                    class="relative w-16 h-16 rounded-2xl">
+                            </div>
+                            <h2 class="text-xl font-bold text-gray-200 mb-2">How can I help?</h2>
+                            <div class="flex flex-wrap justify-center gap-2 mt-4 px-4">
+                                <button class="suggestion-chip">Summarize this file</button>
+                                <button class="suggestion-chip">Write a Python script</button>
+                                <button class="suggestion-chip">Explain quantum physics</button>
+                            </div>
+                        </div>
+                        <div id="ai-chat-history" class="hidden flex flex-col pb-4"></div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="p-4 border-t border-[#333] bg-[#0D0D0D] shrink-0">
+                        <form id="ai-chat-form" class="relative">
+                            <textarea id="ai-user-input"
+                                class="w-full bg-[#1A1A1A] border border-[#333] rounded-lg text-gray-200 p-3 pr-12 focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition-all resize-none custom-scrollbar text-sm"
+                                placeholder="Ask anything..." rows="1"
+                                style="min-height: 44px; max-height: 120px;"></textarea>
+                            <button type="submit" id="ai-send-btn"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-[#2a2b2e] rounded-full text-gray-400 hover:bg-red-600 hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i class="fas fa-arrow-up text-sm"></i>
+                            </button>
+                        </form>
+                        <p class="text-[10px] text-center text-gray-600 mt-2">AI may display inaccurate info.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. UPLOAD MANAGER -->
+            <div id="win-uploads" class="window"
+                style="width: 400px; height: 350px; top: 100px; right: 120px; display: none; z-index: 2000;">
+                <div class="window-header">
+                    <div class="window-title"><i class="fas fa-cloud-upload-alt text-blue-400"></i> Upload Queue</div>
+                    <div class="window-controls">
+                        <div class="win-btn win-min" onclick="WindowManager.minimize('uploads')"></div>
+                        <div class="win-btn win-close" onclick="WindowManager.close('uploads')"></div>
+                    </div>
+                </div>
+                <div class="window-body flex-col bg-[#242424]">
+                    <div
+                        class="p-2 border-b border-[#383838] flex justify-between items-center text-[10px] text-gray-400 bg-[#2a2a2a]">
+                        <span id="upload-status-header">Ready</span>
+                        <button onclick="document.getElementById('upload-items-container').innerHTML=''"
+                            class="hover:text-white">CLEAR LIST</button>
+                    </div>
+                    <div id="upload-items-container" class="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="contextMenu" class="fixed hidden rounded py-1 w-48 text-sm border border-[#404040]"></div>
+    <div id="toast-container" class="fixed top-16 right-5 z-[6000] space-y-2"></div>
+
+    <!-- New Folder Modal -->
+    <div id="newFolderModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
+        <div class="bg-[#242424] p-6 rounded-lg shadow-xl border border-[#404040] w-80 text-white">
+            <h3 class="font-bold mb-4">Create New Folder</h3>
+            <input type="text" id="newFolderNameInput" placeholder="Folder Name"
+                class="bg-[#111] border border-[#444] w-full p-2 rounded mb-4 text-sm focus:border-blue-500 outline-none text-white">
+            <div class="flex justify-end gap-2">
+                <button id="cancelNewFolderBtn" class="text-xs text-gray-400 hover:text-white px-3 py-2">CANCEL</button>
+                <button id="confirmNewFolderBtn"
+                    class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">CREATE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rename Modal -->
+    <div id="renameModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
+        <div class="bg-[#242424] p-6 rounded-lg shadow-xl border border-[#404040] w-96 text-white">
+            <h3 class="font-bold mb-4">Rename Object</h3>
+            <input id="newObjectKeyInput"
+                class="bg-[#111] border border-[#444] w-full p-2 rounded mb-4 text-sm focus:border-blue-500 outline-none text-white">
+            <div class="flex justify-end gap-2">
+                <button id="cancelRenameBtn" class="text-xs text-gray-400 hover:text-white px-3 py-2">CANCEL</button>
+                <button id="confirmRenameBtn"
+                    class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">RENAME</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="shareModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
+        <div class="bg-[#242424] p-6 rounded-lg shadow-xl border border-[#404040] w-96 text-white">
+            <h3 class="font-bold mb-4">Share Link</h3>
+            <div class="space-y-4">
+                <select id="shareDisposition"
+                    class="w-full bg-[#111] border border-[#444] p-2 rounded text-sm outline-none">
+                    <option value="view">View Only</option>
+                    <option value="stream">Stream (Video)</option>
+                    <option value="download">Download</option>
+                </select>
+                <input id="shareExpiry" type="number" value="3600" placeholder="Expires in (seconds)"
+                    class="w-full bg-[#111] border border-[#444] p-2 rounded text-sm outline-none">
+                <div class="flex gap-2">
+                    <input id="shareUrl"
+                        class="flex-1 bg-[#111] border border-[#444] p-2 rounded text-xs text-gray-300 font-mono"
+                        readonly placeholder="Generated URL...">
+                    <button id="copyShareUrlBtn" class="bg-[#333] hover:bg-[#444] px-3 rounded text-white"><i
+                            class="fas fa-copy"></i></button>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+                <button id="closeShareBtn" class="text-xs text-gray-400 hover:text-white px-3 py-2">CLOSE</button>
+                <button id="generateShareBtn"
+                    class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">GENERATE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generic Modal -->
+    <div id="genericModal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[5000] hidden flex items-center justify-center">
+        <div class="bg-[#242424] p-6 rounded-lg shadow-2xl border border-[#404040] w-96">
+            <h3 id="modalTitle" class="text-sm font-bold text-white mb-4 uppercase tracking-wider">Title</h3>
+            <div id="modalContent" class="text-sm text-gray-300"></div>
+            <div class="flex justify-end gap-2 mt-6">
+                <button id="modalCancel"
+                    class="px-4 py-2 rounded text-xs bg-[#333] hover:bg-[#444] text-gray-200">Cancel</button>
+                <button id="modalConfirm"
+                    class="px-4 py-2 rounded text-xs bg-blue-600 hover:bg-blue-500 text-white">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Inputs -->
+    <input type="file" id="fileInput" class="hidden" multiple />
+    <input type="file" id="folderInput" class="hidden" webkitdirectory directory />
+    <input type="file" id="resumeFileInput" class="hidden">
+    <button id="newFolderBtnAction" class="hidden"></button>
+
+    <script>
+        // --- Core Variables ---
+        let currentObjectList = [];
+        let clientSideFolders = [];
+        let starredItems = JSON.parse(localStorage.getItem('starredItems')) || [];
+        let trashedItems = JSON.parse(localStorage.getItem('trashedItems')) || [];
+        let openFilesMap = new Map(); // key -> windowId
+        let activeFragment = '';
+        let currentPath = '';
+        let currentView = 'tiles';
+        let currentTrashView = 'list';
+        const serverLink = `https://storage.litiaina.com`;
+        const token = localStorage.getItem("current-token")?.trim() || "";
+        const totalCapacity = Number(localStorage.getItem("current-capacity")?.trim()) || (15 * 1024 * 1024 * 1024);
+        let uploadQueue = [];
+        let activeUploads = 0;
+        const MAX_CONCURRENT_UPLOADS = 4;
+        const MB = 1024 * 1024;
+        const userName = localStorage.getItem("current-account-name")?.trim() || "User";
+
+        // --- Thumbnail Cache ---
+        const thumbnailCache = new Map(); // Stores key -> url mapping
+
+        // --- IMAGE OBSERVER FOR LAZY LOADING ---
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    const dataKey = img.getAttribute('data-key');
+                    const dataFragment = img.getAttribute('data-fragment');
+
+                    if (dataKey && dataFragment) {
+                        if (thumbnailCache.has(dataKey)) {
+                            // Use cached URL immediately
+                            const url = thumbnailCache.get(dataKey);
+                            img.src = url;
+                            img.classList.remove('opacity-0');
+                            if (img.previousElementSibling) img.previousElementSibling.classList.add('opacity-0');
+                            observer.unobserve(img);
+                        } else {
+                            // Debounce slightly to avoid loading on fast scroll
+                            setTimeout(() => {
+                                if (img.isConnected) { // Check if still in DOM
+                                    getShareableUrl(dataFragment, dataKey, 'view', 3600).then(url => {
+                                        if (url) {
+                                            thumbnailCache.set(dataKey, url); // Cache it
+                                            img.src = url;
+                                            img.onload = () => {
+                                                img.classList.remove('opacity-0');
+                                                if (img.previousElementSibling) img.previousElementSibling.classList.add('opacity-0');
+                                            };
+                                        }
+                                    }).catch(() => { });
+                                }
+                            }, 150);
+                            observer.unobserve(img);
+                        }
+                    }
+                }
+            });
+        }, {
+            root: document.getElementById('browser'), // Scoped to file browser container
+            rootMargin: '100px', // Preload slightly before visible
+            threshold: 0.1
+        });
+
+        // --- Window Manager ---
+        const WindowManager = {
+            zIndex: 100,
+            open: function (appId, meta = {}) {
+                const win = $(`#win-${appId}`);
+
+                if (win.is(':visible')) {
+                    this.focus(appId);
+                    return;
+                }
+
+                win.show();
+                setTimeout(() => win.addClass('visible'), 10);
+                this.focus(appId);
+                this.addTaskbarItem(appId, meta);
+
+                // Specific App Initialization Logic
+                if (appId === 'dashboard') {
+                    setTimeout(() => ResMonitor.init(), 100);
+                }
+                if (appId === 'recycle-bin') showTrash();
+
+                if (appId === 'file-explorer') {
+                    if (activeFragment && currentObjectList.length === 0) {
+                        listObjects(activeFragment);
+                    } else {
+                        // REFRESH VIRTUAL SCROLLER when window opens to fix blank screen
+                        setTimeout(() => VirtualScroller.renderVisible(), 50);
+                    }
+                }
+                if (appId === 'uploads') checkForInterruptedUploads();
+            },
+            close: function (appId) {
+                const win = $(`#win-${appId}`);
+                win.removeClass('visible');
+                setTimeout(() => {
+                    win.hide();
+                    // If dynamic window, remove from DOM
+                    if (appId.startsWith('viewer-')) {
+                        win.remove();
+                        // Find key from value in map and delete
+                        for (let [key, val] of openFilesMap.entries()) {
+                            if (val === appId) openFilesMap.delete(key);
+                        }
+                    }
+                }, 150);
+                $(`#task-item-${appId}`).remove();
+            },
+            minimize: function (appId) {
+                $(`#win-${appId}`).removeClass('visible');
+                setTimeout(() => $(`#win-${appId}`).hide(), 150);
+                $(`#task-item-${appId}`).removeClass('active');
+            },
+            maximize: function (appId) {
+                const win = $(`#win-${appId}`);
+                win.toggleClass('maximized');
+                if (win.hasClass('maximized')) win.css({ top: '0', left: 0, width: '100%', height: '100%', borderRadius: 0 });
+                else {
+                    const defaults = {
+                        'file-explorer': { w: 1000, h: 650, t: 60, l: 100 },
+                        'dashboard': { w: 900, h: 600, t: 80, l: 150 },
+                        'ai': { w: 480, h: 680, t: 60, l: null },
+                        'recycle-bin': { w: 800, h: 500, t: 120, l: 150 },
+                        'uploads': { w: 400, h: 350, t: 100, l: 120 }
+                    }[appId] || { w: 800, h: 550, t: 100, l: 100 };
+                    win.css({ width: defaults.w, height: defaults.h, top: defaults.t, left: defaults.l, borderRadius: '6px' });
+                }
+            },
+            focus: function (appId) {
+                this.zIndex++;
+                $(`#win-${appId}`).css('z-index', this.zIndex);
+                $('.task-item').removeClass('active');
+                $(`#task-item-${appId}`).addClass('active');
+            },
+            addTaskbarItem: function (appId, meta = {}) {
+                if ($(`#task-item-${appId}`).length === 0) {
+                    const map = { 'file-explorer': 'File Station', 'dashboard': 'Monitor', 'recycle-bin': 'Trash', 'ai': 'AI Cortex', 'uploads': 'Upload Queue' };
+                    const iconMap = { 'file-explorer': 'fa-folder-tree', 'dashboard': 'fa-chart-line', 'recycle-bin': 'fa-trash-can', 'ai': 'fa-robot', 'uploads': 'fa-cloud-upload-alt' };
+
+                    const label = meta.title || map[appId] || 'App';
+                    const icon = meta.icon || iconMap[appId] || 'fa-window-maximize';
+
+                    $('#taskbar-apps').append(`
+                        <div id="task-item-${appId}" class="task-item active" onclick="WindowManager.open('${appId}')" title="${label}">
+                            <i class="fas ${icon}"></i> <span class="task-item-text">${label}</span>
+                        </div>
+                    `);
+                }
+            }
+        };
+
+        // --- Resource Monitor ---
+        const ResMonitor = {
+            charts: {},
+            procInterval: null,
+            init: function () {
+                // Ensure context is available
+                if (!document.getElementById('mini-cpu-chart').offsetParent) return; // Hidden
+                if (this.charts['mini-cpu']) return; // Already init
+
+                this.initCharts();
+                this.startProcessSimulation();
+                updateCapacityDisplay();
+            },
+            showTab: function (tabId) {
+                $('.res-tab').removeClass('active');
+                $(`.res-tab[onclick*="${tabId}"]`).addClass('active');
+                $('[id^="res-tab-"]').addClass('hidden');
+                $(`#res-tab-${tabId}`).removeClass('hidden');
+            },
+            initCharts: function () {
+                this.charts['mini-cpu'] = this.createChart('mini-cpu-chart', '#3b82f6', 20);
+                this.charts['mini-mem'] = this.createChart('mini-mem-chart', '#a855f7', 20);
+                this.charts['main-net'] = this.createChart('main-net-chart', '#22c55e', 60);
+
+                setInterval(() => {
+                    const cpu = Math.floor(Math.random() * 30) + 2;
+                    // Use real memory approximation if available, else sim
+                    const memObj = window.performance && window.performance.memory;
+                    let mem = 20;
+                    let usedMemBytes = 0;
+                    if (memObj) {
+                        usedMemBytes = memObj.usedJSHeapSize;
+                        mem = Math.min(100, Math.round((memObj.usedJSHeapSize / memObj.jsHeapSizeLimit) * 100));
+                    } else {
+                        mem = Math.floor(Math.random() * 10) + 20;
+                    }
+                    const net = Math.floor(Math.random() * 50);
+
+                    this.updateChart(this.charts['mini-cpu'], cpu);
+                    this.updateChart(this.charts['mini-mem'], mem);
+                    this.updateChart(this.charts['main-net'], net);
+
+                    $('#ov-cpu-val').text(cpu + '%');
+                    $('#ov-mem-val').text(usedMemBytes ? formatBytes(usedMemBytes) : 'Simulated');
+                }, 1000);
+            },
+            createChart: function (id, color, points) {
+                const canvas = document.getElementById(id);
+                const ctx = canvas.getContext('2d');
+                canvas.width = canvas.parentElement.clientWidth;
+                canvas.height = canvas.parentElement.clientHeight;
+                return { ctx, width: canvas.width, height: canvas.height, data: Array(points).fill(0), color };
+            },
+            updateChart: function (chart, newVal) {
+                chart.data.push(newVal);
+                chart.data.shift();
+                const ctx = chart.ctx;
+                const w = chart.width;
+                const h = chart.height;
+
+                ctx.clearRect(0, 0, w, h);
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                for (let i = 0; i < w; i += 30) { ctx.moveTo(i, 0); ctx.lineTo(i, h); }
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(0, h - (chart.data[0] / 100 * h));
+                for (let i = 1; i < chart.data.length; i++) {
+                    const x = (i / (chart.data.length - 1)) * w;
+                    const y = h - (chart.data[i] / 100 * h);
+                    ctx.lineTo(x, y);
+                }
+                ctx.strokeStyle = chart.color;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.lineTo(w, h);
+                ctx.lineTo(0, h);
+                ctx.fillStyle = chart.color + '33';
+                ctx.fill();
+            },
+            startProcessSimulation: function () {
+                const names = ['System Kernel', 'Window Manager', 'Browser Runtime', 'Network Daemon', 'File Explorer', 'Resource Monitor'];
+                const users = ['root', 'user', 'user', 'service', 'user', 'user'];
+
+                const updateTable = () => {
+                    let html = '';
+                    names.forEach((name, i) => {
+                        const cpu = (Math.random() * 5).toFixed(1);
+                        const mem = (Math.random() * 100 + 20).toFixed(0);
+                        html += `
+                            <tr class="proc-row">
+                                <td>${name}</td>
+                                <td><span class="text-green-500">Running</span></td>
+                                <td class="text-right">${cpu}%</td>
+                                <td class="text-right">${mem} MB</td>
+                                <td>${users[i]}</td>
+                            </tr>
+                        `;
+                    });
+                    $('#proc-list-body').html(html);
+                };
+                updateTable();
+                setInterval(updateTable, 2000);
+            }
+        };
+
+        // --- Core File System ---
+        const AppNav = {
+            navigate: function (view) {
+                $('.nav-item').removeClass('active');
+                $(`#nav-${view}`).addClass('active');
+                if (view === 'my-files') { currentPath = ''; renderObjects(getActiveObjectList()); }
+                else if (view === 'recent') showRecentFiles();
+                else if (view === 'starred') showStarredFiles();
+            }
+        };
+
+        function getActiveObjectList() {
+            const trashKeys = new Set(trashedItems.map(t => t.key));
+            return currentObjectList.filter(o => !trashKeys.has(o.key));
+        }
+
+        // --- VIRTUAL SCROLLER IMPLEMENTATION ---
+        const VirtualScroller = {
+            items: [],
+            container: null,
+            content: null,
+            viewType: 'tiles', // 'tiles' or 'list'
+            ticking: false, // Flag for requestAnimationFrame
+            lastStartIndex: -1, // State tracking to prevent re-renders
+            lastEndIndex: -1,
+
+            init: function (containerId, contentId) {
+                this.container = document.getElementById(containerId);
+                this.content = document.getElementById(contentId);
+                if (this.container) {
+                    // Optimized Scroll Listener using requestAnimationFrame
+                    this.container.addEventListener('scroll', () => {
+                        if (!this.ticking) {
+                            window.requestAnimationFrame(() => {
+                                this.renderVisible();
+                                this.ticking = false;
+                            });
+                            this.ticking = true;
+                        }
+                    });
+
+                    // Optimized Resize Listener
+                    window.addEventListener('resize', () => {
+                        if (!this.ticking) {
+                            window.requestAnimationFrame(() => {
+                                this.forceRender(); // Force re-calc on resize
+                                this.ticking = false;
+                            });
+                            this.ticking = true;
+                        }
+                    });
+                }
+            },
+
+            setItems: function (items, viewType) {
+                this.items = items;
+                this.viewType = viewType;
+                if (this.container) this.container.scrollTop = 0; // Reset scroll on view change
+                this.forceRender();
+            },
+
+            forceRender: function () {
+                this.lastStartIndex = -1; // Reset state to force render
+                this.renderVisible();
+            },
+
+            getColumns: function () {
+                if (this.viewType === 'list') return 1;
+                // Dynamic Column Calculation (approx 120px min width + gap)
+                if (this.container) {
+                    return Math.max(2, Math.floor(this.container.clientWidth / 136));
+                }
+                const w = window.innerWidth;
+                if (w < 768) return 2;
+                if (w < 1024) return 4;
+                return 5;
+            },
+
+            getRowHeight: function () {
+                // Return slightly more than item height to account for gaps
+                // Tile: 155px + 16px gap = 171
+                // List: 42px + 4px gap = 46
+                return this.viewType === 'tiles' ? 171 : 46;
+            },
+
+            renderVisible: function () {
+                if (!this.container || !this.content) return;
+
+                if (!this.items.length) {
+                    this.content.innerHTML = `<div class="col-span-full py-20 text-center text-gray-600 flex flex-col items-center justify-center h-full"><i class="fas fa-folder-open text-5xl mb-4 opacity-50"></i><p>Empty Folder</p></div>`;
+                    this.content.style.paddingTop = '0px';
+                    this.content.style.paddingBottom = '0px';
+                    return;
+                }
+
+                const columns = this.getColumns();
+                const rowHeight = this.getRowHeight();
+                const totalItems = this.items.length;
+                const totalRows = Math.ceil(totalItems / columns);
+                const scrollHeight = totalRows * rowHeight;
+
+                const scrollTop = this.container.scrollTop;
+                const clientHeight = this.container.clientHeight;
+
+                // Buffer rows to render outside visible area
+                const buffer = 2;
+                const startRow = Math.max(0, Math.floor(scrollTop / rowHeight) - buffer);
+                const endRow = Math.min(totalRows, Math.ceil((scrollTop + clientHeight) / rowHeight) + buffer);
+
+                const startIndex = startRow * columns;
+                const endIndex = Math.min(totalItems, endRow * columns);
+
+                // --- OPTIMIZATION FIX: Only re-render if the visible range has changed ---
+                if (startIndex === this.lastStartIndex && endIndex === this.lastEndIndex) {
+                    return;
+                }
+                this.lastStartIndex = startIndex;
+                this.lastEndIndex = endIndex;
+                // -----------------------------------------------------------------------
+
+                const paddingTop = startRow * rowHeight;
+                const paddingBottom = Math.max(0, scrollHeight - (endRow * rowHeight));
+
+                this.content.style.paddingTop = `${paddingTop}px`;
+                this.content.style.paddingBottom = `${paddingBottom}px`;
+
+                // Set Grid/List classes explicitly based on view
+                if (this.viewType === 'tiles') {
+                    // Use Dynamic Grid Template style inline to override Tailwind classes if needed
+                    this.content.className = 'grid gap-4 p-4 content-start';
+                    this.content.style.gridTemplateColumns = `repeat(auto-fill, minmax(120px, 1fr))`;
+                    this.content.style.display = 'grid';
+                } else {
+                    this.content.className = 'flex flex-col gap-1 p-2 content-start';
+                    this.content.style.gridTemplateColumns = 'none';
+                    this.content.style.display = 'flex';
+                }
+
+                // Render logic
+                this.content.innerHTML = '';
+                const slice = this.items.slice(startIndex, endIndex);
+
+                const fragment = document.createDocumentFragment();
+                slice.forEach(itemData => {
+                    let el;
+                    if (itemData.type === 'folder') {
+                        el = this.viewType === 'tiles' ? createTile(itemData.name, 'folder') : createRow(itemData.name, 'folder');
+                    } else {
+                        el = this.viewType === 'tiles' ? createTile(itemData.data, 'file') : createRow(itemData.data, 'file');
+                    }
+                    fragment.appendChild(el);
+                });
+                this.content.appendChild(fragment);
+            }
+        };
+
+        function renderObjects(objects) {
+            const breadcrumb = document.getElementById('breadcrumb');
+            const backBtn = document.getElementById('back-btn');
+
+            if (currentPath) {
+                backBtn.classList.remove('hidden');
+                let parts = currentPath.split('/').filter(p => p);
+                let html = `<span class="cursor-pointer hover:text-white" onclick="navigateTo('')">Files</span>`;
+                let acc = '';
+                parts.forEach(p => { acc += p + '/'; html += ` <span class="text-gray-600">/</span> <span class="cursor-pointer hover:text-white" onclick="navigateTo('${acc}')">${p}</span>`; });
+                breadcrumb.innerHTML = html;
+            } else {
+                backBtn.classList.add('hidden');
+                breadcrumb.innerHTML = 'Local Files';
+            }
+
+            // Prepare flat list for VirtualScroller
+            const folders = new Set();
+            const files = [];
+
+            objects.forEach(obj => {
+                if (obj.key.startsWith(currentPath)) {
+                    const relative = obj.key.substring(currentPath.length);
+                    const slashIdx = relative.indexOf('/');
+                    if (slashIdx > 0) folders.add(relative.substring(0, slashIdx));
+                    else if (slashIdx === -1 && relative.length > 0) files.push(obj);
+                }
+            });
+
+            // Add virtual folders
+            clientSideFolders.filter(f => f.path === currentPath).forEach(f => folders.add(f.name));
+
+            const sortedFolders = Array.from(folders).sort();
+            const sortedFiles = files.sort((a, b) => new Date(Number(b.last_modified.$date.$numberLong)) - new Date(Number(a.last_modified.$date.$numberLong)));
+
+            // Combine into single renderable list
+            const combinedItems = [
+                ...sortedFolders.map(f => ({ type: 'folder', name: f })),
+                ...sortedFiles.map(f => ({ type: 'file', data: f }))
+            ];
+
+            // Initialize or Update VirtualScroller
+            VirtualScroller.setItems(combinedItems, currentView);
+        }
+
+        // --- Filtering Views ---
+        function showRecentFiles() {
+            $('#breadcrumb').html('Recent Files');
+            $('#back-btn').addClass('hidden');
+            const flat = currentObjectList.filter(o => !o.key.endsWith('/')).sort((a, b) => new Date(Number(b.last_modified.$date.$numberLong)) - new Date(Number(a.last_modified.$date.$numberLong))).slice(0, 50);
+            renderFlatView(flat);
+        }
+
+        function showStarredFiles() {
+            $('#breadcrumb').html('Important');
+            $('#back-btn').addClass('hidden');
+            const flat = currentObjectList.filter(o => starredItems.includes(o.key));
+            renderFlatView(flat);
+        }
+
+        function renderFlatView(items) {
+            // Adapted for VirtualScroller
+            const formattedItems = items.map(i => ({ type: 'file', data: i }));
+            VirtualScroller.setItems(formattedItems, 'list'); // Force list view usually for search/recent
+        }
+
+        function createTile(item, type) {
+            const div = document.createElement('div');
+            const isPending = type === 'file' && item.status === 'Pending';
+
+            // Allow wrapping of text
+            div.className = `file-item item-tile p-3 flex flex-col items-center group relative border border-transparent rounded hover:bg-[#2a2a2a] transition-all ${isPending ? 'status-pending' : ''}`;
+
+            const name = type === 'folder' ? item : item.key.split('/').pop();
+            const ext = name.split('.').pop().toLowerCase();
+            const isImage = type === 'file' && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext);
+
+            // Icon Generation
+            const iconHtml = type === 'folder' ? '<i class="fas fa-folder text-4xl text-yellow-500 mb-2 shadow-sm"></i>' : getFileIconHTML(name);
+
+            // Visual Content: Either Icon or Image Container
+            let visualContent;
+            if (isImage && !isPending) {
+                // Check cache immediately
+                const cachedUrl = thumbnailCache.get(item.key);
+                const showImage = !!cachedUrl;
+
+                visualContent = `
+                    <div class="relative w-full h-20 mb-2 flex items-center justify-center">
+                        <div class="icon-placeholder transition-opacity duration-300 ${showImage ? 'opacity-0' : ''}">${iconHtml}</div>
+                        <img class="img-preview absolute inset-0 w-full h-full object-contain rounded transition-opacity duration-300 ${showImage ? '' : 'opacity-0'}" 
+                             alt="${name}" 
+                             src="${showImage ? cachedUrl : ''}"
+                             data-key="${item.key}" data-fragment="${item.fragment}" loading="lazy">
+                    </div>
+                `;
+            } else {
+                visualContent = `<div class="mb-2 h-20 flex items-center justify-center">${iconHtml}</div>`;
+            }
+
+            const menuData = type === 'folder' ? `{type:'folder', name:'${name}', prefix:'${currentPath}${name}/'}` : `{type:'file', data: {key:'${item.key}', fragment:'${item.fragment}'} }`;
+            const pendingIcon = isPending ? `<div class="absolute bottom-10 right-2 text-yellow-500 drop-shadow-md" title="Pending"><i class="fas fa-clock"></i></div>` : '';
+
+            // Use break-all instead of break-words to handle long filenames without spaces
+            // Removed h-8 fixed height, used max-h and overflow hidden
+            div.innerHTML = `
+                ${visualContent}
+                ${pendingIcon}
+                <span class="text-xs text-center break-all line-clamp-2 leading-tight w-full text-gray-300 group-hover:text-white mt-1 max-h-8 overflow-hidden" title="${name}">${name}</span>
+                ${type === 'file' ? `<span class="text-[10px] text-gray-600">${formatBytes(item.size_bytes)}</span>` : ''}
+                <button class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 p-1 hover:bg-[#444] rounded text-gray-300" onclick="event.stopPropagation(); showCtx(event, ${menuData})"><i class="fas fa-ellipsis-v"></i></button>
+            `;
+
+            // ATTACH OBSERVER ONLY IF NOT CACHED
+            if (isImage && !isPending && !thumbnailCache.has(item.key)) {
+                const img = div.querySelector('.img-preview');
+                imageObserver.observe(img);
+            }
+
+            div.onclick = () => type === 'folder' ? navigateTo(currentPath + name + '/') : openFileViewer(item.fragment, item.key);
+            return div;
+        }
+
+        function createRow(item, type) {
+            const div = document.createElement('div');
+            const isPending = type === 'file' && item.status === 'Pending';
+            div.className = `file-item item-list flex items-center p-2 hover:bg-[#333] ${isPending ? 'status-pending' : ''}`;
+
+            const name = type === 'folder' ? item : item.key.split('/').pop();
+            const ext = name.split('.').pop().toLowerCase();
+            const isImage = type === 'file' && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext);
+
+            const iconHtml = type === 'folder' ? '<i class="fas fa-folder text-yellow-500 w-6 text-center mr-3"></i>' : getFileIconHTML(name, true);
+            const pendingIcon = isPending ? `<i class="fas fa-clock text-yellow-500 ml-2 text-xs" title="Pending"></i>` : '';
+
+            // Layout for List Item
+            let iconSection;
+            if (isImage && !isPending) {
+                // Check cache immediately
+                const cachedUrl = thumbnailCache.get(item.key);
+                const showImage = !!cachedUrl;
+
+                iconSection = `
+                    <div class="relative w-6 h-6 mr-3 flex-shrink-0 flex items-center justify-center">
+                        <div class="icon-placeholder absolute inset-0 flex items-center justify-center ${showImage ? 'opacity-0' : ''}">${iconHtml}</div>
+                        <img class="img-preview absolute inset-0 w-full h-full object-cover rounded transition-opacity duration-300 ${showImage ? '' : 'opacity-0'}" 
+                             alt="${name}" 
+                             src="${showImage ? cachedUrl : ''}"
+                             data-key="${item.key}" data-fragment="${item.fragment}" loading="lazy">
+                    </div>
+                `;
+            } else {
+                iconSection = iconHtml;
+            }
+
+            div.innerHTML = `${iconSection}<div class="flex-1 min-w-0 flex items-center"><span class="text-sm text-gray-300 truncate">${name}</span>${pendingIcon}</div>`;
+            if (type === 'file') div.innerHTML += `<span class="text-xs text-gray-500 w-20 text-right">${formatBytes(item.size_bytes)}</span>`;
+
+            // ATTACH OBSERVER ONLY IF NOT CACHED
+            if (isImage && !isPending && !thumbnailCache.has(item.key)) {
+                const img = div.querySelector('.img-preview');
+                imageObserver.observe(img);
+            }
+
+            div.onclick = () => type === 'folder' ? navigateTo(currentPath + name + '/') : openFileViewer(item.fragment, item.key);
+            return div;
+        }
+
+        function navigateTo(path) { currentPath = path; renderObjects(getActiveObjectList()); }
+        function navigateBack() {
+            if (!currentPath) return;
+            const parts = currentPath.split('/').filter(p => p);
+            parts.pop();
+            navigateTo(parts.length ? parts.join('/') + '/' : '');
+        }
+
+        // --- Windowed File Viewer (Dynamic & Multi-Instance) ---
+        async function openFileViewer(fragment, key) {
+            // 1. Check if already open
+            if (openFilesMap.has(key)) {
+                WindowManager.open(openFilesMap.get(key));
+                return;
+            }
+
+            // 2. Generate Unique ID
+            const viewerId = `viewer-${crypto.randomUUID()}`;
+            openFilesMap.set(key, viewerId);
+            const fileName = key.split('/').pop();
+            const ext = key.split('.').pop().toLowerCase();
+            const isImage = ['jpg', 'png', 'jpeg', 'gif', 'svg', 'webp'].includes(ext);
+
+            // 3. Create DOM Structure (Enhanced for Zoom controls)
+            let zoomControls = '';
+            if (isImage) {
+                zoomControls = `
+                <div class="zoom-controls mr-2">
+                    <button class="tool-btn zoom-out-btn" title="Zoom Out"><i class="fas fa-search-minus"></i></button>
+                    <button class="tool-btn zoom-reset-btn" title="Reset Zoom">100%</button>
+                    <button class="tool-btn zoom-in-btn" title="Zoom In"><i class="fas fa-search-plus"></i></button>
+                </div>`;
+            }
+
+            const windowHtml = `
+            <div id="win-${viewerId}" class="window" style="width: 800px; height: 550px; top: 100px; left: 100px; display: none;">
+                <div class="window-header">
+                    <div class="window-title"><i class="fas fa-eye text-yellow-500"></i> ${fileName}</div>
+                    <div class="window-controls">
+                        <div class="win-btn win-min" onclick="WindowManager.minimize('${viewerId}')"></div>
+                        <div class="win-btn win-max" onclick="WindowManager.maximize('${viewerId}')"></div>
+                        <div class="win-btn win-close" onclick="WindowManager.close('${viewerId}')"></div>
+                    </div>
+                </div>
+                <div class="window-body flex-col bg-[#111]">
+                    <div class="toolbar bg-[#222]">
+                        ${zoomControls}
+                        <button class="tool-btn download-btn"><i class="fas fa-download"></i> Download</button>
+                        <button class="tool-btn share-btn"><i class="fas fa-share-alt"></i> Share</button>
+                        <div class="h-4 w-px bg-[#444] mx-2"></div>
+                        <button class="tool-btn hover:text-red-400 delete-btn"><i class="fas fa-trash"></i> Delete</button>
+                        <button class="tool-btn rename-btn"><i class="fas fa-pencil-alt"></i> Rename</button>
+                    </div>
+                    <div class="viewer-content flex-1 flex items-center justify-center overflow-hidden p-0 relative w-full h-full bg-[#0d0d0d]">
+                        <i class="fas fa-circle-notch fa-spin text-3xl text-blue-500"></i>
+                    </div>
+                </div>
+            </div>`;
+
+            $('#windows-container').append(windowHtml);
+
+            // 4. Initialize Draggable/Resizable
+            $(`#win-${viewerId}`).draggable({ handle: ".window-header", containment: "#windows-container", start: function () { WindowManager.focus(viewerId); } }).resizable({ minHeight: 200, minWidth: 300 });
+            $(`#win-${viewerId}`).on('mousedown', function () { WindowManager.focus(viewerId); });
+
+            // 5. Open Window
+            WindowManager.open(viewerId, { title: fileName, icon: 'fa-eye' });
+
+            const winContext = $(`#win-${viewerId}`);
+            
+            // 6. Bind Standard Actions
+            winContext.find('.download-btn').click(() => performDirectDownload(fragment, key));
+            winContext.find('.share-btn').click(() => showShareModal(fragment, key));
+            winContext.find('.rename-btn').click(() => showRenameModal(fragment, key));
+            winContext.find('.delete-btn').click(() => {
+                showGenericModal('Delete File', 'Are you sure?', () => {
+                    moveToTrash(key, 'file');
+                    WindowManager.close(viewerId);
+                });
+            });
+
+            // 7. Load Content
+            try {
+                const url = await getShareableUrl(fragment, key);
+                const contentDiv = winContext.find('.viewer-content');
+                let html = '';
+
+                if (isImage) {
+                    // Zoomable Image Structure
+                    const imgId = `img-${viewerId}`;
+                    html = `
+                        <div class="zoom-container overflow-hidden w-full h-full relative flex items-center justify-center cursor-grab" id="container-${imgId}">
+                            <img id="${imgId}" src="${url}" class="transition-transform duration-100 ease-out max-h-full max-w-full object-contain origin-center select-none" draggable="false">
+                        </div>`;
+                    contentDiv.html(html);
+
+                    // Initialize Zoom Logic
+                    const img = document.getElementById(imgId);
+                    const container = document.getElementById(`container-${imgId}`);
+                    let scale = 1;
+                    let panning = false;
+                    let pointX = 0, pointY = 0;
+                    let startX = 0, startY = 0;
+
+                    const setTransform = () => {
+                        img.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
+                        winContext.find('.zoom-reset-btn').text(`${Math.round(scale * 100)}%`);
+                        container.style.cursor = scale > 1 ? (panning ? 'grabbing' : 'grab') : 'default';
+                    };
+
+                    // Zoom Controls
+                    winContext.find('.zoom-in-btn').click(() => { scale = Math.min(scale + 0.25, 5); setTransform(); });
+                    winContext.find('.zoom-out-btn').click(() => { scale = Math.max(scale - 0.25, 0.25); setTransform(); });
+                    winContext.find('.zoom-reset-btn').click(() => { scale = 1; pointX = 0; pointY = 0; setTransform(); });
+
+                    // Wheel Zoom
+                    container.addEventListener('wheel', (e) => {
+                        e.preventDefault();
+                        const xs = (e.clientX - container.getBoundingClientRect().left - container.offsetWidth / 2) / scale;
+                        const ys = (e.clientY - container.getBoundingClientRect().top - container.offsetHeight / 2) / scale;
+                        
+                        const delta = -Math.sign(e.deltaY) * 0.1;
+                        const oldScale = scale;
+                        scale = Math.min(Math.max(0.25, scale + delta), 5);
+                        
+                        // Adjust point to zoom towards mouse (simplified centered zoom if scale changed)
+                        // For fully correct zooming to pointer, logic is more complex. 
+                        // Keeping it simple: Zoom center, but allow pan.
+                        setTransform();
+                    });
+
+                    // Panning Logic
+                    container.addEventListener('mousedown', (e) => {
+                        if (scale > 1) {
+                            e.preventDefault();
+                            startX = e.clientX - pointX;
+                            startY = e.clientY - pointY;
+                            panning = true;
+                            container.style.cursor = 'grabbing';
+                        }
+                    });
+
+                    window.addEventListener('mouseup', () => {
+                        if (panning) {
+                            panning = false;
+                            container.style.cursor = 'grab';
+                        }
+                    });
+
+                    window.addEventListener('mousemove', (e) => {
+                        if (!panning) return;
+                        e.preventDefault();
+                        pointX = e.clientX - startX;
+                        pointY = e.clientY - startY;
+                        setTransform();
+                    });
+
+                }
+                // Extended Video Support
+                else if (['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv', 'm3u8'].includes(ext)) {
+                    const videoId = `vid-${viewerId}`;
+                    html = `<video id="${videoId}" src="${url}" controls autoplay class="max-h-full max-w-full" style="outline:none; box-shadow:0 0 20px rgba(0,0,0,0.5);"></video>`;
+                    contentDiv.html(html).css('padding', '20px');
+
+                    if (ext === 'm3u8' && Hls.isSupported()) {
+                        const video = document.getElementById(videoId);
+                        const hls = new Hls();
+                        hls.loadSource(url);
+                        hls.attachMedia(video);
+                        hls.on(Hls.Events.MANIFEST_PARSED, function () { video.play(); });
+                    }
+                }
+                else if (ext === 'pdf') {
+                    html = `<iframe src="${url}" class="w-full h-full border-0"></iframe>`;
+                    contentDiv.html(html);
+                }
+                else {
+                    html = `<div class="text-center text-gray-500"><i class="fas fa-file text-5xl mb-4"></i><p>No preview available</p></div>`;
+                    contentDiv.html(html);
+                }
+            } catch (e) {
+                console.error(e);
+                winContext.find('.viewer-content').html('<div class="text-red-500">Error loading file</div>');
+            }
+        }
+
+        // --- Modals (Fixed) ---
+        function showRenameModal(fragment, key) {
+            const modal = document.getElementById('renameModal');
+            const input = document.getElementById('newObjectKeyInput');
+            input.value = key;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            document.getElementById('confirmRenameBtn').onclick = async () => {
+                const newKey = input.value.trim();
+                if (!newKey || newKey === key) return;
+                try {
+                    const response = await fetch(`${serverLink}/v4/fragment/object/rename`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json', authorization: `Bearer ${token}` },
+                        body: JSON.stringify({ source_fragment: fragment, source_key: key, destination_fragment: fragment, destination_key: newKey })
+                    });
+                    if (!response.ok) throw new Error();
+                    showToast('Object renamed successfully.', 'success');
+                    listObjects(fragment);
+                } catch (err) {
+                    showToast('Failed to rename object.', 'error');
+                } finally {
+                    modal.classList.add('hidden');
+                }
+            };
+            document.getElementById('cancelRenameBtn').onclick = () => modal.classList.add('hidden');
+        }
+
+        function showShareModal(fragment, key) {
+            const modal = document.getElementById('shareModal');
+            const urlInput = document.getElementById('shareUrl');
+            urlInput.value = '';
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            document.getElementById('generateShareBtn').onclick = async () => {
+                const disposition = document.getElementById('shareDisposition').value;
+                const expires_in = parseInt(document.getElementById('shareExpiry').value, 10) || 3600;
+                try {
+                    const url = await getShareableUrl(fragment, key, disposition, expires_in);
+                    urlInput.value = url;
+                } catch (err) {
+                    showToast('Failed to generate link.', 'error');
+                }
+            };
+            document.getElementById('copyShareUrlBtn').onclick = () => {
+                if (urlInput.value) {
+                    navigator.clipboard.writeText(urlInput.value);
+                    showToast('URL copied!', 'success');
+                }
+            };
+            document.getElementById('closeShareBtn').onclick = () => modal.classList.add('hidden');
+        }
+
+        // --- Upload Recovery & Management (Matched to N1.html) ---
+        function getSessionKey(file) { return `upload-session-${file.name}-${file.size}-${file.lastModified}`; }
+        function saveSession(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+        function getSession(key) { const s = localStorage.getItem(key); return s ? JSON.parse(s) : null; }
+        function clearSession(key) { localStorage.removeItem(key); }
+
+        function scanForInterruptedUploads() {
+            const sessions = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('upload-session-')) {
+                    const sessionData = getSession(key);
+                    if (sessionData && sessionData.name && sessionData.size) {
+                        sessions.push({ key, data: sessionData });
+                    }
+                }
+            }
+            return sessions;
+        }
+
+        function checkForInterruptedUploads() {
+            const sessions = scanForInterruptedUploads();
+            const listContainer = document.getElementById('upload-items-container');
+
+            // Populate Upload Queue UI with interrupted sessions if not already there
+            sessions.forEach(s => {
+                const recoveryId = `recovery-${s.key.replace(/[^a-zA-Z0-9]/g, '')}`;
+                if (document.getElementById(recoveryId)) return; // Already rendered
+
+                const item = {
+                    id: recoveryId,
+                    sessionKey: s.key,
+                    file: { name: s.data.name, size: s.data.size },
+                    isRecovery: true,
+                    status: 'interrupted',
+                    objectKey: s.data.objectKey
+                };
+
+                // Only add if not already in queue
+                if (!uploadQueue.some(u => u.sessionKey === s.key)) {
+                    createUploadUI(item, true); // true = append to list
+                }
+            });
+
+            if (sessions.length > 0) {
+                WindowManager.addTaskbarItem('uploads');
+            }
+        }
+
+        // --- Data Fetching ---
+        async function listObjects(fragment, options = { render: true }) {
+            if (!fragment) return;
+            if (options.render) $('#browserSpinner').removeClass('hidden').addClass('flex');
+            try {
+                let all = [];
+                let marker = null;
+                while (true) {
+                    let url = `${serverLink}/v4/fragment/object/metadata/${fragment}?show_all=true&limit=100`;
+                    if (marker) url += `&marker=${encodeURIComponent(marker)}`;
+                    const res = await fetch(url, { headers: { authorization: `Bearer ${token}` } });
+                    if (!res.ok) break;
+                    const page = await res.json();
+                    if (page.length > 0) {
+                        all.push(...page);
+                        marker = page[page.length - 1].key;
+                    }
+                    if (page.length < 100) break;
+                }
+                currentObjectList = all;
+                updateCapacityDisplay();
+                if (options.render) {
+                    if ($('#nav-my-files').hasClass('active')) renderObjects(getActiveObjectList());
+                    else if ($('#nav-recent').hasClass('active')) showRecentFiles();
+                    else if ($('#nav-starred').hasClass('active')) showStarredFiles();
+                }
+            } catch (e) { console.error(e); }
+            finally { if (options.render) $('#browserSpinner').addClass('hidden'); }
+        }
+
+        async function updateCapacityDisplay() {
+            try {
+                const res = await fetch(`${serverLink}/v4/capacity/usage`, { headers: { authorization: `Bearer ${token}` } });
+                if (res.ok) {
+                    const data = await res.json();
+                    const used = Number(data.capacity_used);
+                    const pct = Math.min(100, (used / totalCapacity) * 100);
+
+                    $('#gb-used').text(formatBytes(used));
+                    $('#storage-percentage').text(Math.round(pct) + '%');
+
+                    // Sidebar
+                    $('#sidebar-gb-used').text(`${formatBytes(used)} of ${formatBytes(totalCapacity)}`);
+                    $('#sidebar-storage-percent').text(`${Math.round(pct)}%`);
+                    $('#sidebar-storage-bar').css('width', `${pct}%`);
+
+                    const circle = document.getElementById('storage-circle-progress');
+                    const offset = 100 - pct;
+                    circle.style.strokeDashoffset = offset;
+                }
+            } catch (e) { }
+        }
+
+        // --- Helpers ---
+        function getFileIconHTML(name, isList = false) {
+            const ext = name.split('.').pop().toLowerCase();
+            const map = {
+                'pdf': ['fa-file-pdf', 'text-red-500'], 'doc': ['fa-file-word', 'text-blue-500'],
+                'docx': ['fa-file-word', 'text-blue-500'], 'xls': ['fa-file-excel', 'text-green-500'],
+                'jpg': ['fa-file-image', 'text-purple-400'], 'png': ['fa-file-image', 'text-purple-400'],
+                'mp4': ['fa-file-video', 'text-pink-500'], 'zip': ['fa-file-zipper', 'text-yellow-500']
+            };
+            const [icon, color] = map[ext] || ['fa-file', 'text-gray-400'];
+            const cls = isList ? `far ${icon} ${color} w-6 text-center mr-3` : `far ${icon} text-4xl ${color} mb-2 drop-shadow-md`;
+            return `<i class="${cls}"></i>`;
+        }
+
+        function formatBytes(bytes) {
+            if (!bytes) return '0 B';
+            const k = 1024, i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + ['B', 'KB', 'MB', 'GB', 'TB'][i];
+        }
+
+        function formatTime(seconds) {
+            if (isNaN(seconds) || seconds === Infinity || seconds < 0) return '--';
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = Math.floor(seconds % 60);
+            return `${h > 0 ? h + 'h ' : ''}${m > 0 ? m + 'm ' : ''}${s}s`;
+        }
+
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const div = document.createElement('div');
+            const color = type === 'success' ? 'border-green-500 text-green-400' : type === 'error' ? 'border-red-500 text-red-400' : 'border-blue-500 text-blue-400';
+            div.className = `bg-[#222] border-l-4 ${color} text-white px-4 py-3 rounded shadow-lg flex items-center animate-[slideIn_0.3s_ease-out]`;
+            div.innerHTML = `<span class="text-sm font-medium">${msg}</span>`;
+            container.appendChild(div);
+            setTimeout(() => div.remove(), 3000);
+        }
+
+        async function getShareableUrl(fragment, key, disposition = 'view', expiresIn = 3600) {
+            try {
+                const res = await fetch(`${serverLink}/v4/fragment/object/share`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ fragment, object_key: key, expires_in: expiresIn, disposition })
+                });
+                return (await res.json()).url;
+            } catch (e) { return null; }
+        }
+
+        async function performDirectDownload(fragment, key) {
+            const url = await getShareableUrl(fragment, key, 'download');
+            if (url) {
+                const a = document.createElement('a'); a.href = url; a.download = key.split('/').pop();
+                document.body.appendChild(a); a.click(); a.remove();
+            }
+        }
+
+        // --- Context Menu & Actions ---
+        function showCtx(e, data) {
+            e.preventDefault();
+            const menu = $('#contextMenu');
+            // Bounds
+            let x = e.clientX, y = e.clientY;
+            if (x + 200 > window.innerWidth) x -= 200;
+            if (y + 200 > window.innerHeight) y -= 200;
+
+            let html = '';
+
+            if (data.isTrash) {
+                const object = data.data;
+                html = `
+                    <div class="ctx-item text-green-400" onclick="restoreFromTrash('${object.key}')"><i class="fas fa-undo w-4"></i> Restore</div>
+                    <div class="ctx-div"></div>
+                    <div class="ctx-item text-red-400" onclick="deletePermanently('${object.fragment}', '${object.key}', 'file')"><i class="fas fa-trash-alt w-4"></i> Delete Forever</div>
+                `;
+            } else if (data.type === 'file') {
+                const isStarred = starredItems.includes(data.data.key);
+                html = `
+                    <div class="ctx-item" onclick="openFileViewer('${data.data.fragment}','${data.data.key}')"><i class="fas fa-eye w-4"></i> Preview</div>
+                    <div class="ctx-item" onclick="showShareModal('${data.data.fragment}','${data.data.key}')"><i class="fas fa-share-alt w-4"></i> Share</div>
+                    <div class="ctx-item" onclick="showRenameModal('${data.data.fragment}','${data.data.key}')"><i class="fas fa-pencil-alt w-4"></i> Rename</div>
+                    <div class="ctx-item" onclick="performDirectDownload('${data.data.fragment}','${data.data.key}')"><i class="fas fa-download w-4"></i> Download</div>
+                    <div class="ctx-item" onclick="toggleStar('${data.data.key}')"><i class="${isStarred ? 'fas' : 'far'} fa-star w-4 text-yellow-500"></i> ${isStarred ? 'Unstar' : 'Star'}</div>
+                    <div class="ctx-div"></div>
+                    <div class="ctx-item text-red-400" onclick="moveToTrash('${data.data.key}','file')"><i class="fas fa-trash w-4"></i> Delete</div>
+                `;
+            } else {
+                html = `<div class="ctx-item text-red-400" onclick="moveToTrash('${data.prefix}','folder')"><i class="fas fa-trash w-4"></i> Delete Folder</div>`;
+            }
+            menu.html(html).css({ top: y, left: x }).removeClass('hidden');
+        }
+
+        function showGenericModal(title, content, onConfirm) {
+            $('#modalTitle').text(title);
+            $('#modalContent').text(content);
+            $('#genericModal').removeClass('hidden').addClass('flex');
+            $('#modalConfirm').off().click(() => { onConfirm(); $('#genericModal').addClass('hidden').removeClass('flex'); });
+            $('#modalCancel').off().click(() => $('#genericModal').addClass('hidden').removeClass('flex'));
+        }
+
+        function toggleStar(key) {
+            if (starredItems.includes(key)) starredItems = starredItems.filter(k => k !== key);
+            else starredItems.push(key);
+            localStorage.setItem('starredItems', JSON.stringify(starredItems));
+
+            // Refresh view
+            if ($('#nav-starred').hasClass('active')) showStarredFiles();
+            else if ($('#nav-my-files').hasClass('active')) renderObjects(getActiveObjectList());
+        }
+
+        // --- Trash & Uploads (Standard Logic) ---
+        function moveToTrash(key, type) {
+            $('#contextMenu').addClass('hidden');
+            let items = [];
+            if (type === 'folder') items = currentObjectList.filter(o => o.key.startsWith(key));
+            else items = [currentObjectList.find(o => o.key === key)].filter(Boolean);
+            items.forEach(i => { if (!trashedItems.some(t => t.key === i.key)) trashedItems.push({ ...i, trashedDate: new Date().toISOString() }); });
+            localStorage.setItem('trashedItems', JSON.stringify(trashedItems));
+            renderObjects(getActiveObjectList());
+        }
+
+        async function emptyTrash() {
+            showGenericModal('Empty Recycle Bin', 'Delete all items permanently?', async () => {
+                for (const item of trashedItems) {
+                    await fetch(`${serverLink}/v4/fragment/object/delete/${item.fragment}/${item.key}`, {
+                        method: 'DELETE', headers: { authorization: `Bearer ${token}` }
+                    });
+                }
+                trashedItems = [];
+                localStorage.setItem('trashedItems', '[]');
+                showTrash();
+            });
+        }
+
+        async function deletePermanently(fragment, key, type) {
+            $('#contextMenu').addClass('hidden');
+            showGenericModal('Delete Permanently', 'This action cannot be undone. Are you sure?', async () => {
+                try {
+                    await fetch(`${serverLink}/v4/fragment/object/delete/${fragment}/${key}`, {
+                        method: 'DELETE', headers: { authorization: `Bearer ${token}` }
+                    });
+                    trashedItems = trashedItems.filter(t => t.key !== key);
+                    localStorage.setItem('trashedItems', JSON.stringify(trashedItems));
+                    showTrash();
+                    showToast('File deleted permanently.', 'success');
+                } catch (e) {
+                    showToast('Failed to delete file.', 'error');
+                }
+            });
+        }
+
+        function restoreFromTrash(key) {
+            $('#contextMenu').addClass('hidden');
+            trashedItems = trashedItems.filter(t => t.key !== key);
+            localStorage.setItem('trashedItems', JSON.stringify(trashedItems));
+            showTrash();
+            showToast('File restored.', 'success');
+            if ($('#nav-my-files').hasClass('active')) renderObjects(getActiveObjectList());
+        }
+
+        // --- Redesigned Trash View ---
+        function showTrash() {
+            const container = document.getElementById('recycle-bin-content');
+            const header = document.getElementById('trash-list-header');
+            container.innerHTML = '';
+
+            // Setup View Classes
+            if (currentTrashView === 'tiles') {
+                // Added 'content-start' to prevent grid rows from stretching to fill height
+                container.className = 'grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4 custom-scrollbar bg-[#1e1e1e] flex-1 overflow-y-auto content-start';
+                if (header) header.classList.remove('grid');
+                if (header) header.classList.add('hidden');
+            } else {
+                container.className = 'flex flex-col gap-0 custom-scrollbar bg-[#1e1e1e] flex-1 overflow-y-auto';
+                if (header) header.classList.remove('hidden');
+                if (header) header.classList.add('grid');
+            }
+
+            if (trashedItems.length === 0) {
+                container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-600 flex flex-col items-center justify-center h-full"><i class="fas fa-trash-can text-5xl mb-4 opacity-50"></i><p>Recycle Bin is empty</p></div>`;
+                return;
+            }
+
+            trashedItems.forEach(item => {
+                let div;
+                const name = item.key.split('/').pop();
+                const icon = getFileIconHTML(name, currentTrashView === 'list');
+                const date = new Date(item.trashedDate).toLocaleDateString();
+
+                if (currentTrashView === 'tiles') {
+                    div = document.createElement('div');
+                    // Ensure the item has a reasonable height behavior
+                    div.className = 'file-item p-3 flex flex-col items-center group relative border border-transparent rounded hover:bg-[#2a2a2a] transition-all h-max';
+                    div.innerHTML = `
+                        ${getFileIconHTML(name)}
+                        <span class="text-xs text-center truncate w-full text-gray-300 group-hover:text-white mt-1">${name}</span>
+                        <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 rounded">
+                             <button class="w-8 h-8 flex items-center justify-center rounded-full bg-green-600 text-white hover:bg-green-500 shadow-lg transform hover:scale-110 transition-transform" title="Restore" onclick="event.stopPropagation(); restoreFromTrash('${item.key}')"><i class="fas fa-undo text-xs"></i></button>
+                             <button class="w-8 h-8 flex items-center justify-center rounded-full bg-red-600 text-white hover:bg-red-500 shadow-lg transform hover:scale-110 transition-transform" title="Delete Forever" onclick="event.stopPropagation(); deletePermanently('${item.fragment}', '${item.key}', 'file')"><i class="fas fa-times text-xs"></i></button>
+                        </div>
+                    `;
+                } else {
+                    div = document.createElement('div');
+                    div.className = 'grid grid-cols-[1fr_150px_100px] gap-2 px-4 py-2 hover:bg-[#2a2a2a] border-b border-[#333] group items-center text-xs text-gray-300 transition-colors';
+                    div.innerHTML = `
+                        <div class="flex items-center gap-3 truncate">
+                            ${icon}
+                            <span class="truncate">${name}</span>
+                        </div>
+                        <div class="text-gray-500">${date}</div>
+                        <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button class="text-green-500 hover:text-white" title="Restore" onclick="event.stopPropagation(); restoreFromTrash('${item.key}')"><i class="fas fa-undo"></i></button>
+                            <button class="text-red-500 hover:text-white" title="Delete Forever" onclick="event.stopPropagation(); deletePermanently('${item.fragment}', '${item.key}', 'file')"><i class="fas fa-times"></i></button>
+                        </div>
+                    `;
+                }
+
+                // Context Menu
+                div.oncontextmenu = (e) => {
+                    showCtx(e, { isTrash: true, data: item });
+                };
+                container.appendChild(div);
+            });
+        }
+
+        // --- Robust Upload System (Fixed Progress Logic) ---
+        async function handleUploads(files) {
+            if (!files.length) return;
+            WindowManager.open('uploads');
+
+            for (const file of files) {
+                const uploadItem = {
+                    id: crypto.randomUUID(),
+                    file: file,
+                    fragment: activeFragment,
+                    objectKey: currentPath + (file.webkitRelativePath || file.name),
+                    controller: new AbortController()
+                };
+
+                uploadQueue.push(uploadItem);
+                createUploadUI(uploadItem);
+            }
+            processUploadQueue();
+        }
+
+        function createUploadUI(item, append = false) {
+            const container = document.getElementById('upload-items-container');
+            const el = document.createElement('div');
+            el.id = item.id || `upload-${crypto.randomUUID()}`;
+            el.className = 'bg-[#1f1f1f] p-2 rounded border border-[#333] mb-1';
+
+            let actionButtons = '';
+            let progressBar = `<div class="w-full bg-[#333] h-1 rounded-full overflow-hidden mb-1"><div class="progress-bar bg-blue-600 h-full w-0 transition-all"></div></div>`;
+            let status = 'Pending';
+            let statusClass = 'text-gray-400';
+
+            if (item.isRecovery) {
+                status = 'Interrupted';
+                statusClass = 'text-yellow-500';
+                progressBar = ''; // Hide progress bar for recovery until resumed
+                actionButtons = `
+                    <div class="flex gap-2 mt-1">
+                        <button class="text-[10px] bg-green-600 hover:bg-green-500 text-white px-2 py-0.5 rounded resume-btn">Resume</button>
+                        <button class="text-[10px] bg-red-600 hover:bg-red-500 text-white px-2 py-0.5 rounded cancel-btn">Cancel</button>
+                    </div>`;
+            }
+
+            el.innerHTML = `
+                <div class="flex justify-between mb-1 text-[10px]">
+                    <span class="font-medium text-gray-300 truncate w-24">${item.file.name}</span>
+                    <span class="${statusClass} status-text"><i class="far fa-clock mr-1"></i>${status}</span>
+                </div>
+                ${progressBar}
+                <div class="flex justify-between text-[9px] text-gray-500 details-text">
+                    ${item.isRecovery ? '<span>Waiting for action...</span>' : '<span>-- MB/s</span><span>--</span>'}
+                </div>
+                ${actionButtons}
+            `;
+
+            if (item.isRecovery) {
+                el.querySelector('.resume-btn').onclick = () => {
+                    const input = document.getElementById('resumeFileInput');
+                    input.dataset.uiId = item.id;
+                    input.dataset.sessionKey = item.sessionKey;
+                    input.click();
+                };
+                el.querySelector('.cancel-btn').onclick = () => {
+                    clearSession(item.sessionKey);
+                    el.remove();
+                    // If no more items in container, maybe show empty state
+                };
+            }
+
+            if (append) container.appendChild(el);
+            else container.prepend(el);
+        }
+
+        async function processUploadQueue() {
+            if (activeUploads >= MAX_CONCURRENT_UPLOADS) return;
+            const next = uploadQueue.find(i => !i.started && !i.completed && !i.failed);
+            if (next) {
+                activeUploads++;
+                next.started = true;
+                startUpload(next).finally(() => {
+                    activeUploads--;
+                    processUploadQueue();
+                });
+            }
+        }
+
+        function getOptimalChunkSize(fileSize) {
+            if (fileSize < 100 * MB) return 2 * MB;
+            if (fileSize < 500 * MB) return 5 * MB;
+            if (fileSize < 1024 * MB) return 8 * MB;
+            return 16 * MB;
+        }
+
+        async function startUpload(item) {
+            // Find UI element. It might have an ID from item.id if created normally
+            let uiId = item.id;
+            // If it was created dynamically without item.id sync, we might need a lookup, but here we enforce id on creation
+            const ui = document.getElementById(uiId);
+            if (!ui) return; // Should not happen
+
+            const statusText = ui.querySelector('.status-text');
+            const progBar = ui.querySelector('.progress-bar');
+            const detailsText = ui.querySelector('.details-text');
+
+            const sessionKey = getSessionKey(item.file);
+            const fileSize = item.file.size;
+
+            // Stats
+            let uploadedBytes = 0;
+            let lastUploadedBytes = 0;
+            let startTime = Date.now();
+            let lastUpdate = startTime;
+
+            try {
+                // Resume Check
+                let file_id;
+                const existing = getSession(sessionKey);
+                let chunkQueue = [];
+                const chunkSize = getOptimalChunkSize(fileSize);
+                const totalChunks = Math.ceil(fileSize / chunkSize);
+
+                if (existing) {
+                    statusText.textContent = "Resuming...";
+                    const statusRes = await fetch(`${serverLink}/v4/fragment/object/upload/status/${existing.file_id}`, { headers: { authorization: `Bearer ${token}` } });
+                    if (statusRes.ok) {
+                        const status = await statusRes.json();
+                        file_id = existing.file_id;
+
+                        // FIX: Filter out already uploaded chunks to prevent > 100% progress
+                        const doneSet = new Set(status.uploaded_chunks);
+                        chunkQueue = Array.from({ length: totalChunks }, (_, i) => i).filter(i => !doneSet.has(i));
+
+                        // FIX: Calculate initial progress based on actually uploaded chunks
+                        uploadedBytes = doneSet.size * chunkSize;
+                        if (uploadedBytes > fileSize) uploadedBytes = fileSize;
+                        lastUploadedBytes = uploadedBytes; // Avoid jump in speed calc
+                    } else {
+                        clearSession(sessionKey);
+                        // If status fails, we reset
+                        chunkQueue = Array.from({ length: totalChunks }, (_, i) => i);
+                    }
+                } else {
+                    chunkQueue = Array.from({ length: totalChunks }, (_, i) => i);
+                }
+
+                if (!file_id) {
+                    statusText.textContent = "Initializing...";
+                    const init = await fetch(`${serverLink}/v4/fragment/object/upload/init/${item.fragment}/${item.objectKey}`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json', authorization: `Bearer ${token}` },
+                        body: JSON.stringify({ content_type: item.file.type || 'application/octet-stream', total_size_bytes: fileSize, total_chunks: totalChunks })
+                    });
+                    if (!init.ok) throw new Error('Init failed');
+                    const res = await init.json();
+                    file_id = res.file_id;
+                    saveSession(sessionKey, { file_id, name: item.file.name, size: fileSize, lastModified: item.file.lastModified, objectKey: item.objectKey, fragment: item.fragment });
+                }
+
+                let maxWorkers = 4;
+
+                const uploadChunk = async (chunkIndex) => {
+                    const start = chunkIndex * chunkSize;
+                    const end = Math.min(start + chunkSize, fileSize);
+                    const blob = item.file.slice(start, end);
+
+                    const hashBuf = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer());
+                    const b64Hash = btoa(String.fromCharCode(...new Uint8Array(hashBuf)));
+
+                    await fetch(`${serverLink}/v4/fragment/object/upload/chunk/raw/${file_id}/${chunkIndex}`, {
+                        method: 'PUT',
+                        headers: {
+                            'authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/octet-stream',
+                            'Digest': `sha-256=${b64Hash}`,
+                            'Buffer': `memory-size=${chunkSize}`
+                        },
+                        body: blob,
+                        signal: item.controller.signal
+                    });
+
+                    uploadedBytes += blob.size;
+
+                    // UI Update
+                    const now = Date.now();
+                    if ((now - lastUpdate) > 500) {
+                        const speed = (uploadedBytes - lastUploadedBytes) / ((now - lastUpdate) / 1000);
+                        const remaining = fileSize - uploadedBytes;
+                        const eta = speed > 0 ? remaining / speed : 0;
+
+                        // FIX: Cap at 100% explicitly
+                        const percentage = Math.min(100, (uploadedBytes / fileSize) * 100);
+                        progBar.style.width = `${percentage}%`;
+                        statusText.textContent = `${Math.round(percentage)}%`;
+                        detailsText.innerHTML = `<span>${formatBytes(speed)}/s</span><span>ETA: ${formatTime(eta)}</span>`;
+
+                        lastUpdate = now;
+                        lastUploadedBytes = uploadedBytes;
+                    }
+                };
+
+                // Worker Pool
+                await new Promise((resolve, reject) => {
+                    let activeCount = 0;
+                    let failed = false;
+                    const runNext = () => {
+                        if (failed) return;
+                        if (chunkQueue.length === 0 && activeCount === 0) { resolve(); return; }
+
+                        while (activeCount < maxWorkers && chunkQueue.length > 0) {
+                            const idx = chunkQueue.shift();
+                            activeCount++;
+                            uploadChunk(idx)
+                                .then(() => {
+                                    activeCount--;
+                                    runNext();
+                                })
+                                .catch(e => {
+                                    failed = true;
+                                    reject(e);
+                                });
+                        }
+                    };
+                    runNext();
+                });
+
+                statusText.textContent = "Finalizing...";
+                await fetch(`${serverLink}/v4/fragment/object/upload/finalize/${file_id}`, { method: 'POST', headers: { authorization: `Bearer ${token}` } });
+
+                statusText.textContent = "Complete";
+                statusText.className = "text-green-400 text-[10px]";
+                progBar.classList.remove('bg-blue-600');
+                progBar.classList.add('bg-green-500');
+                progBar.style.width = '100%'; // Ensure full width on completion
+                item.completed = true;
+                clearSession(sessionKey);
+                listObjects(activeFragment);
+
+            } catch (e) {
+                console.error(e);
+                statusText.textContent = "Failed";
+                statusText.className = "text-red-400 text-[10px]";
+                item.failed = true;
+
+                // Add Retry UI
+                detailsText.innerHTML = `
+                    <button class="text-[10px] text-blue-400 hover:text-white mr-2" onclick="retryUpload('${item.id}')">Retry</button>
+                    <button class="text-[10px] text-red-400 hover:text-white" onclick="cancelUpload('${item.id}')">Cancel</button>
+                `;
+            }
+        }
+
+        window.retryUpload = (id) => {
+            const item = uploadQueue.find(u => u.id === id);
+            if (item) {
+                item.failed = false;
+                item.started = false;
+                const ui = document.getElementById(id);
+                ui.querySelector('.status-text').className = "text-blue-400 status-text";
+                ui.querySelector('.status-text').textContent = "Retrying...";
+                ui.querySelector('.details-text').innerHTML = `<span>-- MB/s</span><span>--</span>`;
+                processUploadQueue();
+            }
+        };
+
+        window.cancelUpload = (id) => {
+            const item = uploadQueue.find(u => u.id === id);
+            if (item) {
+                if (item.controller) item.controller.abort();
+                clearSession(getSessionKey(item.file));
+                uploadQueue = uploadQueue.filter(u => u.id !== id);
+                document.getElementById(id).remove();
+                activeUploads--;
+                processUploadQueue();
+            }
+        };
+
+        // --- Init ---
+        $(document).ready(() => {
+            // *** VIRTUAL SCROLLER INITIALIZATION (FIX FOR BLANK FILE SYSTEM) ***
+            VirtualScroller.init('browser', 'objectList');
+
+            $(".window").draggable({ handle: ".window-header", containment: "#windows-container", start: function () { WindowManager.focus($(this).attr('id').replace('win-', '')); } }).resizable({ minHeight: 200, minWidth: 300 });
+            $(".window").on('mousedown', function () { WindowManager.focus($(this).attr('id').replace('win-', '')); });
+            $(document).on('click', (e) => { if (!$(e.target).closest('#contextMenu').length) $('#contextMenu').addClass('hidden'); });
+
+            setTimeout(() => { $('#boot-screen').css('opacity', 0); setTimeout(() => $('#boot-screen').remove(), 600); }, 1200);
+
+            $('#fileInput').change((e) => handleUploads(e.target.files));
+
+            // Search Bar Logic
+            $('#searchInput').on('input', function () {
+                const val = $(this).val().toLowerCase();
+                if (!val) {
+                    renderObjects(getActiveObjectList());
+                    $('#breadcrumb').text('Local Files');
+                    return;
+                }
+
+                $('#breadcrumb').html('<span class="text-blue-400">Search Results</span>');
+                const filtered = getActiveObjectList().filter(o => o.key.toLowerCase().includes(val));
+                renderFlatView(filtered);
+            });
+
+            // Fixed Resume Input Handler
+            $('#resumeFileInput').change((e) => {
+                const file = e.target.files[0];
+                const sessionKey = e.target.dataset.sessionKey;
+                const uiId = e.target.dataset.uiId;
+
+                if (file && sessionKey) {
+                    const sessionData = getSession(sessionKey);
+
+                    if (sessionData && file.name === sessionData.name && file.size === sessionData.size && file.lastModified === sessionData.lastModified) {
+                        // Remove the recovery UI item
+                        const oldEl = document.getElementById(uiId);
+                        if (oldEl) oldEl.remove();
+
+                        // Add to active queue
+                        const uploadItem = {
+                            id: crypto.randomUUID(), // New ID for active state
+                            file: file,
+                            fragment: sessionData.fragment,
+                            objectKey: sessionData.objectKey,
+                            controller: new AbortController()
+                        };
+                        uploadQueue.push(uploadItem);
+                        createUploadUI(uploadItem); // Create standard progress bar UI
+                        processUploadQueue();
+                        showToast(`Resuming upload for ${file.name}`, 'success');
+                    } else {
+                        showToast('Incorrect file selected. Please choose the original file.', 'error');
+                    }
+                }
+                e.target.value = '';
+            });
+
+            $('#empty-trash-btn').click(emptyTrash);
+
+            // Trash View Toggles
+            $('#trash-tiles-btn').click(function () {
+                currentTrashView = 'tiles';
+                $(this).removeClass('hover:bg-[#333] text-gray-400').addClass('bg-blue-600 text-white');
+                $('#trash-list-btn').removeClass('bg-blue-600 text-white').addClass('hover:bg-[#333] text-gray-400');
+                showTrash();
+            });
+
+            $('#trash-list-btn').click(function () {
+                currentTrashView = 'list';
+                $(this).removeClass('hover:bg-[#333] text-gray-400').addClass('bg-blue-600 text-white');
+                $('#trash-tiles-btn').removeClass('bg-blue-600 text-white').addClass('hover:bg-[#333] text-gray-400');
+                showTrash();
+            });
+
+            async function load() {
+                try {
+                    const res = await fetch(`${serverLink}/v4/fragment/metadata`, { headers: { authorization: `Bearer ${token}` } });
+                    if (res.ok) {
+                        const frags = await res.json();
+                        const list = $('#fragmentList');
+                        list.empty();
+                        frags.forEach(f => {
+                            const el = $(`<div class="nav-item"><i class="fas fa-database w-4 text-center"></i> ${f}</div>`);
+                            el.click(() => { $('.nav-item').removeClass('active'); el.addClass('active'); activeFragment = f; currentPath = ''; AppNav.navigate('my-files'); listObjects(f); });
+                            list.append(el);
+                        });
+                        if (frags.length > 0) { activeFragment = frags[0]; listObjects(activeFragment); }
+                    }
+                } catch (e) { }
+                checkForInterruptedUploads();
+            }
+            load();
+
+            // New Folder Logic
+            $('#newFolderBtnAction').click(() => {
+                $('#newFolderNameInput').val('');
+                $('#newFolderModal').removeClass('hidden').addClass('flex');
+                setTimeout(() => $('#newFolderNameInput').focus(), 50);
+            });
+            $('#cancelNewFolderBtn').click(() => $('#newFolderModal').addClass('hidden').removeClass('flex'));
+            $('#confirmNewFolderBtn').click(() => {
+                const name = $('#newFolderNameInput').val().trim();
+                if (name) {
+                    clientSideFolders.push({ name, path: currentPath });
+                    $('#newFolderModal').addClass('hidden').removeClass('flex');
+                    renderObjects(getActiveObjectList());
+                    showToast('Folder created', 'success');
+                } else {
+                    showToast('Folder name required', 'error');
+                }
+            });
+
+            // View Switching Logic
+            $('#tiles-view-btn').click(function () {
+                currentView = 'tiles';
+                $(this).removeClass('hover:bg-[#333] text-gray-400').addClass('bg-blue-600 text-white');
+                $('#list-view-btn').removeClass('bg-blue-600 text-white').addClass('hover:bg-[#333] text-gray-400');
+                renderObjects(getActiveObjectList());
+            });
+
+            $('#list-view-btn').click(function () {
+                currentView = 'list';
+                $(this).removeClass('hover:bg-[#333] text-gray-400').addClass('bg-blue-600 text-white');
+                $('#tiles-view-btn').removeClass('bg-blue-600 text-white').addClass('hover:bg-[#333] text-gray-400');
+                renderObjects(getActiveObjectList());
+            });
+
+            // --- AI Cortex Logic (Redesigned) ---
+            const AIChat = {
+                messages: [],
+                controller: null,
+                isStreaming: false,
+
+                appendMessage: (role, content) => {
+                    const container = document.getElementById('ai-chat-history');
+                    const wrapper = document.createElement('div');
+                    wrapper.className = `ai-message-wrapper ${role}`;
+
+                    const bubble = document.createElement('div');
+                    bubble.className = `ai-message-bubble bubble-content ${role === 'user' ? 'ai-user-bubble' : 'ai-bot-bubble'}`;
+
+                    // Parse content
+                    bubble.innerHTML = marked.parse(content);
+
+                    // Highlight Code
+                    bubble.querySelectorAll('pre code').forEach((block) => {
+                        hljs.highlightElement(block);
+                    });
+
+                    wrapper.appendChild(bubble);
+                    container.appendChild(wrapper);
+
+                    const scrollArea = document.getElementById('ai-chat-scroll-area');
+                    scrollArea.scrollTop = scrollArea.scrollHeight;
+
+                    return bubble;
+                },
+
+                createProgressIndicator: () => {
+                    const container = document.getElementById('ai-chat-history');
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'ai-message-wrapper assistant';
+
+                    const bubble = document.createElement('div');
+                    bubble.className = 'ai-message-bubble ai-bot-bubble bubble-content';
+                    bubble.innerHTML = `<div class="flex items-center gap-2 text-gray-400"><i class="fas fa-circle-notch fa-spin text-red-500"></i> Thinking...</div>`;
+
+                    wrapper.appendChild(bubble);
+                    container.appendChild(wrapper);
+
+                    const scrollArea = document.getElementById('ai-chat-scroll-area');
+                    scrollArea.scrollTop = scrollArea.scrollHeight;
+
+                    return { element: wrapper, bubble: bubble };
+                },
+
+                send: async (msg) => {
+                    if (!msg.trim() || AIChat.isStreaming) return;
+
+                    const welcome = document.getElementById('ai-welcome-screen');
+                    const history = document.getElementById('ai-chat-history');
+                    const input = document.getElementById('ai-user-input');
+                    const btn = document.getElementById('ai-send-btn');
+
+                    welcome.classList.add('hidden');
+                    history.classList.remove('hidden');
+
+                    AIChat.isStreaming = true;
+                    AIChat.controller = new AbortController();
+                    input.disabled = true;
+                    btn.disabled = true;
+                    input.value = '';
+
+                    AIChat.appendMessage('user', msg);
+                    AIChat.messages.push({ role: "user", content: msg });
+
+                    const progress = AIChat.createProgressIndicator();
+                    let finalBubble = null;
+
+                    try {
+                        const response = await fetch("https://ai.litiaina.com/v2/api/stream/chat", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                            body: JSON.stringify({ messages: AIChat.messages }),
+                            signal: AIChat.controller.signal
+                        });
+
+                        const reader = response.body.getReader();
+                        const decoder = new TextDecoder("utf-8");
+                        let assistantBuffer = "";
+                        let displayBuffer = "";
+                        let isThinking = false;
+                        let hasFirstToken = false;
+
+                        while (true) {
+                            const { done, value } = await reader.read();
+                            if (done) break;
+                            const chunk = decoder.decode(value, { stream: true });
+
+                            for (const line of chunk.split("\n")) {
+                                if (!line.startsWith("data:")) continue;
+                                const jsonText = line.slice(5).trim();
+                                if (!jsonText || jsonText.includes('[DONE]')) continue;
+
+                                try {
+                                    const json = JSON.parse(jsonText);
+                                    const delta = json.v || "";
+
+                                    if (delta.includes("<think>")) { isThinking = true; continue; }
+                                    if (delta.includes("</think>")) { isThinking = false; continue; }
+
+                                    if (isThinking) {
+                                        // Optional: Update a 'thought process' expandable section
+                                    } else {
+                                        assistantBuffer += delta;
+                                        displayBuffer += delta;
+
+                                        if (!hasFirstToken) {
+                                            progress.element.remove(); // Remove spinner
+                                            finalBubble = AIChat.appendMessage('assistant', displayBuffer + ' ▌');
+                                            hasFirstToken = true;
+                                        } else {
+                                            finalBubble.innerHTML = marked.parse(displayBuffer + ' ▌');
+                                            finalBubble.querySelectorAll('pre code').forEach((el) => hljs.highlightElement(el));
+                                        }
+
+                                        // Auto Scroll
+                                        const scrollArea = document.getElementById('ai-chat-scroll-area');
+                                        scrollArea.scrollTop = scrollArea.scrollHeight;
+                                    }
+                                } catch (e) { }
+                            }
+                        }
+
+                        if (finalBubble) {
+                            finalBubble.innerHTML = marked.parse(displayBuffer);
+                            finalBubble.querySelectorAll('pre code').forEach((el) => hljs.highlightElement(el));
+                        }
+                        AIChat.messages.push({ role: "assistant", content: assistantBuffer });
+
+                    } catch (e) {
+                        progress.element.remove();
+                        if (e.name !== 'AbortError') {
+                            AIChat.appendMessage('assistant', `**Error:** Connection failed.`);
+                        }
+                    } finally {
+                        AIChat.isStreaming = false;
+                        AIChat.controller = null;
+                        input.disabled = false;
+                        btn.disabled = false;
+                        input.focus();
+                    }
+                }
+            };
+
+            // AI Event Listeners
+            $('#ai-chat-form').submit((e) => { e.preventDefault(); AIChat.send($('#ai-user-input').val()); });
+
+            $('#ai-user-input').on('keydown', function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    AIChat.send(this.value);
+                }
+            });
+
+            $('.suggestion-chip').click(function () {
+                AIChat.send($(this).text());
+            });
+
+            setInterval(() => $('#clock').text(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })), 1000);
+        });
+    </script>
+</body>
+
+</html>
