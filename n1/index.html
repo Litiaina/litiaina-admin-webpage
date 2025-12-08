@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>N1 Cloud - Professional</title>
-    <link rel="icon" type="image/png" href="images/litiaina_icon.png">
+    <link rel="icon" type="image/png" href="../images/litiaina_icon.png">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -85,7 +85,7 @@
             height: 100%;
             background: radial-gradient(circle at 50% 50%, #20252e 0%, #111418 100%);
             background-size: cover;
-            background-image: url("images/n1-cloud-professional-wallpaper.jpg")
+            background-image: url("../images/n1-cloud-professional-wallpaper.jpg")
         }
 
         /* --- Bottom Taskbar (Windows Style) --- */
@@ -748,7 +748,7 @@
 
     <!-- Boot Screen -->
     <div id="boot-screen" class="flex flex-col items-center justify-center">
-        <img src="images/litiaina_icon_48x48.png" alt="logo" class="w-16 h-16 rounded-lg mb-4" />
+        <img src="../images/litiaina_icon_48x48.png" alt="logo" class="w-16 h-16 rounded-lg mb-4" />
         <h1 class="text-lg font-medium tracking-wide text-gray-300">N1 Cloud</h1>
         <p class="text-[10px] text-gray-600 mt-2 font-mono">
             ENGINE VERSION 0.0.1 • LOADING SHELL
@@ -1256,7 +1256,7 @@
         const MAX_CONCURRENT_UPLOADS = 4;
         const MB = 1024 * 1024;
         const userName = localStorage.getItem("current-account-name")?.trim() || "User";
-
+ 
         // --- Thumbnail Cache ---
         const thumbnailCache = new Map(); // Stores key -> url mapping
 
@@ -2791,7 +2791,7 @@
             // *** VIRTUAL SCROLLER INITIALIZATION (FIX FOR BLANK FILE SYSTEM) ***
             VirtualScroller.init('browser', 'objectList');
 
-            setupLogoutWithConfirmation("user-profile-btn", "index.html");
+            setupLogoutWithConfirmation("user-profile-btn", "../");
 
             // --- DRAG AND DROP HANDLERS ---
             const dropZone = document.getElementById('browser');

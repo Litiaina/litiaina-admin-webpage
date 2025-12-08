@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>N1 Cloud - Registration</title>
-  <link rel="icon" type="image/png" href="images/litiaina_icon.png">
+  <link rel="icon" type="image/png" href="../images/litiaina_icon.png">
   
   <!-- Tailwind & Fonts -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -253,7 +253,7 @@
             <div class="text-xs text-gray-500 mt-2">Redirecting to login...</div>
           `;
           setTimeout(() => {
-            window.location.href = "index.html"; // Go back to login, not root, for clarity in file structure
+            window.location.href = "../index.html"; // Go back to login, not root, for clarity in file structure
           }, 1500);
         } else {
           error.textContent = "Registration failed. Verify your Auth Key.";

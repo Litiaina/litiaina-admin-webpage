@@ -219,7 +219,7 @@
         modalContainer.classList.add('hidden');
       };
 
-      document.getElementById("signup").onclick = () => window.location.href = "signup.html";
+      document.getElementById("signup").onclick = () => window.location.href = "signup";
 
       document.getElementById("forgotPassword").onclick = () => {
         showModal("System Notice", "Password recovery protocols are offline. Contact the administrator.");
@@ -306,7 +306,7 @@
           showModal("Access Granted", "Initializing desktop environment...", false);
 
           setTimeout(() => {
-            window.location.href = "n1-cloud-professional.html";
+            window.location.href = "n1";
           }, 1500);
 
         } catch (err) {
