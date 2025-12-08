@@ -2486,7 +2486,7 @@
                     <span class="${statusClass} status-text"><i class="far fa-clock mr-1"></i>${status}</span>
                 </div>
                 ${progressBar}
-                <div class="flex justify-between text-[9px] text-gray-500 details-text">
+                <div class="flex justify-end text-[9px] text-gray-500 details-text">
                     ${item.isRecovery ? '<span>Waiting for action...</span>' : '<span>-- MB/s</span><span>--</span>'}
                 </div>
                 ${actionButtons}
@@ -2565,11 +2565,11 @@
                         const status = await statusRes.json();
                         file_id = existing.file_id;
 
-                        // FIX: Filter out already uploaded chunks to prevent > 100% progress
+                        // Filter out already uploaded chunks to prevent > 100% progress
                         const doneSet = new Set(status.uploaded_chunks);
                         chunkQueue = Array.from({ length: totalChunks }, (_, i) => i).filter(i => !doneSet.has(i));
 
-                        // FIX: Calculate initial progress based on actually uploaded chunks
+                        // Calculate initial progress based on actually uploaded chunks
                         uploadedBytes = doneSet.size * chunkSize;
                         if (uploadedBytes > fileSize) uploadedBytes = fileSize;
                         lastUploadedBytes = uploadedBytes; // Avoid jump in speed calc
@@ -2594,72 +2594,101 @@
                     saveSession(sessionKey, { file_id, name: item.file.name, size: fileSize, lastModified: item.file.lastModified, objectKey: item.objectKey, fragment: item.fragment });
                 }
 
-                let maxWorkers = 4;
+                statusText.textContent = "Uploading...";
 
-                const uploadChunk = async (chunkIndex) => {
-                    const start = chunkIndex * chunkSize;
-                    const end = Math.min(start + chunkSize, fileSize);
-                    const blob = item.file.slice(start, end);
+                // --- PRODUCER-CONSUMER IMPLEMENTATION ---
+                const buffer = [];
+                const maxBufferAhead = 4;
+                const maxNetworkWorkers = 6; // Optimal for HTTP/2
+                let hashingFinished = false;
 
-                    const hashBuf = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer());
-                    const b64Hash = btoa(String.fromCharCode(...new Uint8Array(hashBuf)));
+                // 1. PRODUCER (Reads & Hashes)
+                const startProducer = async () => {
+                    // Iterate through the chunkQueue (handles resume logic correctly)
+                    for (const chunkIndex of chunkQueue) {
+                        // Backpressure: If buffer full, wait
+                        while (buffer.length >= maxBufferAhead) {
+                            await new Promise(r => setTimeout(r, 50));
+                        }
 
-                    await fetch(`${serverLink}/v4/fragment/object/upload/chunk/raw/${file_id}/${chunkIndex}`, {
-                        method: 'PUT',
-                        headers: {
-                            'authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/octet-stream',
-                            'Digest': `sha-256=${b64Hash}`,
-                            'Buffer': `memory-size=${chunkSize}`
-                        },
-                        body: blob,
-                        signal: item.controller.signal
-                    });
+                        const start = chunkIndex * chunkSize;
+                        const end = Math.min(start + chunkSize, fileSize);
+                        const blob = item.file.slice(start, end);
 
-                    uploadedBytes += blob.size;
+                        const hashBuf = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer());
+                        const b64Hash = btoa(String.fromCharCode(...new Uint8Array(hashBuf)));
 
-                    // UI Update
-                    const now = Date.now();
-                    if ((now - lastUpdate) > 500) {
-                        const speed = (uploadedBytes - lastUploadedBytes) / ((now - lastUpdate) / 1000);
-                        const remaining = fileSize - uploadedBytes;
-                        const eta = speed > 0 ? remaining / speed : 0;
+                        buffer.push({ index: chunkIndex, blob, b64Hash });
+                    }
+                    hashingFinished = true;
+                };
 
-                        // FIX: Cap at 100% explicitly
-                        const percentage = Math.min(100, (uploadedBytes / fileSize) * 100);
-                        progBar.style.width = `${percentage}%`;
-                        statusText.textContent = `${Math.round(percentage)}%`;
-                        detailsText.innerHTML = `<span>${formatBytes(speed)}/s</span><span>ETA: ${formatTime(eta)}</span>`;
+                // 2. CONSUMER (Uploads)
+                const uploadWorker = async () => {
+                    while (true) {
+                        const chunkData = buffer.shift();
 
-                        lastUpdate = now;
-                        lastUploadedBytes = uploadedBytes;
+                        if (!chunkData) {
+                            if (hashingFinished) break; // Done
+                            await new Promise(r => setTimeout(r, 20)); // Wait for producer
+                            continue;
+                        }
+
+                        try {
+                            await fetch(`${serverLink}/v4/fragment/object/upload/chunk/raw/${file_id}/${chunkData.index}`, {
+                                method: 'PUT',
+                                headers: {
+                                    'authorization': `Bearer ${token}`,
+                                    'Content-Type': 'application/octet-stream',
+                                    'Digest': `sha-256=${chunkData.b64Hash}`,
+                                    'Buffer': `memory-size=${chunkSize}`
+                                },
+                                body: chunkData.blob,
+                                signal: item.controller.signal
+                            });
+
+                            uploadedBytes += chunkData.blob.size;
+
+                            // UI Update
+                            const now = Date.now();
+                            if ((now - lastUpdate) > 500) {
+                                const speed = (uploadedBytes - lastUploadedBytes) / ((now - lastUpdate) / 1000);
+                                const remaining = fileSize - uploadedBytes;
+                                const eta = speed > 0 ? remaining / speed : 0;
+
+                                const percentage = Math.min(100, (uploadedBytes / fileSize) * 100);
+                                progBar.style.width = `${percentage}%`;
+                                statusText.textContent = `${Math.round(percentage)}%`;
+                                detailsText.innerHTML = `<span class="mr-2">${formatBytes(speed)}/s</span><span>ETA: ${formatTime(eta)}</span>`;
+
+                                lastUpdate = now;
+                                lastUploadedBytes = uploadedBytes;
+                            }
+
+                        } catch (e) {
+                            console.error(`Worker failed chunk ${chunkData.index}`, e);
+                            buffer.unshift(chunkData); // Put back at front of queue
+                            await new Promise(r => setTimeout(r, 1000)); // Cool down
+                        }
                     }
                 };
 
-                // Worker Pool
+                // 3. ORCHESTRATOR
                 await new Promise((resolve, reject) => {
-                    let activeCount = 0;
-                    let failed = false;
-                    const runNext = () => {
-                        if (failed) return;
-                        if (chunkQueue.length === 0 && activeCount === 0) { resolve(); return; }
+                    // Start Producer in background
+                    startProducer().catch(reject);
 
-                        while (activeCount < maxWorkers && chunkQueue.length > 0) {
-                            const idx = chunkQueue.shift();
-                            activeCount++;
-                            uploadChunk(idx)
-                                .then(() => {
-                                    activeCount--;
-                                    runNext();
-                                })
-                                .catch(e => {
-                                    failed = true;
-                                    reject(e);
-                                });
-                        }
-                    };
-                    runNext();
+                    // Start Consumer Pool
+                    const workers = [];
+                    for (let i = 0; i < maxNetworkWorkers; i++) {
+                        workers.push(uploadWorker());
+                    }
+
+                    Promise.all(workers)
+                        .then(() => resolve())
+                        .catch(reject);
                 });
+                // ----------------------------------------
 
                 statusText.textContent = "Finalizing...";
                 await fetch(`${serverLink}/v4/fragment/object/upload/finalize/${file_id}`, { method: 'POST', headers: { authorization: `Bearer ${token}` } });
