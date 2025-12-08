@@ -821,7 +821,12 @@
                         <div class="nav-item" id="nav-starred" onclick="AppNav.navigate('starred')"><i
                                 class="fas fa-star w-4 text-center text-yellow-500"></i> Important</div>
 
-                        <div class="text-[10px] font-bold text-gray-500 uppercase mb-2 px-4 mt-6">Mounts</div>
+                        <div class="flex justify-between items-center px-4 mt-6 mb-2">
+                            <div class="text-[10px] font-bold text-gray-500 uppercase">Mounts</div>
+                            <button id="addFragmentBtn" class="text-xs text-gray-400 hover:text-white" title="Add New Mount">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
                         <div id="fragmentList" class="flex flex-col gap-1 overflow-y-auto max-h-40 custom-scrollbar">
                         </div>
 
@@ -1173,6 +1178,20 @@
         </div>
     </div>
 
+    <!-- New Fragment Modal -->
+    <div id="newFragmentModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
+        <div class="bg-[#242424] p-6 rounded-lg shadow-xl border border-[#404040] w-80 text-white">
+            <h3 class="font-bold mb-4">Create New Mount</h3>
+            <input type="text" id="newFragmentNameInput" placeholder="Mount Name"
+                class="bg-[#111] border border-[#444] w-full p-2 rounded mb-4 text-sm focus:border-blue-500 outline-none text-white">
+            <div class="flex justify-end gap-2">
+                <button id="cancelNewFragmentBtn" class="text-xs text-gray-400 hover:text-white px-3 py-2">CANCEL</button>
+                <button id="confirmNewFragmentBtn"
+                    class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">CREATE</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Rename Modal -->
     <div id="renameModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
         <div class="bg-[#242424] p-6 rounded-lg shadow-xl border border-[#404040] w-96 text-white">
@@ -1241,6 +1260,7 @@
         // --- Core Variables ---
         let currentObjectList = [];
         let clientSideFolders = [];
+        let clientSideFragments = []; // Added for temporary fragments
         let starredItems = JSON.parse(localStorage.getItem('starredItems')) || [];
         let trashedItems = JSON.parse(localStorage.getItem('trashedItems')) || [];
         let openFilesMap = new Map(); // key -> windowId
@@ -2906,21 +2926,58 @@
                 showTrash();
             });
 
-            async function load() {
+            async function loadFragments() {
+                const list = $('#fragmentList');
+                // Don't clear immediately to prevent blinking if we want smooth updates, 
+                // but since we rebuild the whole list for simplicity, clear is fine.
+                list.empty();
+
+                let frags = [];
                 try {
                     const res = await fetch(`${serverLink}/v4/fragment/metadata`, { headers: { authorization: `Bearer ${token}` } });
                     if (res.ok) {
-                        const frags = await res.json();
-                        const list = $('#fragmentList');
-                        list.empty();
-                        frags.forEach(f => {
-                            const el = $(`<div class="nav-item"><i class="fas fa-database w-4 text-center"></i> ${f}</div>`);
-                            el.click(() => { $('.nav-item').removeClass('active'); el.addClass('active'); activeFragment = f; currentPath = ''; AppNav.navigate('my-files'); listObjects(f); });
-                            list.append(el);
-                        });
-                        if (frags.length > 0) { activeFragment = frags[0]; listObjects(activeFragment); }
+                        frags = await res.json();
                     }
                 } catch (e) { }
+
+                // Combine server fragments with client-side temporary fragments
+                // Use Set to deduplicate in case a temp fragment becomes real on server later
+                const allFrags = [...new Set([...frags, ...clientSideFragments])];
+
+                allFrags.forEach(f => {
+                    const el = $(`<div class="nav-item"><i class="fas fa-database w-4 text-center"></i> ${f}</div>`);
+                    el.click(() => { 
+                        $('.nav-item').removeClass('active'); 
+                        el.addClass('active'); 
+                        activeFragment = f; 
+                        currentPath = ''; 
+                        AppNav.navigate('my-files'); 
+                        listObjects(f); 
+                    });
+                    
+                    // Restore active state
+                    if (activeFragment === f) {
+                        el.addClass('active');
+                    }
+                    
+                    list.append(el);
+                });
+
+                // Ensure something is selected if list is not empty
+                if (allFrags.length > 0 && !activeFragment) {
+                    activeFragment = allFrags[0];
+                    listObjects(activeFragment);
+                } else if (activeFragment && !allFrags.includes(activeFragment)) {
+                    // If active fragment disappeared (deleted), reset
+                    if(allFrags.length > 0) {
+                         activeFragment = allFrags[0];
+                         listObjects(activeFragment);
+                    }
+                }
+            }
+            
+            async function load() {
+                await loadFragments();
                 checkForInterruptedUploads();
             }
             load();
@@ -2942,6 +2999,39 @@
                 } else {
                     showToast('Folder name required', 'error');
                 }
+            });
+
+            // --- New Fragment Logic (UPDATED: CLIENT-SIDE ONLY) ---
+            $('#addFragmentBtn').click(() => {
+                $('#newFragmentNameInput').val('');
+                $('#newFragmentModal').removeClass('hidden').addClass('flex');
+                setTimeout(() => $('#newFragmentNameInput').focus(), 50);
+            });
+            
+            $('#cancelNewFragmentBtn').click(() => $('#newFragmentModal').addClass('hidden').removeClass('flex'));
+            
+            $('#confirmNewFragmentBtn').click(async () => {
+                const name = $('#newFragmentNameInput').val().trim();
+                if (!name) {
+                    showToast('Mount name required', 'error');
+                    return;
+                }
+                
+                // Client-side temporary addition (no API call)
+                if (!clientSideFragments.includes(name)) {
+                    clientSideFragments.push(name);
+                    showToast(`Mount '${name}' created`, 'success');
+                    
+                    // Refresh the list to show the new mount
+                    // We call loadFragments, but since it fetches from server, 
+                    // it might overwrite our client list if we didn't handle the merge inside loadFragments.
+                    // But we DID update loadFragments to merge clientSideFragments, so this is safe.
+                    loadFragments(); 
+                } else {
+                    showToast('Mount already exists', 'error');
+                }
+                
+                $('#newFragmentModal').addClass('hidden').removeClass('flex');
             });
 
             // View Switching Logic
