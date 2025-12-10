@@ -2347,6 +2347,8 @@
                 if (!next) break;
                 activeUploads++;
                 next.started = true;
+                
+                // Start the upload
                 startUpload(next).finally(() => {
                     activeUploads--;
                     currentUploadSpeed = 0;
