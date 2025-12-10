@@ -61,7 +61,8 @@
         /* Virtualization Fixed Heights */
         /* Adjusted height for text wrapping */
         .item-tile {
-            height: 155px; /* Slightly increased to prevent text cutoff */
+            height: 155px;
+            /* Slightly increased to prevent text cutoff */
         }
 
         .item-list {
@@ -419,7 +420,7 @@
             position: relative;
             transition: background-color 0.2s, border-color 0.2s;
         }
-        
+
         /* Drag and Drop Active State */
         #browser.drag-active {
             background-color: rgba(59, 130, 246, 0.1) !important;
@@ -723,7 +724,7 @@
             color: white;
             border-color: #444;
         }
-        
+
         /* Zoom Viewer Styles */
         .zoom-controls {
             display: flex;
@@ -733,11 +734,11 @@
             border-radius: 4px;
             padding: 2px;
         }
-        
+
         .grab-cursor {
             cursor: grab;
         }
-        
+
         .grabbing-cursor {
             cursor: grabbing;
         }
@@ -823,7 +824,8 @@
 
                         <div class="flex justify-between items-center px-4 mt-6 mb-2">
                             <div class="text-[10px] font-bold text-gray-500 uppercase">Mounts</div>
-                            <button id="addFragmentBtn" class="text-xs text-gray-400 hover:text-white" title="Add New Mount">
+                            <button id="addFragmentBtn" class="text-xs text-gray-400 hover:text-white"
+                                title="Add New Mount">
                                 <i class="fas fa-plus"></i>
                             </button>
                         </div>
@@ -1185,7 +1187,8 @@
             <input type="text" id="newFragmentNameInput" placeholder="Mount Name"
                 class="bg-[#111] border border-[#444] w-full p-2 rounded mb-4 text-sm focus:border-blue-500 outline-none text-white">
             <div class="flex justify-end gap-2">
-                <button id="cancelNewFragmentBtn" class="text-xs text-gray-400 hover:text-white px-3 py-2">CANCEL</button>
+                <button id="cancelNewFragmentBtn"
+                    class="text-xs text-gray-400 hover:text-white px-3 py-2">CANCEL</button>
                 <button id="confirmNewFragmentBtn"
                     class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">CREATE</button>
             </div>
@@ -1276,7 +1279,7 @@
         const MAX_CONCURRENT_UPLOADS = 4;
         const MB = 1024 * 1024;
         const userName = localStorage.getItem("current-account-name")?.trim() || "User";
- 
+
         // --- Thumbnail Cache ---
         const thumbnailCache = new Map(); // Stores key -> url mapping
 
@@ -1526,9 +1529,15 @@
         // --- Core File System ---
         const AppNav = {
             navigate: function (view) {
-                $('.nav-item').removeClass('active');
+                // Only affect main sidebar items, NOT fragment items
+                $('.nav-item').not('.fragment-item').removeClass('active');
+
                 $(`#nav-${view}`).addClass('active');
-                if (view === 'my-files') { currentPath = ''; renderObjects(getActiveObjectList()); }
+
+                if (view === 'my-files') {
+                    currentPath = '';
+                    renderObjects(getActiveObjectList());
+                }
                 else if (view === 'recent') showRecentFiles();
                 else if (view === 'starred') showStarredFiles();
             }
@@ -1916,7 +1925,7 @@
             WindowManager.open(viewerId, { title: fileName, icon: 'fa-eye' });
 
             const winContext = $(`#win-${viewerId}`);
-            
+
             // 6. Bind Standard Actions
             winContext.find('.download-btn').click(() => performDirectDownload(fragment, key));
             winContext.find('.share-btn').click(() => showShareModal(fragment, key));
@@ -1967,11 +1976,11 @@
                         e.preventDefault();
                         const xs = (e.clientX - container.getBoundingClientRect().left - container.offsetWidth / 2) / scale;
                         const ys = (e.clientY - container.getBoundingClientRect().top - container.offsetHeight / 2) / scale;
-                        
+
                         const delta = -Math.sign(e.deltaY) * 0.1;
                         const oldScale = scale;
                         scale = Math.min(Math.max(0.25, scale + delta), 5);
-                        
+
                         // Adjust point to zoom towards mouse (simplified centered zoom if scale changed)
                         // For fully correct zooming to pointer, logic is more complex. 
                         // Keeping it simple: Zoom center, but allow pan.
@@ -2768,7 +2777,7 @@
             const modal = document.createElement("div");
             modal.id = "logout-modal";
             modal.className = "fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[7000] hidden";
-            
+
             // REDESIGNED MODAL CONTENT
             // Matches 'index.html' glass card + screenshot layout
             modal.innerHTML = `
@@ -2819,32 +2828,32 @@
                 // Use a counter or simple add/remove approach
                 // To keep it robust, we can add class on dragenter, remove on dragleave/drop
                 // But dragleave fires when entering children, so we must be careful.
-                
+
                 // Simple approach: dragover adds class, dragleave removes. 
                 // But since dragover fires continuously, let's optimize.
-                
+
                 ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                     dropZone.addEventListener(eventName, (e) => {
                         e.preventDefault();
                         e.stopPropagation();
                     }, false);
                 });
-                
+
                 // Visual Cues
                 let dragCounter = 0; // Robust method for nested children
-                
+
                 dropZone.addEventListener('dragenter', (e) => {
                     dragCounter++;
                     dropZone.classList.add('drag-active');
                 });
-                
+
                 dropZone.addEventListener('dragleave', (e) => {
                     dragCounter--;
                     if (dragCounter === 0) {
                         dropZone.classList.remove('drag-active');
                     }
                 });
-                
+
                 dropZone.addEventListener('drop', (e) => {
                     dragCounter = 0;
                     dropZone.classList.remove('drag-active');
@@ -2945,21 +2954,22 @@
                 const allFrags = [...new Set([...frags, ...clientSideFragments])];
 
                 allFrags.forEach(f => {
-                    const el = $(`<div class="nav-item"><i class="fas fa-database w-4 text-center"></i> ${f}</div>`);
-                    el.click(() => { 
-                        $('.nav-item').removeClass('active'); 
-                        el.addClass('active'); 
-                        activeFragment = f; 
-                        currentPath = ''; 
-                        AppNav.navigate('my-files'); 
-                        listObjects(f); 
+                    const el = $(`<div class="nav-item fragment-item"><i class="fas fa-database w-4 text-center"></i> ${f}</div>`);
+                    el.click(() => {
+                        $('#fragmentList .fragment-item').removeClass('active');  // scoped removal
+                        el.addClass('active');
+
+                        activeFragment = f;
+                        currentPath = '';
+                        AppNav.navigate('my-files');
+                        listObjects(f);
                     });
-                    
+
                     // Restore active state
                     if (activeFragment === f) {
                         el.addClass('active');
                     }
-                    
+
                     list.append(el);
                 });
 
@@ -2969,13 +2979,13 @@
                     listObjects(activeFragment);
                 } else if (activeFragment && !allFrags.includes(activeFragment)) {
                     // If active fragment disappeared (deleted), reset
-                    if(allFrags.length > 0) {
-                         activeFragment = allFrags[0];
-                         listObjects(activeFragment);
+                    if (allFrags.length > 0) {
+                        activeFragment = allFrags[0];
+                        listObjects(activeFragment);
                     }
                 }
             }
-            
+
             async function load() {
                 await loadFragments();
                 checkForInterruptedUploads();
@@ -3007,30 +3017,30 @@
                 $('#newFragmentModal').removeClass('hidden').addClass('flex');
                 setTimeout(() => $('#newFragmentNameInput').focus(), 50);
             });
-            
+
             $('#cancelNewFragmentBtn').click(() => $('#newFragmentModal').addClass('hidden').removeClass('flex'));
-            
+
             $('#confirmNewFragmentBtn').click(async () => {
                 const name = $('#newFragmentNameInput').val().trim();
                 if (!name) {
                     showToast('Mount name required', 'error');
                     return;
                 }
-                
+
                 // Client-side temporary addition (no API call)
                 if (!clientSideFragments.includes(name)) {
                     clientSideFragments.push(name);
                     showToast(`Mount '${name}' created`, 'success');
-                    
+
                     // Refresh the list to show the new mount
                     // We call loadFragments, but since it fetches from server, 
                     // it might overwrite our client list if we didn't handle the merge inside loadFragments.
                     // But we DID update loadFragments to merge clientSideFragments, so this is safe.
-                    loadFragments(); 
+                    loadFragments();
                 } else {
                     showToast('Mount already exists', 'error');
                 }
-                
+
                 $('#newFragmentModal').addClass('hidden').removeClass('flex');
             });
 
