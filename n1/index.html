@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
@@ -888,7 +889,8 @@
                         </div>
                         <div
                             class="h-8 border-b border-[#383838] flex items-center px-4 bg-[#242424] text-xs text-gray-400">
-                            <i class="fas fa-trash-can mr-2"></i> Recycle Bin</div>
+                            <i class="fas fa-trash-can mr-2"></i> Recycle Bin
+                        </div>
                         <div id="recycle-bin-content"
                             class="custom-scrollbar bg-[#1e1e1e] flex-1 overflow-y-auto content-start"></div>
                     </div>
@@ -2393,6 +2395,89 @@
         }
 
         // --- Uploads ---
+        async function processZipUpload(files) {
+            if (!files || files.length === 0) return;
+
+            if (typeof JSZip === 'undefined') {
+                showToast('JSZip library missing', 'error');
+                return;
+            }
+
+            const zip = new JSZip();
+            
+            const pathInfo = files[0].entryPath || files[0].webkitRelativePath || '';
+            const rootFolderName = pathInfo.split('/')[0] || 'folder_archive';
+            
+            showToast('Compressing folder...', 'info');
+            showProgressModal('Compressing Folder', files.length);
+
+            let processed = 0;
+            
+            try {
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    processed++;
+                    updateProgress(processed, files.length, `Zipping ${file.name}...`);
+                    
+                    const filePath = file.entryPath || file.webkitRelativePath || file.name;
+                    zip.file(filePath, file);
+                }
+                const content = await zip.generateAsync({ 
+                    type: "blob",
+                    compression: "DEFLATE",
+                    compressionOptions: { level: 6 }
+                }, (metadata) => {
+                    if(metadata.percent < 100) {
+                         $('#progressBar').css('width', `${metadata.percent}%`);
+                         $('#progressStatus').text(`Compressing: ${metadata.percent.toFixed(0)}%`);
+                    }
+                });
+
+                const zipFile = new File([content], `${rootFolderName}.zip`, { type: "application/zip" });
+                
+                hideProgressModal();
+                showToast('Folder compressed! Added to queue.', 'success');
+                
+                handleUploads([zipFile]);
+
+            } catch (e) {
+                console.error(e);
+                hideProgressModal();
+                showToast('Failed to zip folder', 'error');
+            }
+        }
+
+        async function scanFiles(item, path = '') {
+            if (item.isFile) {
+                return new Promise(resolve => {
+                    item.file(file => {
+                        // Attach the full path for the zipper to use
+                        file.entryPath = path + file.name;
+                        resolve([file]);
+                    });
+                });
+            } else if (item.isDirectory) {
+                const dirReader = item.createReader();
+                let entries = [];
+
+                // readEntries must be called repeatedly until empty
+                const readEntries = async () => {
+                    const result = await new Promise(resolve => dirReader.readEntries(resolve));
+                    if (result.length === 0) return entries;
+                    entries = entries.concat(result);
+                    return readEntries();
+                };
+
+                const allEntries = await readEntries();
+                const files = [];
+                for (const entry of allEntries) {
+                    files.push(...await scanFiles(entry, path + item.name + '/'));
+                }
+                return files;
+            }
+            return [];
+        }
+
         async function handleUploads(files) {
             if (!files.length) return;
             WindowManager.open('uploads');
@@ -2673,10 +2758,8 @@
             // Drag Drop
             const dz = document.getElementById('browser');
             let dc = 0;
-            // Added dragover prevention to fix drag and drop
-            dz.addEventListener('dragover', (e) => {
-                e.preventDefault();
-            });
+
+            dz.addEventListener('dragover', (e) => e.preventDefault());
             dz.addEventListener('dragenter', (e) => {
                 dc++;
                 dz.classList.add('drag-active');
@@ -2685,42 +2768,99 @@
                 dc--;
                 if (dc === 0) dz.classList.remove('drag-active');
             });
-            dz.addEventListener('drop', (e) => {
+
+            dz.addEventListener('drop', async (e) => {
                 e.preventDefault();
                 dc = 0;
                 dz.classList.remove('drag-active');
-                handleUploads(e.dataTransfer.files);
+
+                const items = e.dataTransfer.items;
+                const files = [];
+                let hasFolder = false;
+
+                if (items) {
+                    for (let i = 0; i < items.length; i++) {
+                        const entry = items[i].webkitGetAsEntry ? items[i].webkitGetAsEntry() : null;
+                        if (entry) {
+                            if (entry.isDirectory) hasFolder = true;
+                            files.push(...await scanFiles(entry));
+                        } else {
+                            // Fallback for items that aren't entries
+                            const f = items[i].getAsFile();
+                            if (f) files.push(f);
+                        }
+                    }
+                } else {
+                    // Fallback for older browsers
+                    files.push(...e.dataTransfer.files);
+                }
+
+                if (files.length > 0) {
+                    if (hasFolder) {
+                        // If we detected a folder, ZIP IT
+                        processZipUpload(files);
+                    } else {
+                        // Otherwise, normal upload
+                        handleUploads(files);
+                    }
+                }
             });
+
+            // --- Paste Handler (Standard) ---
             $(document).on('paste', (e) => {
                 const cd = e.originalEvent.clipboardData;
                 if (!cd) return;
-
-                const uniqueFiles = new Map();
+                
+                const files = [];
+                const uniqueFiles = new Set();
+                let potentialFolders = 0;
 
                 const addFile = (f) => {
-                    if (!f) return;
-                    const key = `${f.name}-${f.size}-${f.lastModified}`;
-                    if (!uniqueFiles.has(key)) {
-                        uniqueFiles.set(key, f);
+                    if (!uniqueFiles.has(f.name + f.size)) {
+                        files.push(f);
+                        uniqueFiles.add(f.name + f.size);
                     }
                 };
-
-                if (cd.items && cd.items.length > 0) {
+                if (cd.items) {
                     for (let i = 0; i < cd.items.length; i++) {
-                        if (cd.items[i].kind === 'file') {
-                            addFile(cd.items[i].getAsFile());
+                        const item = cd.items[i];
+                        if (item.kind !== 'file') continue;
+
+                        const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
+                        if (entry && entry.isDirectory) {
+                            potentialFolders++;
+                            continue;
+                        }
+
+                        const f = item.getAsFile();
+                        if (f) {
+                            if (f.size === 0) {
+                                potentialFolders++;
+                            } else {
+                                addFile(f);
+                            }
                         }
                     }
                 }
-
-                if (cd.files && cd.files.length > 0) {
-                    Array.from(cd.files).forEach(addFile);
+                // 2. Fallback Method: 'files' list (older browsers)
+                else if (cd.files) {
+                    for (let i = 0; i < cd.files.length; i++) {
+                        const f = cd.files[i];
+                        if (f.size === 0) potentialFolders++;
+                        else addFile(f);
+                    }
                 }
 
-                const files = Array.from(uniqueFiles.values());
-                if (files.length > 0 && $('#win-file-explorer').is(':visible')) {
-                    e.preventDefault();
-                    handleUploads(files);
+                if ($('#win-file-explorer').is(':visible')) {
+                    if (files.length > 0) {
+                        e.preventDefault();
+                        handleUploads(files);
+                    }
+                    
+                    // Show error if we detected folders (and nothing valid was pasted)
+                    if (potentialFolders > 0 && files.length === 0) {
+                        showToast('Cannot paste folders. Please use Drag & Drop to zip/upload folders.', 'error');
+                    }
                 }
             });
             $(".window").draggable({
@@ -2739,17 +2879,15 @@
             $(document).on('click', (e) => {
                 if (!$(e.target).closest('#contextMenu').length) $('#contextMenu').addClass('hidden');
             });
+            $('#folderInput').off('change');
+            $('#browser').off('contextmenu');
 
-            // Clear selection when clicking on empty space
-            $('#browser').on('click', (e) => {
-                if (e.target === e.currentTarget || e.target.id === 'objectList') {
-                    SelectionManager.clear();
-                }
+            $('#folderInput').change((e) => {
+                processZipUpload(e.target.files);
+                e.target.value = ''; // Reset input
             });
 
-            // Right-click on blank space (New Feature)
             $('#browser').on('contextmenu', (e) => {
-                // If we clicked on a file-item or its children, do nothing (let item listener handle it)
                 if ($(e.target).closest('.file-item').length) return;
 
                 e.preventDefault();
@@ -2758,13 +2896,14 @@
                 const menu = $('#contextMenu');
                 let x = e.clientX,
                     y = e.clientY;
-                // Boundary checks
+
                 if (x + 200 > window.innerWidth) x -= 200;
                 if (y + 200 > window.innerHeight) y -= 200;
 
                 const html = `
                     <div class="ctx-item" onclick="document.getElementById('newFolderBtnAction').click()"><i class="fas fa-folder-plus w-4"></i> New Folder</div>
                     <div class="ctx-item" onclick="document.getElementById('fileInput').click()"><i class="fas fa-upload w-4"></i> Upload File</div>
+                    <div class="ctx-item" onclick="document.getElementById('folderInput').click()"><i class="fas fa-file-zipper w-4"></i> Upload Folder as Zip</div>
                     <div class="ctx-div"></div>
                     <div class="ctx-item" onclick="listObjects(activeFragment)"><i class="fas fa-sync-alt w-4"></i> Refresh</div>
                 `;
@@ -2773,6 +2912,13 @@
                     top: y,
                     left: x
                 }).removeClass('hidden');
+            });
+
+            // Clear selection when clicking on empty space
+            $('#browser').on('click', (e) => {
+                if (e.target === e.currentTarget || e.target.id === 'objectList') {
+                    SelectionManager.clear();
+                }
             });
 
             // Selection Box (Marquee)
