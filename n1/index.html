@@ -22,7 +22,7 @@
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 
-    <!-- Markdown & Highlight -->
+    <!-- Markdown & Highlight (Kept for previewing markdown files if needed, though AI is gone) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <link rel="stylesheet"
@@ -47,11 +47,6 @@
 
             --item-hover: rgba(255, 255, 255, 0.04);
             --item-active: rgba(59, 130, 246, 0.15);
-
-            /* AI Theme Colors (Gemini-like) */
-            --ai-bg: #0D0D0D;
-            --ai-surface: #1C1C1C;
-            --ai-accent: #B91C1C;
         }
 
         .status-pending {
@@ -589,142 +584,6 @@
             backdrop-filter: blur(2px);
         }
 
-        /* --- AI Cortex Specific (Gemini Style) --- */
-        .ai-message-bubble {
-            max-width: 85%;
-            padding: 1rem;
-            border-radius: 0.75rem;
-            line-height: 1.6;
-            font-size: 0.95rem;
-        }
-
-        .ai-user-bubble {
-            background-color: #262626;
-            color: white;
-            border-top-right-radius: 0;
-            margin-left: auto;
-        }
-
-        .ai-bot-bubble {
-            background-color: #1C1C1C;
-            color: #E5E5E5;
-            border-top-left-radius: 0;
-            margin-right: auto;
-        }
-
-        .ai-message-wrapper {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            animation: messageIn 0.3s ease-out forwards;
-        }
-
-        .ai-message-wrapper.user {
-            flex-direction: row-reverse;
-        }
-
-        @keyframes messageIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Syntax Highlighting overrides for AI */
-        .ai-bot-bubble pre {
-            background-color: #0d0d0d !important;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            overflow-x: auto;
-            margin-top: 0.5rem;
-            border: 1px solid #333;
-        }
-
-        .code-block-wrapper {
-            margin-top: 1rem;
-            border-radius: 0.5rem;
-            overflow: hidden;
-            border: 1px solid #333;
-        }
-
-        .code-header {
-            background-color: #2a2b2e;
-            padding: 0.5rem 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.75rem;
-            color: #a3a3a3;
-            border-bottom: 1px solid #333;
-        }
-
-        /* Markdown Styles for AI */
-        .bubble-content p {
-            margin-bottom: 0.75rem;
-        }
-
-        .bubble-content p:last-child {
-            margin-bottom: 0;
-        }
-
-        .bubble-content ul {
-            list-style-type: disc;
-            padding-left: 1.5rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .bubble-content ol {
-            list-style-type: decimal;
-            padding-left: 1.5rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .bubble-content code {
-            background: #2d2d2d;
-            padding: 2px 4px;
-            rounded: 4px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85em;
-        }
-
-        .bubble-content pre code {
-            background: transparent;
-            padding: 0;
-        }
-
-        .bubble-content strong {
-            color: #fff;
-            font-weight: 600;
-        }
-
-        .bubble-content a {
-            color: #F87171;
-            text-decoration: underline;
-        }
-
-        .suggestion-chip {
-            background-color: #1C1C1C;
-            border: 1px solid #333;
-            padding: 0.5rem 1rem;
-            border-radius: 999px;
-            font-size: 0.85rem;
-            color: #a3a3a3;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-
-        .suggestion-chip:hover {
-            background-color: #2a2b2e;
-            color: white;
-            border-color: #444;
-        }
-
         /* Zoom Viewer Styles */
         .zoom-controls {
             display: flex;
@@ -770,10 +629,6 @@
             <div class="desktop-icon" onclick="WindowManager.open('recycle-bin')">
                 <div class="desktop-icon-img text-gray-400"><i class="fas fa-trash-can"></i></div>
                 <div class="desktop-icon-label">Recycle Bin</div>
-            </div>
-            <div class="desktop-icon" onclick="WindowManager.open('ai')">
-                <div class="desktop-icon-img text-red-600"><i class="fas fa-robot"></i></div>
-                <div class="desktop-icon-label">AI Cortex</div>
             </div>
         </div>
 
@@ -1091,52 +946,6 @@
                 </div>
             </div>
 
-            <!-- 5. AI CORTEX (REDESIGNED) -->
-            <div id="win-ai" class="window" style="width: 480px; height: 680px; top: 60px; right: 40px; display: none;">
-                <div class="window-header" style="background-color: var(--ai-bg); border-bottom: 1px solid #333;">
-                    <div class="window-title"><i class="fas fa-robot text-red-600"></i> AI Cortex</div>
-                    <div class="window-controls">
-                        <div class="win-btn win-min" onclick="WindowManager.minimize('ai')"></div>
-                        <div class="win-btn win-close" onclick="WindowManager.close('ai')"></div>
-                    </div>
-                </div>
-                <div class="window-body flex-col" style="background-color: var(--ai-bg);">
-                    <!-- Chat Scroll Area -->
-                    <div id="ai-chat-scroll-area" class="flex-1 overflow-y-auto p-4 custom-scrollbar">
-                        <div id="ai-welcome-screen"
-                            class="h-full flex flex-col items-center justify-center text-center">
-                            <div class="relative w-16 h-16 mb-4">
-                                <div class="absolute inset-0 bg-red-600 rounded-2xl blur-lg opacity-20"></div>
-                                <img src="https://placehold.co/100x100/B91C1C/ffffff?text=AI" alt="Logo"
-                                    class="relative w-16 h-16 rounded-2xl">
-                            </div>
-                            <h2 class="text-xl font-bold text-gray-200 mb-2">How can I help?</h2>
-                            <div class="flex flex-wrap justify-center gap-2 mt-4 px-4">
-                                <button class="suggestion-chip">Summarize this file</button>
-                                <button class="suggestion-chip">Write a Python script</button>
-                                <button class="suggestion-chip">Explain quantum physics</button>
-                            </div>
-                        </div>
-                        <div id="ai-chat-history" class="hidden flex flex-col pb-4"></div>
-                    </div>
-
-                    <!-- Input Area -->
-                    <div class="p-4 border-t border-[#333] bg-[#0D0D0D] shrink-0">
-                        <form id="ai-chat-form" class="relative">
-                            <textarea id="ai-user-input"
-                                class="w-full bg-[#1A1A1A] border border-[#333] rounded-lg text-gray-200 p-3 pr-12 focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition-all resize-none custom-scrollbar text-sm"
-                                placeholder="Ask anything..." rows="1"
-                                style="min-height: 44px; max-height: 120px;"></textarea>
-                            <button type="submit" id="ai-send-btn"
-                                class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-[#2a2b2e] rounded-full text-gray-400 hover:bg-red-600 hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <i class="fas fa-arrow-up text-sm"></i>
-                            </button>
-                        </form>
-                        <p class="text-[10px] text-center text-gray-600 mt-2">AI may display inaccurate info.</p>
-                    </div>
-                </div>
-            </div>
-
             <!-- 6. UPLOAD MANAGER -->
             <div id="win-uploads" class="window"
                 style="width: 400px; height: 350px; top: 100px; right: 120px; display: none; z-index: 2000;">
@@ -1276,7 +1085,9 @@
         const totalCapacity = Number(localStorage.getItem("current-capacity")?.trim()) || (15 * 1024 * 1024 * 1024);
         let uploadQueue = [];
         let activeUploads = 0;
-        const MAX_CONCURRENT_UPLOADS = 4;
+        // CHANGED: Reduced concurrent file uploads to 1 to prevent server 409 conflicts.
+        // Chunk parallelism remains high (inside startUpload) for speed.
+        const MAX_CONCURRENT_UPLOADS = 1;
         const MB = 1024 * 1024;
         const userName = localStorage.getItem("current-account-name")?.trim() || "User";
 
@@ -1387,7 +1198,6 @@
                     const defaults = {
                         'file-explorer': { w: 1000, h: 650, t: 60, l: 100 },
                         'dashboard': { w: 900, h: 600, t: 80, l: 150 },
-                        'ai': { w: 480, h: 680, t: 60, l: null },
                         'recycle-bin': { w: 800, h: 500, t: 120, l: 150 },
                         'uploads': { w: 400, h: 350, t: 100, l: 120 }
                     }[appId] || { w: 800, h: 550, t: 100, l: 100 };
@@ -1402,8 +1212,8 @@
             },
             addTaskbarItem: function (appId, meta = {}) {
                 if ($(`#task-item-${appId}`).length === 0) {
-                    const map = { 'file-explorer': 'File Station', 'dashboard': 'Monitor', 'recycle-bin': 'Trash', 'ai': 'AI Cortex', 'uploads': 'Upload Queue' };
-                    const iconMap = { 'file-explorer': 'fa-folder-tree', 'dashboard': 'fa-chart-line', 'recycle-bin': 'fa-trash-can', 'ai': 'fa-robot', 'uploads': 'fa-cloud-upload-alt' };
+                    const map = { 'file-explorer': 'File Station', 'dashboard': 'Monitor', 'recycle-bin': 'Trash', 'uploads': 'Upload Queue' };
+                    const iconMap = { 'file-explorer': 'fa-folder-tree', 'dashboard': 'fa-chart-line', 'recycle-bin': 'fa-trash-can', 'uploads': 'fa-cloud-upload-alt' };
 
                     const label = meta.title || map[appId] || 'App';
                     const icon = meta.icon || iconMap[appId] || 'fa-window-maximize';
@@ -1717,8 +1527,8 @@
                 }
             });
 
-            // Add virtual folders
-            clientSideFolders.filter(f => f.path === currentPath).forEach(f => folders.add(f.name));
+            // UPDATED: Filter folders by Fragment
+            clientSideFolders.filter(f => f.path === currentPath && f.fragment === activeFragment).forEach(f => folders.add(f.name));
 
             const sortedFolders = Array.from(folders).sort();
             const sortedFiles = files.sort((a, b) => new Date(Number(b.last_modified.$date.$numberLong)) - new Date(Number(a.last_modified.$date.$numberLong)));
@@ -2318,11 +2128,29 @@
         function moveToTrash(key, type) {
             $('#contextMenu').addClass('hidden');
             let items = [];
-            if (type === 'folder') items = currentObjectList.filter(o => o.key.startsWith(key));
-            else items = [currentObjectList.find(o => o.key === key)].filter(Boolean);
+            if (type === 'folder') {
+                items = currentObjectList.filter(o => o.key.startsWith(key));
+                // FIX: Also remove the client-side folder object itself
+                // Folders are stored as { name: 'Folder', path: 'path/', fragment: '...' }
+                // Key passed here usually ends in slash: 'path/Folder/'
+                const folderPath = key.substring(0, key.length - 1); // remove trailing slash
+                // Filter out folders that match the deleted path
+                clientSideFolders = clientSideFolders.filter(f => {
+                    const fullFolderPath = (f.path || '') + f.name + '/';
+                    return fullFolderPath !== key;
+                });
+            } else {
+                items = [currentObjectList.find(o => o.key === key)].filter(Boolean);
+            }
+
             items.forEach(i => { if (!trashedItems.some(t => t.key === i.key)) trashedItems.push({ ...i, trashedDate: new Date().toISOString() }); });
             localStorage.setItem('trashedItems', JSON.stringify(trashedItems));
             renderObjects(getActiveObjectList());
+            
+            // FIX: Refresh recycle bin if open
+            if ($('#win-recycle-bin').is(':visible')) {
+                showTrash();
+            }
         }
 
         async function emptyTrash() {
@@ -2471,8 +2299,11 @@
         async function handleUploads(files) {
             if (!files.length) return;
             WindowManager.open('uploads');
+            
+            // Convert to Array to ensure we can iterate safely if it's a FileList
+            const fileArray = Array.from(files);
 
-            for (const file of files) {
+            for (const file of fileArray) {
                 const uploadItem = {
                     id: crypto.randomUUID(),
                     file: file,
@@ -2540,13 +2371,18 @@
         }
 
         async function processUploadQueue() {
-            if (activeUploads >= MAX_CONCURRENT_UPLOADS) return;
-            const next = uploadQueue.find(i => !i.started && !i.completed && !i.failed);
-            if (next) {
+            // FIX: Loop to fill all concurrent slots instead of starting just one
+            while (activeUploads < MAX_CONCURRENT_UPLOADS) {
+                const next = uploadQueue.find(i => !i.started && !i.completed && !i.failed);
+                if (!next) break;
+
                 activeUploads++;
                 next.started = true;
+                
+                // Start the upload
                 startUpload(next).finally(() => {
                     activeUploads--;
+                    // Recursively process queue to pick up next items as slots free up
                     processUploadQueue();
                 });
             }
@@ -2863,6 +2699,23 @@
                 });
             }
 
+            // --- PASTE SUPPORT (OS -> Browser) (FIXED FOR MULTIPLE FILES) ---
+            $(document).on('paste', (e) => {
+                // Get the ClipboardData from the event. 
+                // Note: e.originalEvent is required when using jQuery to access the native event properties
+                const clipboardData = e.originalEvent.clipboardData || window.clipboardData;
+                
+                if (clipboardData && clipboardData.files && clipboardData.files.length > 0) {
+                    // Prevent default paste behavior (which usually does nothing for files in non-editable areas)
+                    e.preventDefault();
+                    
+                    // Check if File Explorer is visible and a folder is selected
+                    if ($('#win-file-explorer').is(':visible') && activeFragment) {
+                        handleUploads(clipboardData.files);
+                    }
+                }
+            });
+
             $(".window").draggable({ handle: ".window-header", containment: "#windows-container", start: function () { WindowManager.focus($(this).attr('id').replace('win-', '')); } }).resizable({ minHeight: 200, minWidth: 300 });
             $(".window").on('mousedown', function () { WindowManager.focus($(this).attr('id').replace('win-', '')); });
             $(document).on('click', (e) => { if (!$(e.target).closest('#contextMenu').length) $('#contextMenu').addClass('hidden'); });
@@ -3002,7 +2855,7 @@
             $('#confirmNewFolderBtn').click(() => {
                 const name = $('#newFolderNameInput').val().trim();
                 if (name) {
-                    clientSideFolders.push({ name, path: currentPath });
+                    clientSideFolders.push({ name: name, path: currentPath, fragment: activeFragment });
                     $('#newFolderModal').addClass('hidden').removeClass('flex');
                     renderObjects(getActiveObjectList());
                     showToast('Folder created', 'success');
@@ -3057,168 +2910,6 @@
                 $(this).removeClass('hover:bg-[#333] text-gray-400').addClass('bg-blue-600 text-white');
                 $('#tiles-view-btn').removeClass('bg-blue-600 text-white').addClass('hover:bg-[#333] text-gray-400');
                 renderObjects(getActiveObjectList());
-            });
-
-            // --- AI Cortex Logic (Redesigned) ---
-            const AIChat = {
-                messages: [],
-                controller: null,
-                isStreaming: false,
-
-                appendMessage: (role, content) => {
-                    const container = document.getElementById('ai-chat-history');
-                    const wrapper = document.createElement('div');
-                    wrapper.className = `ai-message-wrapper ${role}`;
-
-                    const bubble = document.createElement('div');
-                    bubble.className = `ai-message-bubble bubble-content ${role === 'user' ? 'ai-user-bubble' : 'ai-bot-bubble'}`;
-
-                    // Parse content
-                    bubble.innerHTML = marked.parse(content);
-
-                    // Highlight Code
-                    bubble.querySelectorAll('pre code').forEach((block) => {
-                        hljs.highlightElement(block);
-                    });
-
-                    wrapper.appendChild(bubble);
-                    container.appendChild(wrapper);
-
-                    const scrollArea = document.getElementById('ai-chat-scroll-area');
-                    scrollArea.scrollTop = scrollArea.scrollHeight;
-
-                    return bubble;
-                },
-
-                createProgressIndicator: () => {
-                    const container = document.getElementById('ai-chat-history');
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'ai-message-wrapper assistant';
-
-                    const bubble = document.createElement('div');
-                    bubble.className = 'ai-message-bubble ai-bot-bubble bubble-content';
-                    bubble.innerHTML = `<div class="flex items-center gap-2 text-gray-400"><i class="fas fa-circle-notch fa-spin text-red-500"></i> Thinking...</div>`;
-
-                    wrapper.appendChild(bubble);
-                    container.appendChild(wrapper);
-
-                    const scrollArea = document.getElementById('ai-chat-scroll-area');
-                    scrollArea.scrollTop = scrollArea.scrollHeight;
-
-                    return { element: wrapper, bubble: bubble };
-                },
-
-                send: async (msg) => {
-                    if (!msg.trim() || AIChat.isStreaming) return;
-
-                    const welcome = document.getElementById('ai-welcome-screen');
-                    const history = document.getElementById('ai-chat-history');
-                    const input = document.getElementById('ai-user-input');
-                    const btn = document.getElementById('ai-send-btn');
-
-                    welcome.classList.add('hidden');
-                    history.classList.remove('hidden');
-
-                    AIChat.isStreaming = true;
-                    AIChat.controller = new AbortController();
-                    input.disabled = true;
-                    btn.disabled = true;
-                    input.value = '';
-
-                    AIChat.appendMessage('user', msg);
-                    AIChat.messages.push({ role: "user", content: msg });
-
-                    const progress = AIChat.createProgressIndicator();
-                    let finalBubble = null;
-
-                    try {
-                        const response = await fetch("https://ai.litiaina.com/v2/api/stream/chat", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-                            body: JSON.stringify({ messages: AIChat.messages }),
-                            signal: AIChat.controller.signal
-                        });
-
-                        const reader = response.body.getReader();
-                        const decoder = new TextDecoder("utf-8");
-                        let assistantBuffer = "";
-                        let displayBuffer = "";
-                        let isThinking = false;
-                        let hasFirstToken = false;
-
-                        while (true) {
-                            const { done, value } = await reader.read();
-                            if (done) break;
-                            const chunk = decoder.decode(value, { stream: true });
-
-                            for (const line of chunk.split("\n")) {
-                                if (!line.startsWith("data:")) continue;
-                                const jsonText = line.slice(5).trim();
-                                if (!jsonText || jsonText.includes('[DONE]')) continue;
-
-                                try {
-                                    const json = JSON.parse(jsonText);
-                                    const delta = json.v || "";
-
-                                    if (delta.includes("<think>")) { isThinking = true; continue; }
-                                    if (delta.includes("</think>")) { isThinking = false; continue; }
-
-                                    if (isThinking) {
-                                        // Optional: Update a 'thought process' expandable section
-                                    } else {
-                                        assistantBuffer += delta;
-                                        displayBuffer += delta;
-
-                                        if (!hasFirstToken) {
-                                            progress.element.remove(); // Remove spinner
-                                            finalBubble = AIChat.appendMessage('assistant', displayBuffer + ' ▌');
-                                            hasFirstToken = true;
-                                        } else {
-                                            finalBubble.innerHTML = marked.parse(displayBuffer + ' ▌');
-                                            finalBubble.querySelectorAll('pre code').forEach((el) => hljs.highlightElement(el));
-                                        }
-
-                                        // Auto Scroll
-                                        const scrollArea = document.getElementById('ai-chat-scroll-area');
-                                        scrollArea.scrollTop = scrollArea.scrollHeight;
-                                    }
-                                } catch (e) { }
-                            }
-                        }
-
-                        if (finalBubble) {
-                            finalBubble.innerHTML = marked.parse(displayBuffer);
-                            finalBubble.querySelectorAll('pre code').forEach((el) => hljs.highlightElement(el));
-                        }
-                        AIChat.messages.push({ role: "assistant", content: assistantBuffer });
-
-                    } catch (e) {
-                        progress.element.remove();
-                        if (e.name !== 'AbortError') {
-                            AIChat.appendMessage('assistant', `**Error:** Connection failed.`);
-                        }
-                    } finally {
-                        AIChat.isStreaming = false;
-                        AIChat.controller = null;
-                        input.disabled = false;
-                        btn.disabled = false;
-                        input.focus();
-                    }
-                }
-            };
-
-            // AI Event Listeners
-            $('#ai-chat-form').submit((e) => { e.preventDefault(); AIChat.send($('#ai-user-input').val()); });
-
-            $('#ai-user-input').on('keydown', function (e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    AIChat.send(this.value);
-                }
-            });
-
-            $('.suggestion-chip').click(function () {
-                AIChat.send($(this).text());
             });
 
             setInterval(() => $('#clock').text(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })), 1000);
