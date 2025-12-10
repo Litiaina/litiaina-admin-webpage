@@ -11,7 +11,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Libraries -->
@@ -609,11 +611,13 @@
             <div class="start-btn" id="start-btn"><i class="fas fa-th text-lg"></i></div>
             <div id="taskbar-apps"></div>
             <div class="ml-auto flex items-center gap-4 text-xs font-mono text-gray-400">
-                <div class="cursor-pointer hover:text-white flex items-center gap-2" title="Upload Status" onclick="WindowManager.open('uploads')">
+                <div class="cursor-pointer hover:text-white flex items-center gap-2" title="Upload Status"
+                    onclick="WindowManager.open('uploads')">
                     <i class="fas fa-cloud-upload-alt"></i>
                 </div>
                 <div id="clock">12:00 PM</div>
-                <div class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white cursor-pointer hover:bg-blue-500" id="user-profile-btn" title="Logout">
+                <div class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white cursor-pointer hover:bg-blue-500"
+                    id="user-profile-btn" title="Logout">
                     <i class="fas fa-power-off text-[10px]"></i>
                 </div>
             </div>
@@ -623,7 +627,8 @@
         <div id="windows-container">
 
             <!-- 1. FILE EXPLORER -->
-            <div id="win-file-explorer" class="window" style="width: 1000px; height: 650px; top: 60px; left: 100px; display: none;">
+            <div id="win-file-explorer" class="window"
+                style="width: 1000px; height: 650px; top: 60px; left: 100px; display: none;">
                 <div class="window-header">
                     <div class="window-title"><i class="fas fa-folder-tree text-blue-500"></i> File Station</div>
                     <div class="window-controls">
@@ -647,9 +652,11 @@
 
                         <div class="flex justify-between items-center px-4 mt-6 mb-2">
                             <div class="text-[10px] font-bold text-gray-500 uppercase">Mounts</div>
-                            <button id="addFragmentBtn" class="text-xs text-gray-400 hover:text-white"><i class="fas fa-plus"></i></button>
+                            <button id="addFragmentBtn" class="text-xs text-gray-400 hover:text-white"><i
+                                    class="fas fa-plus"></i></button>
                         </div>
-                        <div id="fragmentList" class="flex flex-col gap-1 overflow-y-auto max-h-40 custom-scrollbar"></div>
+                        <div id="fragmentList" class="flex flex-col gap-1 overflow-y-auto max-h-40 custom-scrollbar">
+                        </div>
 
                         <!-- Storage Quota UI -->
                         <div class="mt-auto p-4 border-t border-[#383838]">
@@ -658,7 +665,9 @@
                                 <span id="sidebar-storage-percent">0%</span>
                             </div>
                             <div class="w-full bg-[#333] rounded-full h-1.5 mb-2">
-                                <div id="sidebar-storage-bar" class="bg-blue-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                <div id="sidebar-storage-bar"
+                                    class="bg-blue-500 h-1.5 rounded-full transition-all duration-500"
+                                    style="width: 0%"></div>
                             </div>
                             <div id="sidebar-gb-used" class="text-[10px] text-gray-500">0 GB used</div>
                         </div>
@@ -666,37 +675,53 @@
                     <div class="window-content">
                         <div class="toolbar">
                             <div class="flex items-center gap-2">
-                                <button id="back-btn" class="w-7 h-7 flex items-center justify-center rounded hover:bg-[#4a4a4a] text-gray-300 hidden" onclick="navigateBack()">
+                                <button id="back-btn"
+                                    class="w-7 h-7 flex items-center justify-center rounded hover:bg-[#4a4a4a] text-gray-300 hidden"
+                                    onclick="navigateBack()">
                                     <i class="fas fa-chevron-left text-xs"></i>
                                 </button>
-                                <button class="tool-btn hover:bg-[#444]" onclick="listObjects(activeFragment)"><i class="fas fa-sync-alt"></i></button>
-                                <button class="tool-btn primary" onclick="document.getElementById('fileInput').click()"><i class="fas fa-upload"></i> Upload</button>
-                                <button class="tool-btn" onclick="document.getElementById('newFolderBtnAction').click()"><i class="fas fa-folder-plus"></i> New Folder</button>
+                                <button class="tool-btn hover:bg-[#444]" onclick="listObjects(activeFragment)"><i
+                                        class="fas fa-sync-alt"></i></button>
+                                <button class="tool-btn primary"
+                                    onclick="document.getElementById('fileInput').click()"><i class="fas fa-upload"></i>
+                                    Upload</button>
+                                <button class="tool-btn"
+                                    onclick="document.getElementById('newFolderBtnAction').click()"><i
+                                        class="fas fa-folder-plus"></i> New Folder</button>
                             </div>
                             <div class="flex-1 mx-4">
-                                <div class="bg-[#1f1f1f] border border-[#383838] rounded flex items-center px-3 py-1 w-full max-w-md focus-within:border-blue-500 transition-colors">
+                                <div
+                                    class="bg-[#1f1f1f] border border-[#383838] rounded flex items-center px-3 py-1 w-full max-w-md focus-within:border-blue-500 transition-colors">
                                     <i class="fas fa-search text-gray-500 mr-2 text-xs"></i>
-                                    <input type="text" id="searchInput" placeholder="Search..." class="bg-transparent border-none outline-none text-xs w-full text-white placeholder-gray-600 h-6">
+                                    <input type="text" id="searchInput" placeholder="Search..."
+                                        class="bg-transparent border-none outline-none text-xs w-full text-white placeholder-gray-600 h-6">
                                 </div>
                             </div>
                             <div class="flex bg-[#1f1f1f] rounded border border-[#383838] p-0.5">
-                                <button id="tiles-view-btn" class="p-1.5 rounded hover:bg-[#333] text-gray-400 text-xs"><i class="fas fa-th-large"></i></button>
-                                <button id="list-view-btn" class="p-1.5 rounded hover:bg-[#333] text-gray-400 text-xs"><i class="fas fa-list"></i></button>
+                                <button id="tiles-view-btn"
+                                    class="p-1.5 rounded hover:bg-[#333] text-gray-400 text-xs"><i
+                                        class="fas fa-th-large"></i></button>
+                                <button id="list-view-btn"
+                                    class="p-1.5 rounded hover:bg-[#333] text-gray-400 text-xs"><i
+                                        class="fas fa-list"></i></button>
                             </div>
                         </div>
                         <div class="h-8 border-b border-[#383838] flex items-center px-4 bg-[#242424]">
                             <div id="breadcrumb" class="breadcrumb">Local Files</div>
                         </div>
                         <div id="browser" class="custom-scrollbar bg-[#1e1e1e] relative select-none">
-                            <div id="objectList" class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));"></div>
-                            <div id="browserSpinner" class="absolute inset-0 flex items-center justify-center bg-[#1e1e1e]/80 hidden z-10">
+                            <div id="objectList" class="grid gap-4"
+                                style="grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));"></div>
+                            <div id="browserSpinner"
+                                class="absolute inset-0 flex items-center justify-center bg-[#1e1e1e]/80 hidden z-10">
                                 <div class="flex flex-col items-center">
                                     <i class="fas fa-circle-notch fa-spin text-2xl text-blue-500 mb-2"></i>
                                     <span class="text-xs text-gray-400 font-mono">ACCESSING DISK...</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="h-6 bg-[#2d2d2d] border-t border-[#383838] flex items-center px-4 text-[10px] text-gray-500 justify-between">
+                        <div
+                            class="h-6 bg-[#2d2d2d] border-t border-[#383838] flex items-center px-4 text-[10px] text-gray-500 justify-between">
                             <span id="selection-status">0 items selected</span>
                             <span id="network-activity-status" class="flex items-center gap-2">
                                 <div class="w-2 h-2 rounded-full bg-green-500"></div> Connected
@@ -707,7 +732,8 @@
             </div>
 
             <!-- 2. RESOURCE MONITOR (UPDATED) -->
-            <div id="win-dashboard" class="window" style="width: 900px; height: 600px; top: 80px; left: 150px; display: none;">
+            <div id="win-dashboard" class="window"
+                style="width: 900px; height: 600px; top: 80px; left: 150px; display: none;">
                 <div class="window-header">
                     <div class="window-title"><i class="fas fa-chart-line text-green-500"></i> Resource Monitor</div>
                     <div class="window-controls">
@@ -717,39 +743,50 @@
                 </div>
                 <div class="window-body">
                     <div class="res-sidebar">
-                        <div class="res-tab active" onclick="ResMonitor.showTab('overview')"><i class="fas fa-tachometer-alt w-5 text-center mr-1"></i> Overview</div>
+                        <div class="res-tab active" onclick="ResMonitor.showTab('overview')"><i
+                                class="fas fa-tachometer-alt w-5 text-center mr-1"></i> Overview</div>
                     </div>
                     <div class="res-content bg-[#1e1e1e] custom-scrollbar">
                         <!-- Overview Tab -->
                         <div id="res-tab-overview" class="block">
-                            <h2 class="text-lg font-light text-white mb-4">System Status: <span class="text-green-500">Healthy</span></h2>
+                            <h2 class="text-lg font-light text-white mb-4">System Status: <span
+                                    class="text-green-500">Healthy</span></h2>
                             <div class="grid grid-cols-2 gap-4">
                                 <!-- Account Info -->
-                                <div class="res-card col-span-2 flex gap-4 items-center bg-gradient-to-r from-[#2a2a2a] to-[#222]">
-                                    <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl shadow-lg">
+                                <div
+                                    class="res-card col-span-2 flex gap-4 items-center bg-gradient-to-r from-[#2a2a2a] to-[#222]">
+                                    <div
+                                        class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl shadow-lg">
                                         <i class="fas fa-user"></i>
                                     </div>
                                     <div>
-                                        <div class="text-sm text-gray-400 uppercase tracking-wider text-[10px]">Current Account</div>
-                                        <div class="text-lg font-medium text-white" id="account-name-display">Loading...</div>
-                                        <div class="text-xs text-gray-500 font-mono" id="account-email-display">Loading...</div>
+                                        <div class="text-sm text-gray-400 uppercase tracking-wider text-[10px]">Current
+                                            Account</div>
+                                        <div class="text-lg font-medium text-white" id="account-name-display">Loading...
+                                        </div>
+                                        <div class="text-xs text-gray-500 font-mono" id="account-email-display">
+                                            Loading...</div>
                                     </div>
                                 </div>
 
                                 <!-- Network Activity Charts (Replacing CPU/RAM) -->
                                 <div class="res-card">
-                                    <div class="res-label text-blue-400"><i class="fas fa-arrow-down mr-2"></i>Network In (Download)</div>
+                                    <div class="res-label text-blue-400"><i class="fas fa-arrow-down mr-2"></i>Network
+                                        In (Download)</div>
                                     <div class="h-32 w-full relative">
                                         <canvas id="net-in-chart"></canvas>
                                     </div>
-                                    <div class="text-right mt-2 font-mono text-sm text-blue-300" id="net-in-val">0 KB/s</div>
+                                    <div class="text-right mt-2 font-mono text-sm text-blue-300" id="net-in-val">0 KB/s
+                                    </div>
                                 </div>
                                 <div class="res-card">
-                                    <div class="res-label text-green-400"><i class="fas fa-arrow-up mr-2"></i>Network Out (Upload)</div>
+                                    <div class="res-label text-green-400"><i class="fas fa-arrow-up mr-2"></i>Network
+                                        Out (Upload)</div>
                                     <div class="h-32 w-full relative">
                                         <canvas id="net-out-chart"></canvas>
                                     </div>
-                                    <div class="text-right mt-2 font-mono text-sm text-green-300" id="net-out-val">0 KB/s</div>
+                                    <div class="text-right mt-2 font-mono text-sm text-green-300" id="net-out-val">0
+                                        KB/s</div>
                                 </div>
 
                                 <!-- Storage Analysis with Pie Chart -->
@@ -761,7 +798,8 @@
                                             <div class="relative w-40 h-40">
                                                 <canvas id="storage-pie-chart"></canvas>
                                             </div>
-                                            <div class="text-xs text-gray-500 mt-2 text-center" id="storage-total-label">0 GB Used</div>
+                                            <div class="text-xs text-gray-500 mt-2 text-center"
+                                                id="storage-total-label">0 GB Used</div>
                                         </div>
 
                                         <!-- Stats List -->
@@ -769,28 +807,40 @@
                                             <div class="res-label">Storage Details</div>
                                             <div class="space-y-2 text-xs" id="storage-stats-container">
                                                 <div class="stat-row">
-                                                    <span class="text-gray-400"><i class="fas fa-image stat-icon text-purple-400"></i>Images</span>
-                                                    <span class="text-white font-mono" id="stat-images">0 files (0 MB)</span>
+                                                    <span class="text-gray-400"><i
+                                                            class="fas fa-image stat-icon text-purple-400"></i>Images</span>
+                                                    <span class="text-white font-mono" id="stat-images">0 files (0
+                                                        MB)</span>
                                                 </div>
                                                 <div class="stat-row">
-                                                    <span class="text-gray-400"><i class="fas fa-video stat-icon text-pink-500"></i>Videos</span>
-                                                    <span class="text-white font-mono" id="stat-videos">0 files (0 MB)</span>
+                                                    <span class="text-gray-400"><i
+                                                            class="fas fa-video stat-icon text-pink-500"></i>Videos</span>
+                                                    <span class="text-white font-mono" id="stat-videos">0 files (0
+                                                        MB)</span>
                                                 </div>
                                                 <div class="stat-row">
-                                                    <span class="text-gray-400"><i class="fas fa-music stat-icon text-yellow-500"></i>Audio</span>
-                                                    <span class="text-white font-mono" id="stat-audio">0 files (0 MB)</span>
+                                                    <span class="text-gray-400"><i
+                                                            class="fas fa-music stat-icon text-yellow-500"></i>Audio</span>
+                                                    <span class="text-white font-mono" id="stat-audio">0 files (0
+                                                        MB)</span>
                                                 </div>
                                                 <div class="stat-row">
-                                                    <span class="text-gray-400"><i class="fas fa-file-word stat-icon text-blue-500"></i>Documents</span>
-                                                    <span class="text-white font-mono" id="stat-docs">0 files (0 MB)</span>
+                                                    <span class="text-gray-400"><i
+                                                            class="fas fa-file-word stat-icon text-blue-500"></i>Documents</span>
+                                                    <span class="text-white font-mono" id="stat-docs">0 files (0
+                                                        MB)</span>
                                                 </div>
                                                 <div class="stat-row">
-                                                    <span class="text-gray-400"><i class="fas fa-file-zipper stat-icon text-orange-500"></i>Archives</span>
-                                                    <span class="text-white font-mono" id="stat-archives">0 files (0 MB)</span>
+                                                    <span class="text-gray-400"><i
+                                                            class="fas fa-file-zipper stat-icon text-orange-500"></i>Archives</span>
+                                                    <span class="text-white font-mono" id="stat-archives">0 files (0
+                                                        MB)</span>
                                                 </div>
                                                 <div class="stat-row">
-                                                    <span class="text-gray-400"><i class="fas fa-file stat-icon text-gray-500"></i>Others</span>
-                                                    <span class="text-white font-mono" id="stat-others">0 files (0 MB)</span>
+                                                    <span class="text-gray-400"><i
+                                                            class="fas fa-file stat-icon text-gray-500"></i>Others</span>
+                                                    <span class="text-white font-mono" id="stat-others">0 files (0
+                                                        MB)</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -803,7 +853,8 @@
             </div>
 
             <!-- 4. RECYCLE BIN -->
-            <div id="win-recycle-bin" class="window" style="width: 800px; height: 500px; top: 120px; left: 150px; display: none;">
+            <div id="win-recycle-bin" class="window"
+                style="width: 800px; height: 500px; top: 120px; left: 150px; display: none;">
                 <div class="window-header">
                     <div class="window-title"><i class="fas fa-trash-can text-gray-400"></i> Recycle Bin</div>
                     <div class="window-controls">
@@ -815,26 +866,38 @@
                     <div class="window-sidebar">
                         <div class="text-[10px] font-bold text-gray-500 uppercase mb-2 px-4 mt-2">Trash Can</div>
                         <div class="nav-item active"><i class="fas fa-dumpster w-4 text-center"></i> Recycle Bin</div>
-                        <div class="mt-auto p-4 text-[10px] text-gray-500 text-center">Items are automatically deleted after 30 days.</div>
+                        <div class="mt-auto p-4 text-[10px] text-gray-500 text-center">Items are automatically deleted
+                            after 30 days.</div>
                     </div>
                     <div class="window-content">
                         <div class="toolbar">
-                            <button id="empty-trash-btn" class="tool-btn hover:bg-red-900/50 hover:text-red-400 hover:border-red-900"><i class="fas fa-dumpster-fire"></i> Empty Bin</button>
-                            <button id="restore-all-btn" class="tool-btn hover:bg-green-900/50 hover:text-green-400 hover:border-green-900 ml-2"><i class="fas fa-trash-restore"></i> Restore All</button>
+                            <button id="empty-trash-btn"
+                                class="tool-btn hover:bg-red-900/50 hover:text-red-400 hover:border-red-900"><i
+                                    class="fas fa-dumpster-fire"></i> Empty Bin</button>
+                            <button id="restore-all-btn"
+                                class="tool-btn hover:bg-green-900/50 hover:text-green-400 hover:border-green-900 ml-2"><i
+                                    class="fas fa-trash-restore"></i> Restore All</button>
                             <div class="flex-1"></div>
                             <div class="flex bg-[#1f1f1f] rounded border border-[#383838] p-0.5">
-                                <button id="trash-tiles-btn" class="p-1.5 rounded hover:bg-[#333] text-gray-400 text-xs"><i class="fas fa-th-large"></i></button>
-                                <button id="trash-list-btn" class="p-1.5 rounded bg-blue-600 text-white text-xs"><i class="fas fa-list"></i></button>
+                                <button id="trash-tiles-btn"
+                                    class="p-1.5 rounded hover:bg-[#333] text-gray-400 text-xs"><i
+                                        class="fas fa-th-large"></i></button>
+                                <button id="trash-list-btn" class="p-1.5 rounded bg-blue-600 text-white text-xs"><i
+                                        class="fas fa-list"></i></button>
                             </div>
                         </div>
-                        <div class="h-8 border-b border-[#383838] flex items-center px-4 bg-[#242424] text-xs text-gray-400"><i class="fas fa-trash-can mr-2"></i> Recycle Bin</div>
-                        <div id="recycle-bin-content" class="custom-scrollbar bg-[#1e1e1e] flex-1 overflow-y-auto content-start"></div>
+                        <div
+                            class="h-8 border-b border-[#383838] flex items-center px-4 bg-[#242424] text-xs text-gray-400">
+                            <i class="fas fa-trash-can mr-2"></i> Recycle Bin</div>
+                        <div id="recycle-bin-content"
+                            class="custom-scrollbar bg-[#1e1e1e] flex-1 overflow-y-auto content-start"></div>
                     </div>
                 </div>
             </div>
 
             <!-- 6. UPLOAD MANAGER -->
-            <div id="win-uploads" class="window" style="width: 400px; height: 350px; top: 100px; right: 120px; display: none; z-index: 2000;">
+            <div id="win-uploads" class="window"
+                style="width: 400px; height: 350px; top: 100px; right: 120px; display: none; z-index: 2000;">
                 <div class="window-header">
                     <div class="window-title"><i class="fas fa-cloud-upload-alt text-blue-400"></i> Upload Queue</div>
                     <div class="window-controls">
@@ -843,11 +906,14 @@
                     </div>
                 </div>
                 <div class="window-body flex-col bg-[#242424]">
-                    <div class="p-2 border-b border-[#383838] flex justify-between items-center text-[10px] text-gray-400 bg-[#2a2a2a]">
+                    <div
+                        class="p-2 border-b border-[#383838] flex justify-between items-center text-[10px] text-gray-400 bg-[#2a2a2a]">
                         <span id="upload-status-header">Ready</span>
-                        <button onclick="document.getElementById('upload-items-container').innerHTML=''" class="hover:text-white">CLEAR LIST</button>
+                        <button onclick="document.getElementById('upload-items-container').innerHTML=''"
+                            class="hover:text-white">CLEAR LIST</button>
                     </div>
-                    <div id="upload-items-container" class="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar"></div>
+                    <div id="upload-items-container" class="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
+                    </div>
                 </div>
             </div>
 
@@ -862,10 +928,12 @@
     <div id="newFolderModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
         <div class="bg-[#242424] p-6 rounded-lg shadow-xl border border-[#404040] w-80 text-white">
             <h3 class="font-bold mb-4">Create New Folder</h3>
-            <input type="text" id="newFolderNameInput" placeholder="Folder Name" class="bg-[#111] border border-[#444] w-full p-2 rounded mb-4 text-sm focus:border-blue-500 outline-none text-white">
+            <input type="text" id="newFolderNameInput" placeholder="Folder Name"
+                class="bg-[#111] border border-[#444] w-full p-2 rounded mb-4 text-sm focus:border-blue-500 outline-none text-white">
             <div class="flex justify-end gap-2">
                 <button id="cancelNewFolderBtn" class="text-xs text-gray-400 hover:text-white px-3 py-2">CANCEL</button>
-                <button id="confirmNewFolderBtn" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">CREATE</button>
+                <button id="confirmNewFolderBtn"
+                    class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">CREATE</button>
             </div>
         </div>
     </div>
@@ -873,10 +941,13 @@
     <div id="newFragmentModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
         <div class="bg-[#242424] p-6 rounded-lg shadow-xl border border-[#404040] w-80 text-white">
             <h3 class="font-bold mb-4">Create New Mount</h3>
-            <input type="text" id="newFragmentNameInput" placeholder="Mount Name" class="bg-[#111] border border-[#444] w-full p-2 rounded mb-4 text-sm focus:border-blue-500 outline-none text-white">
+            <input type="text" id="newFragmentNameInput" placeholder="Mount Name"
+                class="bg-[#111] border border-[#444] w-full p-2 rounded mb-4 text-sm focus:border-blue-500 outline-none text-white">
             <div class="flex justify-end gap-2">
-                <button id="cancelNewFragmentBtn" class="text-xs text-gray-400 hover:text-white px-3 py-2">CANCEL</button>
-                <button id="confirmNewFragmentBtn" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">CREATE</button>
+                <button id="cancelNewFragmentBtn"
+                    class="text-xs text-gray-400 hover:text-white px-3 py-2">CANCEL</button>
+                <button id="confirmNewFragmentBtn"
+                    class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">CREATE</button>
             </div>
         </div>
     </div>
@@ -884,10 +955,12 @@
     <div id="renameModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
         <div class="bg-[#242424] p-6 rounded-lg shadow-xl border border-[#404040] w-96 text-white">
             <h3 class="font-bold mb-4">Rename Object</h3>
-            <input id="newObjectKeyInput" class="bg-[#111] border border-[#444] w-full p-2 rounded mb-4 text-sm focus:border-blue-500 outline-none text-white">
+            <input id="newObjectKeyInput"
+                class="bg-[#111] border border-[#444] w-full p-2 rounded mb-4 text-sm focus:border-blue-500 outline-none text-white">
             <div class="flex justify-end gap-2">
                 <button id="cancelRenameBtn" class="text-xs text-gray-400 hover:text-white px-3 py-2">CANCEL</button>
-                <button id="confirmRenameBtn" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">RENAME</button>
+                <button id="confirmRenameBtn"
+                    class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">RENAME</button>
             </div>
         </div>
     </div>
@@ -896,40 +969,51 @@
         <div class="bg-[#242424] p-6 rounded-lg shadow-xl border border-[#404040] w-96 text-white">
             <h3 class="font-bold mb-4">Share Link</h3>
             <div class="space-y-4">
-                <select id="shareDisposition" class="w-full bg-[#111] border border-[#444] p-2 rounded text-sm outline-none">
+                <select id="shareDisposition"
+                    class="w-full bg-[#111] border border-[#444] p-2 rounded text-sm outline-none">
                     <option value="view">View Only</option>
                     <option value="stream">Stream (Video)</option>
                     <option value="download">Download</option>
                 </select>
-                <input id="shareExpiry" type="number" value="3600" placeholder="Expires in (seconds)" class="w-full bg-[#111] border border-[#444] p-2 rounded text-sm outline-none">
+                <input id="shareExpiry" type="number" value="3600" placeholder="Expires in (seconds)"
+                    class="w-full bg-[#111] border border-[#444] p-2 rounded text-sm outline-none">
                 <div class="flex gap-2">
-                    <input id="shareUrl" class="flex-1 bg-[#111] border border-[#444] p-2 rounded text-xs text-gray-300 font-mono" readonly placeholder="Generated URL...">
-                    <button id="copyShareUrlBtn" class="bg-[#333] hover:bg-[#444] px-3 rounded text-white"><i class="fas fa-copy"></i></button>
+                    <input id="shareUrl"
+                        class="flex-1 bg-[#111] border border-[#444] p-2 rounded text-xs text-gray-300 font-mono"
+                        readonly placeholder="Generated URL...">
+                    <button id="copyShareUrlBtn" class="bg-[#333] hover:bg-[#444] px-3 rounded text-white"><i
+                            class="fas fa-copy"></i></button>
                 </div>
             </div>
             <div class="flex justify-end gap-2 mt-6">
                 <button id="closeShareBtn" class="text-xs text-gray-400 hover:text-white px-3 py-2">CLOSE</button>
-                <button id="generateShareBtn" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">GENERATE</button>
+                <button id="generateShareBtn"
+                    class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">GENERATE</button>
             </div>
         </div>
     </div>
 
-    <div id="genericModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[5000] hidden flex items-center justify-center">
+    <div id="genericModal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[5000] hidden flex items-center justify-center">
         <div class="bg-[#242424] p-6 rounded-lg shadow-2xl border border-[#404040] w-96">
             <h3 id="modalTitle" class="text-sm font-bold text-white mb-4 uppercase tracking-wider">Title</h3>
             <div id="modalContent" class="text-sm text-gray-300"></div>
             <div class="flex justify-end gap-2 mt-6">
-                <button id="modalCancel" class="px-4 py-2 rounded text-xs bg-[#333] hover:bg-[#444] text-gray-200">Cancel</button>
-                <button id="modalConfirm" class="px-4 py-2 rounded text-xs bg-blue-600 hover:bg-blue-500 text-white">Confirm</button>
+                <button id="modalCancel"
+                    class="px-4 py-2 rounded text-xs bg-[#333] hover:bg-[#444] text-gray-200">Cancel</button>
+                <button id="modalConfirm"
+                    class="px-4 py-2 rounded text-xs bg-blue-600 hover:bg-blue-500 text-white">Confirm</button>
             </div>
         </div>
     </div>
 
-    <div id="progressModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[6000] hidden flex-col items-center justify-center">
+    <div id="progressModal"
+        class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[6000] hidden flex-col items-center justify-center">
         <div class="bg-[#242424] p-6 rounded-lg shadow-2xl border border-[#404040] w-96">
             <h3 id="progressTitle" class="text-sm font-bold text-white mb-2">Processing...</h3>
             <div class="w-full bg-[#333] rounded-full h-2 mb-3">
-                <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-200" style="width: 0%"></div>
+                <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-200"
+                    style="width: 0%"></div>
             </div>
             <div class="flex justify-between text-[10px] text-gray-400 font-mono">
                 <span id="progressStatus">Initializing...</span>
@@ -971,11 +1055,11 @@
         const SelectionManager = {
             selectedItems: new Set(), // Set of strings: "folder:name" or "file:key"
             lastSelectedIndex: -1,
-            clear: function() {
+            clear: function () {
                 this.selectedItems.clear();
                 this.updateUI();
             },
-            toggle: function(id, isRange = false, allItems = []) {
+            toggle: function (id, isRange = false, allItems = []) {
                 if (isRange && this.lastSelectedIndex !== -1 && allItems.length > 0) {
                     // Range logic
                     const currentIndex = allItems.findIndex(i => i.id === id);
@@ -999,7 +1083,7 @@
                 }
                 this.updateUI();
             },
-            selectSingle: function(id, allItems = []) {
+            selectSingle: function (id, allItems = []) {
                 this.selectedItems.clear();
                 this.selectedItems.add(id);
                 if (allItems.length) {
@@ -1007,7 +1091,7 @@
                 }
                 this.updateUI();
             },
-            updateUI: function() {
+            updateUI: function () {
                 // Update Visuals
                 document.querySelectorAll('.file-item').forEach(el => {
                     const id = el.dataset.id;
@@ -1016,9 +1100,9 @@
                 });
                 // Update Status Bar
                 const count = this.selectedItems.size;
-                document.getElementById('selection-status').textContent = `${count} item${count!==1?'s':''} selected`;
+                document.getElementById('selection-status').textContent = `${count} item${count !== 1 ? 's' : ''} selected`;
             },
-            getSelection: function() {
+            getSelection: function () {
                 return Array.from(this.selectedItems).map(id => {
                     const [type, ...rest] = id.split(':');
                     const key = rest.join(':');
@@ -1062,7 +1146,7 @@
                                                 if (img.previousElementSibling) img.previousElementSibling.classList.add('opacity-0');
                                             };
                                         }
-                                    }).catch(() => {});
+                                    }).catch(() => { });
                                 }
                             }, 150);
                             observer.unobserve(img);
@@ -1079,7 +1163,7 @@
         // --- Window Manager ---
         const WindowManager = {
             zIndex: 100,
-            open: function(appId, meta = {}) {
+            open: function (appId, meta = {}) {
                 const win = $(`#win-${appId}`);
                 if (win.is(':visible')) {
                     this.focus(appId);
@@ -1099,7 +1183,7 @@
                 }
                 if (appId === 'uploads') checkForInterruptedUploads();
             },
-            close: function(appId) {
+            close: function (appId) {
                 const win = $(`#win-${appId}`);
                 win.removeClass('visible');
                 setTimeout(() => {
@@ -1113,12 +1197,12 @@
                 }, 150);
                 $(`#task-item-${appId}`).remove();
             },
-            minimize: function(appId) {
+            minimize: function (appId) {
                 $(`#win-${appId}`).removeClass('visible');
                 setTimeout(() => $(`#win-${appId}`).hide(), 150);
                 $(`#task-item-${appId}`).removeClass('active');
             },
-            maximize: function(appId) {
+            maximize: function (appId) {
                 const win = $(`#win-${appId}`);
                 win.toggleClass('maximized');
                 if (win.hasClass('maximized')) win.css({
@@ -1154,7 +1238,7 @@
                             t: 100,
                             l: 120
                         }
-                    } [appId] || {
+                    }[appId] || {
                         w: 800,
                         h: 550,
                         t: 100,
@@ -1169,13 +1253,13 @@
                     });
                 }
             },
-            focus: function(appId) {
+            focus: function (appId) {
                 this.zIndex++;
                 $(`#win-${appId}`).css('z-index', this.zIndex);
                 $('.task-item').removeClass('active');
                 $(`#task-item-${appId}`).addClass('active');
             },
-            addTaskbarItem: function(appId, meta = {}) {
+            addTaskbarItem: function (appId, meta = {}) {
                 if ($(`#task-item-${appId}`).length === 0) {
                     const map = {
                         'file-explorer': 'File Station',
@@ -1199,7 +1283,7 @@
         // --- Resource Monitor (Chart.js) ---
         const ResMonitor = {
             charts: {},
-            init: function() {
+            init: function () {
                 if (!document.getElementById('net-in-chart').offsetParent) return;
                 if (this.charts['net-in']) return;
 
@@ -1211,11 +1295,11 @@
                 updateCapacityDisplay();
                 updateStorageStats(); // Initial Draw of Pie Chart
             },
-            showTab: function(tabId) {
+            showTab: function (tabId) {
                 $('.res-tab').removeClass('active');
                 $(`.res-tab[onclick*="${tabId}"]`).addClass('active');
             },
-            initCharts: function() {
+            initCharts: function () {
                 Chart.defaults.color = '#a3a3a3';
                 Chart.defaults.borderColor = '#333';
                 Chart.defaults.font.family = "'Inter', sans-serif";
@@ -1245,7 +1329,7 @@
                                 color: '#333'
                             },
                             ticks: {
-                                callback: function(val) {
+                                callback: function (val) {
                                     return formatBytes(val, 0) + '/s';
                                 }
                             }
@@ -1274,9 +1358,12 @@
                             fill: true
                         }]
                     },
-                    options: { ...commonOptions,
-                        scales: { ...commonOptions.scales,
-                            y: { ...commonOptions.scales.y,
+                    options: {
+                        ...commonOptions,
+                        scales: {
+                            ...commonOptions.scales,
+                            y: {
+                                ...commonOptions.scales.y,
                                 max: 20 * 1024 * 1024
                             }
                         }
@@ -1295,9 +1382,12 @@
                             fill: true
                         }]
                     },
-                    options: { ...commonOptions,
-                        scales: { ...commonOptions.scales,
-                            y: { ...commonOptions.scales.y,
+                    options: {
+                        ...commonOptions,
+                        scales: {
+                            ...commonOptions.scales,
+                            y: {
+                                ...commonOptions.scales.y,
                                 max: 10 * 1024 * 1024
                             }
                         }
@@ -1332,7 +1422,7 @@
                     this.updateNetworkCharts();
                 }, 1000);
             },
-            updateNetworkCharts: function() {
+            updateNetworkCharts: function () {
                 if (!this.charts['net-in']) return;
 
                 // Simulate Network Traffic (Base noise + active upload speed)
@@ -1355,7 +1445,7 @@
                 update(this.charts['net-in'], totalDown, 'net-in-val');
                 update(this.charts['net-out'], totalUp, 'net-out-val');
             },
-            updatePieChart: function(stats) {
+            updatePieChart: function (stats) {
                 if (!this.charts['pie']) return;
                 const data = [stats.images.size, stats.videos.size, stats.audio.size, stats.docs.size, stats.archives.size, stats.others.size];
                 // If all zero, show placeholder
@@ -1367,7 +1457,7 @@
 
         // --- Core File System ---
         const AppNav = {
-            navigate: function(view) {
+            navigate: function (view) {
                 $('.nav-item').not('.fragment-item').removeClass('active');
                 $(`#nav-${view}`).addClass('active');
                 if (view === 'my-files') {
@@ -1391,7 +1481,7 @@
             ticking: false,
             lastStartIndex: -1,
             lastEndIndex: -1,
-            init: function(containerId, contentId) {
+            init: function (containerId, contentId) {
                 this.container = document.getElementById(containerId);
                 this.content = document.getElementById(contentId);
                 if (this.container) {
@@ -1415,26 +1505,26 @@
                     });
                 }
             },
-            setItems: function(items, viewType) {
+            setItems: function (items, viewType) {
                 this.items = items;
                 this.viewType = viewType;
                 if (this.container) this.container.scrollTop = 0;
                 this.forceRender();
                 SelectionManager.clear();
             },
-            forceRender: function() {
+            forceRender: function () {
                 this.lastStartIndex = -1;
                 this.renderVisible();
             },
-            getColumns: function() {
+            getColumns: function () {
                 if (this.viewType === 'list') return 1;
                 if (this.container) return Math.max(2, Math.floor(this.container.clientWidth / 136));
                 return 5;
             },
-            getRowHeight: function() {
+            getRowHeight: function () {
                 return this.viewType === 'tiles' ? 171 : 46;
             },
-            renderVisible: function() {
+            renderVisible: function () {
                 if (!this.container || !this.content) return;
                 if (!this.items.length) {
                     this.content.innerHTML = `<div class="col-span-full py-20 text-center text-gray-600 flex flex-col items-center justify-center h-full"><i class="fas fa-folder-open text-5xl mb-4 opacity-50"></i><p>Empty Folder</p></div>`;
@@ -1669,14 +1759,14 @@
             $(`#win-${viewerId}`).draggable({
                 handle: ".window-header",
                 containment: "#windows-container",
-                start: function() {
+                start: function () {
                     WindowManager.focus(viewerId);
                 }
             }).resizable({
                 minHeight: 200,
                 minWidth: 300
             });
-            $(`#win-${viewerId}`).on('mousedown', function() {
+            $(`#win-${viewerId}`).on('mousedown', function () {
                 WindowManager.focus(viewerId);
             });
             WindowManager.open(viewerId, {
@@ -1765,7 +1855,7 @@
                         const hls = new Hls();
                         hls.loadSource(url);
                         hls.attachMedia(video);
-                        hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                        hls.on(Hls.Events.MANIFEST_PARSED, function () {
                             video.play();
                         });
                     }
@@ -1908,8 +1998,8 @@
                         authorization: `Bearer ${token}`
                     }
                 });
-                if (res.ok) {}
-            } catch (e) {}
+                if (res.ok) { }
+            } catch (e) { }
         }
 
         // --- Helpers ---
@@ -2019,7 +2109,7 @@
                 html = `<div class="ctx-item" onclick="openFileViewer('${data.data.fragment}','${data.data.key}')"><i class="fas fa-eye w-4"></i> Preview</div><div class="ctx-item" onclick="showShareModal('${data.data.fragment}','${data.data.key}')"><i class="fas fa-share-alt w-4"></i> Share</div><div class="ctx-item" onclick="showRenameModal('${data.data.fragment}','${data.data.key}')"><i class="fas fa-pencil-alt w-4"></i> Rename</div><div class="ctx-item" onclick="performDirectDownload('${data.data.fragment}','${data.data.key}')"><i class="fas fa-download w-4"></i> Download</div><div class="ctx-item" onclick="toggleStar('${data.data.key}')"><i class="${isStarred ? 'fas' : 'far'} fa-star w-4 text-yellow-500"></i> ${isStarred ? 'Unstar' : 'Star'}</div><div class="ctx-div"></div><div class="ctx-item text-red-400" onclick="moveToTrash('${data.data.key}','file')"><i class="fas fa-trash w-4"></i> Delete</div>`;
             } else {
                 // BUG FIX: data.data is the string name for folders, not an object with a .name property
-                const folderName = data.data; 
+                const folderName = data.data;
                 html = `<div class="ctx-item text-red-400" onclick="moveToTrash('${currentPath + folderName}/','folder')"><i class="fas fa-trash w-4"></i> Delete Folder</div>`;
             }
             menu.html(html).css({
@@ -2139,7 +2229,8 @@
             let items = type === 'folder' ? currentObjectList.filter(o => o.key.startsWith(key)) : [currentObjectList.find(o => o.key === key)].filter(Boolean);
             if (type === 'folder') clientSideFolders = clientSideFolders.filter(f => (f.path || '') + f.name + '/' !== key);
             items.forEach(i => {
-                if (!trashedItems.some(t => t.key === i.key)) trashedItems.push({ ...i,
+                if (!trashedItems.some(t => t.key === i.key)) trashedItems.push({
+                    ...i,
                     trashedDate: new Date().toISOString()
                 });
             });
@@ -2149,11 +2240,11 @@
         }
         async function emptyTrash() {
             if (trashedItems.length === 0) return;
-            
+
             showGenericModal('Empty Recycle Bin', `Permanently delete ${trashedItems.length} items? This cannot be undone.`, async () => {
                 const total = trashedItems.length;
                 showProgressModal('Emptying Recycle Bin', total);
-                
+
                 let count = 0;
                 // Create a copy to iterate safely
                 const itemsToDelete = [...trashedItems];
@@ -2161,7 +2252,7 @@
                 for (const item of itemsToDelete) {
                     count++;
                     updateProgress(count, total, `Deleting ${item.key.split('/').pop()}...`);
-                    
+
                     try {
                         await fetch(`${serverLink}/v4/fragment/object/delete/${item.fragment}/${item.key}`, {
                             method: 'DELETE',
@@ -2184,18 +2275,18 @@
 
         function restoreAll() {
             if (trashedItems.length === 0) return;
-            
+
             showGenericModal('Restore All', `Restore all ${trashedItems.length} items to their original locations?`, () => {
                 const total = trashedItems.length;
                 showProgressModal('Restoring Files', total);
-                
+
                 // Simulate a small delay for UI feel since local operations are instant
                 setTimeout(() => {
                     trashedItems = [];
                     localStorage.setItem('trashedItems', '[]');
-                    
+
                     updateProgress(total, total, 'Finalizing...');
-                    
+
                     setTimeout(() => {
                         hideProgressModal();
                         showTrash();
@@ -2326,7 +2417,7 @@
             el.className = 'bg-[#1f1f1f] p-2 rounded border border-[#333] mb-1';
             let progressBar = `<div class="w-full bg-[#333] h-1 rounded-full overflow-hidden mb-1"><div class="progress-bar bg-blue-600 h-full w-0 transition-all"></div></div>`;
             let actions = item.isRecovery ? `<div class="flex gap-2 mt-1"><button class="text-[10px] bg-green-600 hover:bg-green-500 text-white px-2 py-0.5 rounded resume-btn">Resume</button><button class="text-[10px] bg-red-600 hover:bg-red-500 text-white px-2 py-0.5 rounded cancel-btn">Cancel</button></div>` : '';
-            el.innerHTML = `<div class="flex justify-between mb-1 text-[10px]"><span class="font-medium text-gray-300 truncate w-24">${item.file.name}</span><span class="${item.isRecovery?'text-yellow-500':'text-gray-400'} status-text"><i class="far fa-clock mr-1"></i>${item.isRecovery?'Interrupted':'Pending'}</span></div>${item.isRecovery?'':progressBar}<div class="flex justify-end text-[9px] text-gray-500 details-text">${item.isRecovery?'<span>Waiting...</span>':'<span>-- MB/s</span><span>--</span>'}</div>${actions}`;
+            el.innerHTML = `<div class="flex justify-between mb-1 text-[10px]"><span class="font-medium text-gray-300 truncate w-24">${item.file.name}</span><span class="${item.isRecovery ? 'text-yellow-500' : 'text-gray-400'} status-text"><i class="far fa-clock mr-1"></i>${item.isRecovery ? 'Interrupted' : 'Pending'}</span></div>${item.isRecovery ? '' : progressBar}<div class="flex justify-end text-[9px] text-gray-500 details-text">${item.isRecovery ? '<span>Waiting...</span>' : '<span>-- MB/s</span><span>--</span>'}</div>${actions}`;
             if (item.isRecovery) {
                 el.querySelector('.resume-btn').onclick = () => {
                     const inp = document.getElementById('resumeFileInput');
@@ -2347,7 +2438,7 @@
                 if (!next) break;
                 activeUploads++;
                 next.started = true;
-                
+
                 // Start the upload
                 startUpload(next).finally(() => {
                     activeUploads--;
@@ -2362,7 +2453,7 @@
             const statusText = ui.querySelector('.status-text');
             const progBar = ui.querySelector('.progress-bar');
             const detailsText = ui.querySelector('.details-text');
-            
+
             // --- FIXED: Check Storage Capacity Before Starting ---
             const currentUsage = currentObjectList.reduce((acc, obj) => acc + Number(obj.size_bytes), 0);
             if (currentUsage + item.file.size > totalCapacity) {
@@ -2481,8 +2572,8 @@
                                 const speed = (uploadedBytes - lastUploadedBytes) / ((now - lastUpdate) / 1000);
                                 currentUploadSpeed = speed; // Update global for graph
                                 const eta = speed > 0 ? (fileSize - uploadedBytes) / speed : 0;
-                                progBar.style.width = `${Math.min(100, (uploadedBytes/fileSize)*100)}%`;
-                                statusText.textContent = `${Math.round((uploadedBytes/fileSize)*100)}%`;
+                                progBar.style.width = `${Math.min(100, (uploadedBytes / fileSize) * 100)}%`;
+                                statusText.textContent = `${Math.round((uploadedBytes / fileSize) * 100)}%`;
                                 detailsText.innerHTML = `<span class="mr-2">${formatBytes(speed)}/s</span><span>ETA: ${formatTime(eta)}</span>`;
                                 lastUpdate = now;
                                 lastUploadedBytes = uploadedBytes;
@@ -2553,7 +2644,7 @@
                 if (k.startsWith('upload-session-')) {
                     const d = JSON.parse(localStorage.getItem(k));
                     if (!uploadQueue.some(u => u.sessionKey === k)) createUploadUI({
-                        id: `recovery-${k.replace(/[^a-zA-Z0-9]/g,'')}`,
+                        id: `recovery-${k.replace(/[^a-zA-Z0-9]/g, '')}`,
                         sessionKey: k,
                         file: {
                             name: d.name,
@@ -2602,20 +2693,47 @@
             });
             $(document).on('paste', (e) => {
                 const cd = e.originalEvent.clipboardData;
-                if (cd?.files?.length && $('#win-file-explorer').is(':visible')) handleUploads(cd.files);
-            });
+                if (!cd) return;
 
+                const uniqueFiles = new Map();
+
+                const addFile = (f) => {
+                    if (!f) return;
+                    const key = `${f.name}-${f.size}-${f.lastModified}`;
+                    if (!uniqueFiles.has(key)) {
+                        uniqueFiles.set(key, f);
+                    }
+                };
+
+                if (cd.items && cd.items.length > 0) {
+                    for (let i = 0; i < cd.items.length; i++) {
+                        if (cd.items[i].kind === 'file') {
+                            addFile(cd.items[i].getAsFile());
+                        }
+                    }
+                }
+
+                if (cd.files && cd.files.length > 0) {
+                    Array.from(cd.files).forEach(addFile);
+                }
+
+                const files = Array.from(uniqueFiles.values());
+                if (files.length > 0 && $('#win-file-explorer').is(':visible')) {
+                    e.preventDefault();
+                    handleUploads(files);
+                }
+            });
             $(".window").draggable({
                 handle: ".window-header",
                 containment: "#windows-container",
-                start: function() {
+                start: function () {
                     WindowManager.focus($(this).attr('id').replace('win-', ''));
                 }
             }).resizable({
                 minHeight: 200,
                 minWidth: 300
             });
-            $(".window").on('mousedown', function() {
+            $(".window").on('mousedown', function () {
                 WindowManager.focus($(this).attr('id').replace('win-', ''));
             });
             $(document).on('click', (e) => {
@@ -2714,7 +2832,7 @@
                 setTimeout(() => $('#boot-screen').remove(), 600);
             }, 1200);
             $('#fileInput').change((e) => handleUploads(e.target.files));
-            $('#searchInput').on('input', function() {
+            $('#searchInput').on('input', function () {
                 const v = $(this).val().toLowerCase();
                 if (!v) {
                     renderObjects(getActiveObjectList());
@@ -2755,19 +2873,19 @@
 
             $('#empty-trash-btn').click(emptyTrash);
             $('#restore-all-btn').click(restoreAll);
-            $('#trash-tiles-btn').click(function() {
+            $('#trash-tiles-btn').click(function () {
                 currentTrashView = 'tiles';
                 showTrash();
             });
-            $('#trash-list-btn').click(function() {
+            $('#trash-list-btn').click(function () {
                 currentTrashView = 'list';
                 showTrash();
             });
-            $('#tiles-view-btn').click(function() {
+            $('#tiles-view-btn').click(function () {
                 currentView = 'tiles';
                 renderObjects(getActiveObjectList());
             });
-            $('#list-view-btn').click(function() {
+            $('#list-view-btn').click(function () {
                 currentView = 'list';
                 renderObjects(getActiveObjectList());
             });
@@ -2780,13 +2898,13 @@
                             authorization: `Bearer ${token}`
                         }
                     });
-                    if (res.ok)(await res.json()).forEach(pushFrag);
-                } catch (e) {}
+                    if (res.ok) (await res.json()).forEach(pushFrag);
+                } catch (e) { }
                 clientSideFragments.forEach(pushFrag);
 
                 function pushFrag(f) {
                     if (document.getElementById(`frag-${f}`)) return;
-                    const el = $(`<div id="frag-${f}" class="nav-item fragment-item"><i class="fas fa-database w-4 text-center"></i> ${f}</div>`).click(function() {
+                    const el = $(`<div id="frag-${f}" class="nav-item fragment-item"><i class="fas fa-database w-4 text-center"></i> ${f}</div>`).click(function () {
                         $('#fragmentList .fragment-item').removeClass('active');
                         $(this).addClass('active');
                         activeFragment = f;
