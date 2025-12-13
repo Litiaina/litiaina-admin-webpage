@@ -1052,12 +1052,11 @@
         const totalCapacity = Number(localStorage.getItem("current-capacity")?.trim()) || (15 * 1024 * 1024 * 1024);
         let uploadQueue = [];
         let activeUploads = 0;
-        // HTTP/2 Optimization: Increased from 1 to 5 to allow parallel file uploads
-        const MAX_CONCURRENT_UPLOADS = 5; 
+        const MAX_CONCURRENT_UPLOADS = 1;
         const MB = 1024 * 1024;
 
         // Stats for Network Graph
-        // Removed global variable since each upload calculates its own speed now
+        let currentUploadSpeed = 0; // Bytes/sec
 
         // Selection Manager State
         const SelectionManager = {
@@ -1128,85 +1127,44 @@
 
         const thumbnailCache = new Map();
 
-        // --- Thumbnail Queue System ---
-        const ThumbnailLoader = {
-            queue: [], // Array of { id, fragment, key, imgElement }
-            processing: new Set(),
-            maxConcurrent: 4, // Max simultaneous API requests for signing URLs
-
-            enqueue: function(imgElement, fragment, key) {
-                // If already cached, apply immediately
-                if (thumbnailCache.has(key)) {
-                    this.apply(imgElement, thumbnailCache.get(key));
-                    return;
-                }
-                
-                // Avoid duplicates in queue
-                if (this.queue.find(item => item.key === key)) return;
-                
-                // Add to queue
-                this.queue.push({ imgElement, fragment, key });
-                this.process();
-            },
-
-            dequeue: function(key) {
-                // Remove from queue if scrolled out of view (optional optimization)
-                this.queue = this.queue.filter(item => item.key !== key);
-            },
-
-            process: async function() {
-                if (this.processing.size >= this.maxConcurrent || this.queue.length === 0) return;
-
-                const item = this.queue.shift();
-                if (!item.imgElement.isConnected) {
-                    this.process(); // Skip if element removed from DOM
-                    return;
-                }
-
-                const { imgElement, fragment, key } = item;
-                this.processing.add(key);
-
-                try {
-                    // 1. Get Signed URL (Hits View Limit)
-                    const url = await getShareableUrl(fragment, key, 'view', 3600);
-                    
-                    if (url) {
-                        thumbnailCache.set(key, url);
-                        this.apply(imgElement, url);
-                    }
-                } catch (e) {
-                    console.error("Thumbnail load failed", e);
-                } finally {
-                    this.processing.delete(key);
-                    this.process(); // Trigger next
-                }
-            },
-
-            apply: function(img, url) {
-                img.src = url; // Hits Sharing Limit (handled by browser network queue usually, but good to control)
-                img.onload = () => {
-                    img.classList.remove('opacity-0');
-                    if (img.previousElementSibling) img.previousElementSibling.classList.add('opacity-0');
-                };
-            }
-        };
-
         // --- IMAGE OBSERVER ---
-        const imageObserver = new IntersectionObserver((entries) => {
+        const imageObserver = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => {
-                const img = entry.target;
-                const key = img.getAttribute('data-key');
-                const fragment = img.getAttribute('data-fragment');
-
                 if (entry.isIntersecting) {
-                    ThumbnailLoader.enqueue(img, fragment, key);
-                    imageObserver.unobserve(img); 
+                    const img = entry.target;
+                    const dataKey = img.getAttribute('data-key');
+                    const dataFragment = img.getAttribute('data-fragment');
+
+                    if (dataKey && dataFragment) {
+                        if (thumbnailCache.has(dataKey)) {
+                            img.src = thumbnailCache.get(dataKey);
+                            img.classList.remove('opacity-0');
+                            if (img.previousElementSibling) img.previousElementSibling.classList.add('opacity-0');
+                            observer.unobserve(img);
+                        } else {
+                            setTimeout(() => {
+                                if (img.isConnected) {
+                                    getShareableUrl(dataFragment, dataKey, 'view', 3600).then(url => {
+                                        if (url) {
+                                            thumbnailCache.set(dataKey, url);
+                                            img.src = url;
+                                            img.onload = () => {
+                                                img.classList.remove('opacity-0');
+                                                if (img.previousElementSibling) img.previousElementSibling.classList.add('opacity-0');
+                                            };
+                                        }
+                                    }).catch(() => { });
+                                }
+                            }, 150);
+                            observer.unobserve(img);
+                        }
+                    }
                 }
             });
         }, {
             root: document.getElementById('browser'),
-            rootMargin: '200px', // Preload a bit more ahead since we are throttling
-            threshold: 0.01
+            rootMargin: '100px',
+            threshold: 0.1
         });
 
         // --- Window Manager ---
@@ -1478,11 +1436,8 @@
                 // Base noise: 100KB - 500KB download (idle chatter), 10KB - 50KB upload
                 const baseDown = Math.random() * 400 * 1024 + 100 * 1024;
                 const baseUp = Math.random() * 40 * 1024 + 10 * 1024;
-                
-                // Calculate total upload speed from all active uploads
-                const totalUploadSpeed = uploadQueue.reduce((acc, item) => acc + (item.currentSpeed || 0), 0);
 
-                const totalUp = baseUp + totalUploadSpeed;
+                const totalUp = baseUp + currentUploadSpeed;
                 const totalDown = baseDown; // We don't track download speed variable yet
 
                 // Update Data Arrays
@@ -2640,31 +2595,19 @@
             }
             append ? container.appendChild(el) : container.prepend(el);
         }
-
-        let isProcessingQueue = false;
         async function processUploadQueue() {
-            if (isProcessingQueue) return;
-            isProcessingQueue = true;
-            try {
-                while (activeUploads < MAX_CONCURRENT_UPLOADS) {
-                    const next = uploadQueue.find(i => !i.started && !i.completed && !i.failed);
-                    if (!next) break;
-                    activeUploads++;
-                    next.started = true;
+            while (activeUploads < MAX_CONCURRENT_UPLOADS) {
+                const next = uploadQueue.find(i => !i.started && !i.completed && !i.failed);
+                if (!next) break;
+                activeUploads++;
+                next.started = true;
 
-                    // UPDATED: Start upload
-                    startUpload(next).finally(() => {
-                        activeUploads--;
-                        // We do not reset global speed here anymore.
-                        processUploadQueue();
-                    });
-                    
-                    // Throttling Start (Auth Limit 2/s)
-                    // We pause 500ms between starting uploads to ensure we don't burst the auth/init limit
-                    await new Promise(r => setTimeout(r, 500));
-                }
-            } finally {
-                isProcessingQueue = false;
+                // Start the upload
+                startUpload(next).finally(() => {
+                    activeUploads--;
+                    currentUploadSpeed = 0;
+                    processUploadQueue();
+                });
             }
         }
         async function startUpload(item) {
@@ -2674,6 +2617,7 @@
             const progBar = ui.querySelector('.progress-bar');
             const detailsText = ui.querySelector('.details-text');
 
+            // --- FIXED: Check Storage Capacity Before Starting ---
             const currentUsage = currentObjectList.reduce((acc, obj) => acc + Number(obj.size_bytes), 0);
             if (currentUsage + item.file.size > totalCapacity) {
                 statusText.textContent = "Storage Full";
@@ -2683,17 +2627,12 @@
                 showToast(`Not enough storage to upload ${item.file.name}`, 'error');
                 return;
             }
+            // ---------------------------------------------------
 
             const sessionKey = `upload-session-${item.file.name}-${item.file.size}-${item.file.lastModified}`;
-            item.sessionKey = sessionKey; // Explicitly attach for tracking
-
             let uploadedBytes = 0,
                 lastUploadedBytes = 0,
                 lastUpdate = Date.now();
-            
-            // Initialize speed tracking for this item
-            item.currentSpeed = 0;
-
             try {
                 const fileSize = item.file.size;
                 const chunkSize = fileSize < 100 * MB ? 2 * MB : fileSize < 500 * MB ? 5 * MB : fileSize < 1024 * MB ? 8 * MB : 16 * MB;
@@ -2754,9 +2693,7 @@
                 statusText.textContent = "Uploading...";
                 const buffer = [],
                     maxBuffer = 4,
-                    // UPDATED: maxWorkers increased to take advantage of HTTP/2 multiplexing
-                    maxWorkers = 24; 
-                    
+                    maxWorkers = 6;
                 let hashingDone = false;
 
                 const producer = async () => {
@@ -2781,7 +2718,7 @@
                             continue;
                         }
                         try {
-                            const res = await fetch(`${serverLink}/v4/fragment/object/upload/chunk/raw/${file_id}/${chunk.index}`, {
+                            await fetch(`${serverLink}/v4/fragment/object/upload/chunk/raw/${file_id}/${chunk.index}`, {
                                 method: 'PUT',
                                 headers: {
                                     authorization: `Bearer ${token}`,
@@ -2792,19 +2729,11 @@
                                 body: chunk.blob,
                                 signal: item.controller.signal
                             });
-
-                            if (!res.ok) {
-                                throw new Error(`Server returned status ${res.status}`);
-                            }
-
                             uploadedBytes += chunk.blob.size;
                             const now = Date.now();
                             if (now - lastUpdate > 500) {
                                 const speed = (uploadedBytes - lastUploadedBytes) / ((now - lastUpdate) / 1000);
-                                
-                                // Store speed on item instead of global
-                                item.currentSpeed = speed;
-
+                                currentUploadSpeed = speed; // Update global for graph
                                 const eta = speed > 0 ? (fileSize - uploadedBytes) / speed : 0;
                                 progBar.style.width = `${Math.min(100, (uploadedBytes / fileSize) * 100)}%`;
                                 statusText.textContent = `${Math.round((uploadedBytes / fileSize) * 100)}%`;
@@ -2813,11 +2742,8 @@
                                 lastUploadedBytes = uploadedBytes;
                             }
                         } catch (e) {
-                            // Rate limit handling (Retry)
                             buffer.unshift(chunk);
-                            // Add slight jitter to prevent thundering herd
-                            const jitter = Math.random() * 500; 
-                            await new Promise(r => setTimeout(r, 1000 + jitter));
+                            await new Promise(r => setTimeout(r, 1000));
                         }
                     }
                 };
@@ -2841,7 +2767,6 @@
                 progBar.classList.replace('bg-blue-600', 'bg-green-500');
                 progBar.style.width = '100%';
                 item.completed = true;
-                item.currentSpeed = 0; // Reset speed on completion
                 localStorage.removeItem(sessionKey);
                 listObjects(activeFragment);
 
@@ -2850,7 +2775,6 @@
                 statusText.textContent = "Failed";
                 statusText.className = "text-red-400 text-[10px]";
                 item.failed = true;
-                item.currentSpeed = 0; // Reset speed on failure
                 detailsText.innerHTML = `<button class="text-blue-400 mr-2" onclick="retryUpload('${item.id}')">Retry</button><button class="text-red-400" onclick="cancelUpload('${item.id}')">Cancel</button>`;
             }
         }
@@ -2882,24 +2806,17 @@
                 const k = localStorage.key(i);
                 if (k.startsWith('upload-session-')) {
                     const d = JSON.parse(localStorage.getItem(k));
-                    
-                    // Generate ID deterministically
-                    const elId = `recovery-${k.replace(/[^a-zA-Z0-9]/g, '')}`;
-
-                    // CHECK: Ensure item is not already in queue (being uploaded) AND UI element doesn't already exist
-                    if (!uploadQueue.some(u => u.sessionKey === k) && !document.getElementById(elId)) { 
-                        createUploadUI({
-                            id: elId,
-                            sessionKey: k,
-                            file: {
-                                name: d.name,
-                                size: d.size
-                            },
-                            isRecovery: true,
-                            status: 'interrupted',
-                            objectKey: d.objectKey
-                        }, true);
-                    }
+                    if (!uploadQueue.some(u => u.sessionKey === k)) createUploadUI({
+                        id: `recovery-${k.replace(/[^a-zA-Z0-9]/g, '')}`,
+                        sessionKey: k,
+                        file: {
+                            name: d.name,
+                            size: d.size
+                        },
+                        isRecovery: true,
+                        status: 'interrupted',
+                        objectKey: d.objectKey
+                    }, true);
                 }
             }
             if (document.querySelectorAll('#upload-items-container > div').length > 0) WindowManager.addTaskbarItem('uploads');
@@ -3167,8 +3084,7 @@
                             file: f,
                             fragment: d.fragment,
                             objectKey: d.objectKey,
-                            controller: new AbortController(),
-                            sessionKey: sKey // Ensure sessionKey is tracked
+                            controller: new AbortController()
                         };
                         uploadQueue.push(item);
                         createUploadUI(item);
