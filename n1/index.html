@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>N1 Cloud - Professional</title>
+    <title>N1 Cloud</title>
     <link rel="icon" type="image/png" href="../images/litiaina_icon_48x48.png">
 
     <!-- Tailwind CSS -->
@@ -20,9 +20,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://unpkg.com/docx-preview/dist/docx-preview.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-    <script src="https://unpkg.com/docx-preview/dist/docx-preview.min.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
@@ -589,7 +586,7 @@
     <div id="boot-screen" class="flex flex-col items-center justify-center">
         <img src="../images/litiaina_icon_48x48.png" alt="logo" class="w-16 h-16 rounded-lg mb-4" />
         <h1 class="text-lg font-medium tracking-wide text-gray-300">N1 Cloud</h1>
-        <p class="text-[10px] text-gray-600 mt-2 font-mono">ENGINE VERSION 0.0.3 • LOADING SHELL</p>
+        <p class="text-[10px] text-gray-600 mt-2 font-mono">ENGINE VERSION 0.0.4 • LOADING SHELL</p>
     </div>
 
     <!-- Selection Marquee -->
@@ -1047,16 +1044,17 @@
         let currentPath = '';
         let currentView = 'tiles';
         let currentTrashView = 'list';
-        const serverLink = `https://storage.litiaina.com`;
+        const serverLink = `https://localhost:50001`;
         const token = localStorage.getItem("current-token")?.trim() || "";
-        const totalCapacity = Number(localStorage.getItem("current-capacity")?.trim()) || (15 * 1024 * 1024 * 1024);
+        let totalCapacity = Number(localStorage.getItem("current-capacity")?.trim()) || (15 * 1024 * 1024 * 1024);
         let uploadQueue = [];
         let activeUploads = 0;
-        const MAX_CONCURRENT_UPLOADS = 1;
+        // HTTP/2 Optimization: Increased from 1 to 5 to allow parallel file uploads
+        const MAX_CONCURRENT_UPLOADS = 5;
         const MB = 1024 * 1024;
 
         // Stats for Network Graph
-        let currentUploadSpeed = 0; // Bytes/sec
+        // Removed global variable since each upload calculates its own speed now
 
         // Selection Manager State
         const SelectionManager = {
@@ -1125,46 +1123,121 @@
         const userEmail = localStorage.getItem("current-account-email") || "user@n1cloud.com";
         const userName = localStorage.getItem("current-account-name") || "N1 User";
 
-        const thumbnailCache = new Map();
+        const thumbnailCache = {
+            map: new Map(),
+            maxSize: 100,
+            get(key) { return this.map.get(key); },
+            has(key) { return this.map.has(key); },
+            set(key, url) {
+                if (this.map.has(key)) return;
+
+                if (this.map.size >= this.maxSize) {
+                    const firstKey = this.map.keys().next().value;
+                    const oldUrl = this.map.get(firstKey);
+                    URL.revokeObjectURL(oldUrl);
+                    this.map.delete(firstKey);
+                }
+                this.map.set(key, url);
+            }
+        };
+
+        // --- Thumbnail Queue System ---
+        const ThumbnailLoader = {
+            queue: [],
+            processing: new Set(),
+            maxConcurrent: 4, // Reduced from 8 to keep UI responsive
+
+            enqueue: function (imgElement, fragment, key) {
+                if (thumbnailCache.has(key)) {
+                    this.apply(imgElement, thumbnailCache.get(key));
+                    return;
+                }
+
+                // Avoid adding duplicates to queue
+                if (this.queue.some(item => item.key === key)) return;
+
+                // Add to queue
+                this.queue.push({ imgElement, fragment, key });
+                this.process();
+            },
+
+            process: async function () {
+                if (this.processing.size >= this.maxConcurrent || this.queue.length === 0) return;
+
+                const item = this.queue.shift();
+                const { imgElement, fragment, key } = item;
+
+                // --- PERFORMANCE FIX ---
+                // If the element is no longer in the DOM (user scrolled past it), 
+                // DROP the request. Do not download.
+                if (!imgElement.isConnected) {
+                    this.process(); // Skip to next
+                    return;
+                }
+
+                this.processing.add(key);
+
+                try {
+                    // Fetch logic
+                    const directUrl = `${serverLink}/v4/fragment/object/get/${fragment}/${key}`;
+                    const res = await fetch(directUrl, {
+                        headers: { 'Authorization': `Bearer ${token}` },
+                        // Optional: Add AbortSignal here if you want to cancel mid-flight requests
+                    });
+
+                    if (!res.ok) throw new Error('Fetch failed');
+
+                    const blob = await res.blob();
+
+                    // Double-check: Did the user scroll away while we were downloading?
+                    if (!imgElement.isConnected) {
+                        // If yes, discard the blob without creating a URL
+                        this.processing.delete(key);
+                        this.process();
+                        return;
+                    }
+
+                    const objectUrl = URL.createObjectURL(blob);
+                    thumbnailCache.set(key, objectUrl);
+                    this.apply(imgElement, objectUrl);
+
+                } catch (e) {
+                    // Silently fail or log debug
+                } finally {
+                    this.processing.delete(key);
+                    this.process(); // Trigger next
+                }
+            },
+
+            apply: function (img, url) {
+                if (!img.isConnected) return;
+                // Use requestAnimationFrame for smoother UI updates
+                requestAnimationFrame(() => {
+                    img.src = url;
+                    img.onload = () => {
+                        img.classList.remove('opacity-0');
+                        if (img.previousElementSibling) img.previousElementSibling.classList.add('opacity-0');
+                    };
+                });
+            }
+        };
 
         // --- IMAGE OBSERVER ---
-        const imageObserver = new IntersectionObserver((entries, observer) => {
+        const imageObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const img = entry.target;
-                    const dataKey = img.getAttribute('data-key');
-                    const dataFragment = img.getAttribute('data-fragment');
+                const img = entry.target;
+                const key = img.getAttribute('data-key');
+                const fragment = img.getAttribute('data-fragment');
 
-                    if (dataKey && dataFragment) {
-                        if (thumbnailCache.has(dataKey)) {
-                            img.src = thumbnailCache.get(dataKey);
-                            img.classList.remove('opacity-0');
-                            if (img.previousElementSibling) img.previousElementSibling.classList.add('opacity-0');
-                            observer.unobserve(img);
-                        } else {
-                            setTimeout(() => {
-                                if (img.isConnected) {
-                                    getShareableUrl(dataFragment, dataKey, 'view', 3600).then(url => {
-                                        if (url) {
-                                            thumbnailCache.set(dataKey, url);
-                                            img.src = url;
-                                            img.onload = () => {
-                                                img.classList.remove('opacity-0');
-                                                if (img.previousElementSibling) img.previousElementSibling.classList.add('opacity-0');
-                                            };
-                                        }
-                                    }).catch(() => { });
-                                }
-                            }, 150);
-                            observer.unobserve(img);
-                        }
-                    }
+                if (entry.isIntersecting) {
+                    ThumbnailLoader.enqueue(img, fragment, key);
+                    imageObserver.unobserve(img);
                 }
             });
         }, {
             root: document.getElementById('browser'),
-            rootMargin: '100px',
-            threshold: 0.1
+            rootMargin: '200px', // Preload a bit more ahead since we are throttling
+            threshold: 0.01
         });
 
         // --- Window Manager ---
@@ -1437,7 +1510,10 @@
                 const baseDown = Math.random() * 400 * 1024 + 100 * 1024;
                 const baseUp = Math.random() * 40 * 1024 + 10 * 1024;
 
-                const totalUp = baseUp + currentUploadSpeed;
+                // Calculate total upload speed from all active uploads
+                const totalUploadSpeed = uploadQueue.reduce((acc, item) => acc + (item.currentSpeed || 0), 0);
+
+                const totalUp = baseUp + totalUploadSpeed;
                 const totalDown = baseDown; // We don't track download speed variable yet
 
                 // Update Data Arrays
@@ -1488,6 +1564,7 @@
             ticking: false,
             lastStartIndex: -1,
             lastEndIndex: -1,
+
             init: function (containerId, contentId) {
                 this.container = document.getElementById(containerId);
                 this.content = document.getElementById(contentId);
@@ -1514,6 +1591,10 @@
             },
             setItems: function (items, viewType) {
                 this.items = items;
+                // If view type changes, we must clear the DOM to prevent recycling wrong element types
+                if (this.viewType !== viewType && this.content) {
+                    this.content.innerHTML = '';
+                }
                 this.viewType = viewType;
                 if (this.container) this.container.scrollTop = 0;
                 this.forceRender();
@@ -1521,7 +1602,7 @@
             },
             forceRender: function () {
                 this.lastStartIndex = -1;
-                this.renderVisible();
+                this.renderVisible(true);
             },
             getColumns: function () {
                 if (this.viewType === 'list') return 1;
@@ -1531,7 +1612,7 @@
             getRowHeight: function () {
                 return this.viewType === 'tiles' ? 171 : 46;
             },
-            renderVisible: function () {
+            renderVisible: function (force = false) {
                 if (!this.container || !this.content) return;
                 if (!this.items.length) {
                     this.content.innerHTML = `<div class="col-span-full py-20 text-center text-gray-600 flex flex-col items-center justify-center h-full"><i class="fas fa-folder-open text-5xl mb-4 opacity-50"></i><p>Empty Folder</p></div>`;
@@ -1539,49 +1620,97 @@
                     this.content.style.paddingBottom = '0px';
                     return;
                 }
+
                 const columns = this.getColumns();
                 const rowHeight = this.getRowHeight();
                 const totalItems = this.items.length;
                 const totalRows = Math.ceil(totalItems / columns);
                 const scrollTop = this.container.scrollTop;
                 const clientHeight = this.container.clientHeight;
-                const buffer = 2;
+
+                // Increased buffer to 4 to prevent gray zones during fast scrolling
+                const buffer = 4;
                 const startRow = Math.max(0, Math.floor(scrollTop / rowHeight) - buffer);
                 const endRow = Math.min(totalRows, Math.ceil((scrollTop + clientHeight) / rowHeight) + buffer);
+
                 const startIndex = startRow * columns;
                 const endIndex = Math.min(totalItems, endRow * columns);
-                if (startIndex === this.lastStartIndex && endIndex === this.lastEndIndex) return;
+
+                if (!force && startIndex === this.lastStartIndex && endIndex === this.lastEndIndex) return;
+
                 this.lastStartIndex = startIndex;
                 this.lastEndIndex = endIndex;
 
                 const paddingTop = startRow * rowHeight;
                 const paddingBottom = Math.max(0, (totalRows * rowHeight) - (endRow * rowHeight));
-                this.content.style.paddingTop = `${paddingTop}px`;
-                this.content.style.paddingBottom = `${paddingBottom}px`;
 
+                // Apply padding changes only if necessary to avoid reflows
+                if (this.content.style.paddingTop !== `${paddingTop}px`) this.content.style.paddingTop = `${paddingTop}px`;
+                if (this.content.style.paddingBottom !== `${paddingBottom}px`) this.content.style.paddingBottom = `${paddingBottom}px`;
+
+                // Layout Update
                 if (this.viewType === 'tiles') {
-                    this.content.className = 'grid gap-4 p-4 content-start';
+                    if (this.content.className !== 'grid gap-4 p-4 content-start')
+                        this.content.className = 'grid gap-4 p-4 content-start';
                     this.content.style.gridTemplateColumns = `repeat(auto-fill, minmax(120px, 1fr))`;
                     this.content.style.display = 'grid';
                 } else {
-                    this.content.className = 'flex flex-col gap-1 p-2 content-start';
+                    if (this.content.className !== 'flex flex-col gap-1 p-2 content-start')
+                        this.content.className = 'flex flex-col gap-1 p-2 content-start';
                     this.content.style.gridTemplateColumns = 'none';
                     this.content.style.display = 'flex';
                 }
 
-                this.content.innerHTML = '';
-                const slice = this.items.slice(startIndex, endIndex);
-                const fragment = document.createDocumentFragment();
-                slice.forEach(itemData => {
-                    let el = itemData.type === 'folder' ? (this.viewType === 'tiles' ? createTile(itemData, 'folder') : createRow(itemData, 'folder')) : (this.viewType === 'tiles' ? createTile(itemData, 'file') : createRow(itemData, 'file'));
-                    fragment.appendChild(el);
+                // --- DOM Recycling Logic ---
+
+                // 1. Snapshot currently rendered nodes by ID
+                const existingNodes = new Map();
+                // Convert HTMLCollection to Array to avoid live collection issues
+                Array.from(this.content.children).forEach(child => {
+                    if (child.dataset.id) existingNodes.set(child.dataset.id, child);
                 });
-                this.content.appendChild(fragment);
-                SelectionManager.updateUI(); // Re-apply selection styles
+
+                // 2. Build Fragment with recycled or new nodes
+                const fragment = document.createDocumentFragment();
+                const slice = this.items.slice(startIndex, endIndex);
+
+                slice.forEach(itemData => {
+                    const id = itemData.id;
+                    let el = existingNodes.get(id);
+
+                    if (el) {
+                        // Reuse existing node (moves it from current parent to fragment)
+                        // This preserves the <img> state so it doesn't reload/flash
+                        fragment.appendChild(el);
+                        existingNodes.delete(id); // Mark as claimed
+                    } else {
+                        // Create new node only if it doesn't exist
+                        el = itemData.type === 'folder'
+                            ? (this.viewType === 'tiles' ? createTile(itemData, 'folder') : createRow(itemData, 'folder'))
+                            : (this.viewType === 'tiles' ? createTile(itemData, 'file') : createRow(itemData, 'file'));
+                        fragment.appendChild(el);
+                    }
+
+                    // CRITICAL FIX: Update selection state inline.
+                    // Checking selection map is fast (O(1)).
+                    // Updating classList on a detached/fragment element is fast (no reflow).
+                    if (SelectionManager.selectedItems.has(id)) {
+                        el.classList.add('selected');
+                    } else {
+                        el.classList.remove('selected');
+                    }
+                });
+
+                // 3. Atomic Update: This removes any nodes left in 'content' (unused ones) and inserts the fragment
+                this.content.replaceChildren(fragment);
+
+                // REMOVED: SelectionManager.updateUI(); 
+                // Calling updateUI here triggered a global querySelectorAll and forced a synchronous layout reflow
+                // immediately after we modified padding, causing the "freeze".
             }
         };
 
-        function renderObjects(objects) {
+        function renderObjects(objects, keepScroll = false) {
             const breadcrumb = document.getElementById('breadcrumb');
             const backBtn = document.getElementById('back-btn');
             if (currentPath) {
@@ -1612,7 +1741,6 @@
             const sortedFolders = Array.from(folders).sort();
             const sortedFiles = files.sort((a, b) => new Date(Number(b.last_modified.$date.$numberLong)) - new Date(Number(a.last_modified.$date.$numberLong)));
 
-            // Format items for VirtualScroller and SelectionManager
             const items = [
                 ...sortedFolders.map(f => ({
                     type: 'folder',
@@ -1626,8 +1754,10 @@
                 }))
             ];
 
-            VirtualScroller.setItems(items, currentView);
+            // Pass keepScroll to VirtualScroller to prevent jumping
+            VirtualScroller.setItems(items, currentView, keepScroll);
         }
+
 
         function showRecentFiles() {
             $('#breadcrumb').html('Recent Files');
@@ -1816,7 +1946,15 @@
             });
 
             try {
-                const url = await getShareableUrl(fragment, key);
+                // For Viewer, we can still use Signed URL or Blob. Blob is faster.
+                // Let's check cache first.
+                let url;
+                if (thumbnailCache.has(key)) {
+                    url = thumbnailCache.get(key);
+                } else {
+                    url = await getShareableUrl(fragment, key);
+                }
+
                 const contentDiv = winContext.find('.viewer-content');
 
                 if (isImage) {
@@ -1920,36 +2058,54 @@
         }
 
         // --- Data Fetching & Stats ---
-        async function listObjects(fragment, options = {
-            render: true
-        }) {
+        async function listObjects(fragment, options = { render: true }) {
             if (!fragment) return;
             if (options.render) $('#browserSpinner').removeClass('hidden').addClass('flex');
+
+            // Clear list initially if this is a fresh load request
+            currentObjectList = [];
+
+            // Reset view initially (clear old items)
+            if (options.render) {
+                if ($('#nav-my-files').hasClass('active')) renderObjects(getActiveObjectList(), false);
+            }
+
             try {
-                let all = [];
                 let marker = null;
+                let isFirstPage = true;
+
                 while (true) {
                     let url = `${serverLink}/v4/fragment/object/metadata/${fragment}?show_all=true&limit=100`;
                     if (marker) url += `&marker=${encodeURIComponent(marker)}`;
-                    const res = await fetch(url, {
-                        headers: {
-                            authorization: `Bearer ${token}`
-                        }
-                    });
+
+                    const res = await fetch(url, { headers: { authorization: `Bearer ${token}` } });
                     if (!res.ok) break;
+
                     const page = await res.json();
-                    if (page.length > 0) {
-                        all.push(...page);
-                        marker = page[page.length - 1].key;
+
+                    const mappedPage = page.map(item => ({
+                        ...item,
+                        key: item.object_key, 
+                        size_bytes: item.total_size_bytes, 
+                        last_modified: { $date: { $numberLong: item.created_at * 1000 } } 
+                    }));
+
+                    if (mappedPage.length > 0) {
+                        currentObjectList.push(...mappedPage);
+                        marker = mappedPage[mappedPage.length - 1].key; 
+
+                        if (options.render) {
+                            updateStorageStats();
+                            if ($('#nav-my-files').hasClass('active')) {
+                                renderObjects(getActiveObjectList(), !isFirstPage);
+                            }
+                            else if ($('#nav-recent').hasClass('active')) showRecentFiles();
+                            else if ($('#nav-starred').hasClass('active')) showStarredFiles();
+                        }
+                        isFirstPage = false;
                     }
+
                     if (page.length < 100) break;
-                }
-                currentObjectList = all;
-                updateStorageStats();
-                if (options.render) {
-                    if ($('#nav-my-files').hasClass('active')) renderObjects(getActiveObjectList());
-                    else if ($('#nav-recent').hasClass('active')) showRecentFiles();
-                    else if ($('#nav-starred').hasClass('active')) showStarredFiles();
                 }
             } catch (e) {
                 console.error(e);
@@ -2038,8 +2194,20 @@
                         authorization: `Bearer ${token}`
                     }
                 });
-                if (res.ok) { }
-            } catch (e) { }
+                if (res.ok) {
+                    const data = await res.json();
+                    const used = data.capacity_used;
+                    
+                    // Update UI elements if they exist (dashboard might not be open)
+                    const pct = Math.min(100, (used / totalCapacity) * 100);
+                    $('#sidebar-gb-used').text(`${formatBytes(used)} of ${formatBytes(totalCapacity)}`);
+                    $('#sidebar-storage-percent').text(`${Math.round(pct)}%`);
+                    $('#sidebar-storage-bar').css('width', `${pct}%`);
+                    $('#storage-total-label').text(`${formatBytes(used)} / ${formatBytes(totalCapacity)}`);
+                }
+            } catch (e) {
+                console.error("Failed to fetch capacity usage", e);
+            }
         }
 
         // --- Helpers ---
@@ -2595,19 +2763,31 @@
             }
             append ? container.appendChild(el) : container.prepend(el);
         }
-        async function processUploadQueue() {
-            while (activeUploads < MAX_CONCURRENT_UPLOADS) {
-                const next = uploadQueue.find(i => !i.started && !i.completed && !i.failed);
-                if (!next) break;
-                activeUploads++;
-                next.started = true;
 
-                // Start the upload
-                startUpload(next).finally(() => {
-                    activeUploads--;
-                    currentUploadSpeed = 0;
-                    processUploadQueue();
-                });
+        let isProcessingQueue = false;
+        async function processUploadQueue() {
+            if (isProcessingQueue) return;
+            isProcessingQueue = true;
+            try {
+                while (activeUploads < MAX_CONCURRENT_UPLOADS) {
+                    const next = uploadQueue.find(i => !i.started && !i.completed && !i.failed);
+                    if (!next) break;
+                    activeUploads++;
+                    next.started = true;
+
+                    // UPDATED: Start upload
+                    startUpload(next).finally(() => {
+                        activeUploads--;
+                        // We do not reset global speed here anymore.
+                        processUploadQueue();
+                    });
+
+                    // Throttling Start (Auth Limit 2/s)
+                    // We pause 500ms between starting uploads to ensure we don't burst the auth/init limit
+                    await new Promise(r => setTimeout(r, 500));
+                }
+            } finally {
+                isProcessingQueue = false;
             }
         }
         async function startUpload(item) {
@@ -2617,7 +2797,6 @@
             const progBar = ui.querySelector('.progress-bar');
             const detailsText = ui.querySelector('.details-text');
 
-            // --- FIXED: Check Storage Capacity Before Starting ---
             const currentUsage = currentObjectList.reduce((acc, obj) => acc + Number(obj.size_bytes), 0);
             if (currentUsage + item.file.size > totalCapacity) {
                 statusText.textContent = "Storage Full";
@@ -2627,17 +2806,22 @@
                 showToast(`Not enough storage to upload ${item.file.name}`, 'error');
                 return;
             }
-            // ---------------------------------------------------
 
             const sessionKey = `upload-session-${item.file.name}-${item.file.size}-${item.file.lastModified}`;
+            item.sessionKey = sessionKey; // Explicitly attach for tracking
+
             let uploadedBytes = 0,
                 lastUploadedBytes = 0,
                 lastUpdate = Date.now();
+
+            // Initialize speed tracking for this item
+            item.currentSpeed = 0;
+
             try {
                 const fileSize = item.file.size;
                 const chunkSize = fileSize < 100 * MB ? 2 * MB : fileSize < 500 * MB ? 5 * MB : fileSize < 1024 * MB ? 8 * MB : 16 * MB;
                 const totalChunks = Math.ceil(fileSize / chunkSize);
-                let file_id, chunkQueue = Array.from({
+                let version_id, session_id, chunkQueue = Array.from({
                     length: totalChunks
                 }, (_, i) => i);
 
@@ -2645,15 +2829,16 @@
                 if (existing) {
                     const sess = JSON.parse(existing);
                     statusText.textContent = "Resuming...";
-                    const statusRes = await fetch(`${serverLink}/v4/fragment/object/upload/status/${sess.file_id}`, {
+                    const statusRes = await fetch(`${serverLink}/v4/fragment/object/upload/status/${sess.fragment}/${sess.version_id}?object_key=${encodeURIComponent(sess.objectKey)}`, {
                         headers: {
                             authorization: `Bearer ${token}`
                         }
                     });
                     if (statusRes.ok) {
                         const s = await statusRes.json();
-                        file_id = sess.file_id;
-                        const done = new Set(s.uploaded_chunks);
+                        version_id = sess.version_id;
+                        session_id = sess.session_id;
+                        const done = new Set(s.uploaded_parts); // Corrected property name from backend 'uploaded_parts'
                         chunkQueue = chunkQueue.filter(i => !done.has(i));
                         uploadedBytes = done.size * chunkSize;
                         if (uploadedBytes > fileSize) uploadedBytes = fileSize;
@@ -2663,7 +2848,7 @@
                     }
                 }
 
-                if (!file_id) {
+                if (!version_id) {
                     statusText.textContent = "Initializing...";
                     const init = await fetch(`${serverLink}/v4/fragment/object/upload/init/${item.fragment}/${item.objectKey}`, {
                         method: 'POST',
@@ -2673,15 +2858,17 @@
                         },
                         body: JSON.stringify({
                             content_type: item.file.type || 'application/octet-stream',
-                            total_size_bytes: fileSize,
-                            total_chunks: totalChunks
+                            total_size_bytes: fileSize
                         })
                     });
                     if (!init.ok) throw new Error();
                     const res = await init.json();
-                    file_id = res.file_id;
+                    version_id = res.version_id;
+                    session_id = res.session_id;
+                    
                     localStorage.setItem(sessionKey, JSON.stringify({
-                        file_id,
+                        version_id,
+                        session_id,
                         name: item.file.name,
                         size: fileSize,
                         lastModified: item.file.lastModified,
@@ -2693,18 +2880,22 @@
                 statusText.textContent = "Uploading...";
                 const buffer = [],
                     maxBuffer = 4,
-                    maxWorkers = 6;
+                    // UPDATED: maxWorkers increased to take advantage of HTTP/2 multiplexing
+                    maxWorkers = 24;
+
                 let hashingDone = false;
 
                 const producer = async () => {
                     for (const idx of chunkQueue) {
                         while (buffer.length >= maxBuffer) await new Promise(r => setTimeout(r, 50));
                         const blob = item.file.slice(idx * chunkSize, Math.min((idx + 1) * chunkSize, fileSize));
-                        const hashBuf = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer());
+                        // Backend calculates hash, client side hashing is good for verification but not mandatory if using HTTPS and TCP checksums
+                        // But let's keep it if we want to add headers later.
+                        // For now the backend doesn't require Digest header in your provided code
+                        
                         buffer.push({
                             index: idx,
-                            blob,
-                            hash: btoa(String.fromCharCode(...new Uint8Array(hashBuf)))
+                            blob
                         });
                     }
                     hashingDone = true;
@@ -2718,22 +2909,29 @@
                             continue;
                         }
                         try {
-                            await fetch(`${serverLink}/v4/fragment/object/upload/chunk/raw/${file_id}/${chunk.index}`, {
+                            // NEW API: PUT /v4/fragment/object/upload/chunk/{fragment}/{version_id}/{part_index}?object_key={key}
+                            const res = await fetch(`${serverLink}/v4/fragment/object/upload/chunk/${item.fragment}/${version_id}/${chunk.index}?object_key=${encodeURIComponent(item.objectKey)}`, {
                                 method: 'PUT',
                                 headers: {
                                     authorization: `Bearer ${token}`,
-                                    'Content-Type': 'application/octet-stream',
-                                    'Digest': `sha-256=${chunk.hash}`,
-                                    'Buffer': `memory-size=${chunkSize}`
+                                    'Content-Type': 'application/octet-stream'
                                 },
                                 body: chunk.blob,
                                 signal: item.controller.signal
                             });
+
+                            if (!res.ok) {
+                                throw new Error(`Server returned status ${res.status}`);
+                            }
+
                             uploadedBytes += chunk.blob.size;
                             const now = Date.now();
                             if (now - lastUpdate > 500) {
                                 const speed = (uploadedBytes - lastUploadedBytes) / ((now - lastUpdate) / 1000);
-                                currentUploadSpeed = speed; // Update global for graph
+
+                                // Store speed on item instead of global
+                                item.currentSpeed = speed;
+
                                 const eta = speed > 0 ? (fileSize - uploadedBytes) / speed : 0;
                                 progBar.style.width = `${Math.min(100, (uploadedBytes / fileSize) * 100)}%`;
                                 statusText.textContent = `${Math.round((uploadedBytes / fileSize) * 100)}%`;
@@ -2742,8 +2940,11 @@
                                 lastUploadedBytes = uploadedBytes;
                             }
                         } catch (e) {
+                            // Rate limit handling (Retry)
                             buffer.unshift(chunk);
-                            await new Promise(r => setTimeout(r, 1000));
+                            // Add slight jitter to prevent thundering herd
+                            const jitter = Math.random() * 500;
+                            await new Promise(r => setTimeout(r, 1000 + jitter));
                         }
                     }
                 };
@@ -2756,17 +2957,25 @@
                 });
 
                 statusText.textContent = "Finalizing...";
-                await fetch(`${serverLink}/v4/fragment/object/upload/finalize/${file_id}`, {
+                // NEW API: POST /v4/fragment/object/upload/finalize/{fragment}/{version_id}/{session_id}?object_key={key}
+                // BODY: JSON { content_type, total_size_bytes }
+                await fetch(`${serverLink}/v4/fragment/object/upload/finalize/${item.fragment}/${version_id}/${session_id}?object_key=${encodeURIComponent(item.objectKey)}`, {
                     method: 'POST',
                     headers: {
-                        authorization: `Bearer ${token}`
-                    }
+                        authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        content_type: item.file.type || 'application/octet-stream',
+                        total_size_bytes: fileSize
+                    })
                 });
                 statusText.textContent = "Complete";
                 statusText.className = "text-green-400 text-[10px]";
                 progBar.classList.replace('bg-blue-600', 'bg-green-500');
                 progBar.style.width = '100%';
                 item.completed = true;
+                item.currentSpeed = 0; // Reset speed on completion
                 localStorage.removeItem(sessionKey);
                 listObjects(activeFragment);
 
@@ -2775,6 +2984,7 @@
                 statusText.textContent = "Failed";
                 statusText.className = "text-red-400 text-[10px]";
                 item.failed = true;
+                item.currentSpeed = 0; // Reset speed on failure
                 detailsText.innerHTML = `<button class="text-blue-400 mr-2" onclick="retryUpload('${item.id}')">Retry</button><button class="text-red-400" onclick="cancelUpload('${item.id}')">Cancel</button>`;
             }
         }
@@ -2806,17 +3016,24 @@
                 const k = localStorage.key(i);
                 if (k.startsWith('upload-session-')) {
                     const d = JSON.parse(localStorage.getItem(k));
-                    if (!uploadQueue.some(u => u.sessionKey === k)) createUploadUI({
-                        id: `recovery-${k.replace(/[^a-zA-Z0-9]/g, '')}`,
-                        sessionKey: k,
-                        file: {
-                            name: d.name,
-                            size: d.size
-                        },
-                        isRecovery: true,
-                        status: 'interrupted',
-                        objectKey: d.objectKey
-                    }, true);
+
+                    // Generate ID deterministically
+                    const elId = `recovery-${k.replace(/[^a-zA-Z0-9]/g, '')}`;
+
+                    // CHECK: Ensure item is not already in queue (being uploaded) AND UI element doesn't already exist
+                    if (!uploadQueue.some(u => u.sessionKey === k) && !document.getElementById(elId)) {
+                        createUploadUI({
+                            id: elId,
+                            sessionKey: k,
+                            file: {
+                                name: d.name,
+                                size: d.size
+                            },
+                            isRecovery: true,
+                            status: 'interrupted',
+                            objectKey: d.objectKey
+                        }, true);
+                    }
                 }
             }
             if (document.querySelectorAll('#upload-items-container > div').length > 0) WindowManager.addTaskbarItem('uploads');
@@ -3084,7 +3301,8 @@
                             file: f,
                             fragment: d.fragment,
                             objectKey: d.objectKey,
-                            controller: new AbortController()
+                            controller: new AbortController(),
+                            sessionKey: sKey // Ensure sessionKey is tracked
                         };
                         uploadQueue.push(item);
                         createUploadUI(item);

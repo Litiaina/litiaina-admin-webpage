@@ -77,6 +77,16 @@
       background: #444;
       border-radius: 4px;
     }
+
+    /* Loading Overlay for Session Check */
+    #loadingOverlay {
+      position: fixed;
+      inset: 0;
+      background: #111418;
+      z-index: 100;
+      /* Removed display: flex here to allow Tailwind's 'hidden' class to work */
+      transition: opacity 0.5s ease-out;
+    }
   </style>
 </head>
 
@@ -86,8 +96,16 @@
   <div class="absolute inset-0 z-0 pointer-events-none" 
        style="background-image: url('images/n1-cloud-professional-wallpaper.jpg'); background-size: cover; opacity: 0.1;"></div>
 
+  <!-- Session Loading Overlay -->
+  <!-- Added flex classes here so they apply when 'hidden' is removed -->
+  <div id="loadingOverlay" class="hidden flex flex-col items-center justify-center">
+    <div class="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+    <h2 class="text-xl font-light tracking-widest text-white">RESTORING SESSION</h2>
+    <p class="text-xs text-gray-500 mt-2">Verifying credentials...</p>
+  </div>
+
   <!-- Login Container -->
-  <div class="w-full max-w-md p-6 relative z-10 fade-in-up">
+  <div class="w-full max-w-md p-6 relative z-10 fade-in-up" id="loginContainer">
     
     <!-- OS-Like User Profile Header -->
     <div class="text-center mb-8 flex flex-col items-center">
@@ -134,7 +152,8 @@
 
         <div class="flex justify-between items-center text-xs text-gray-400">
             <label class="flex items-center hover:text-gray-300 cursor-pointer">
-                <input type="checkbox" class="mr-2 rounded bg-[#111] border-[#333] text-blue-600 focus:ring-0"> Remember me
+                <!-- Added ID to checkbox -->
+                <input type="checkbox" id="rememberMe" class="mr-2 rounded bg-[#111] border-[#333] text-blue-600 focus:ring-0"> Remember me
             </label>
             <span id="forgotPassword" class="hover:text-blue-400 cursor-pointer transition-colors">Forgot password?</span>
         </div>
@@ -174,7 +193,7 @@
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', async function () {
       const serverLink = `https://api.litiaina.com`;
       const loginForm = document.getElementById('loginForm');
       const otpGroup = document.getElementById('otpGroup');
@@ -186,6 +205,9 @@
       const modalTitle = document.getElementById('modalTitle');
       const modalMessage = document.getElementById('modalMessage');
       const modalCloseBtn = document.getElementById('modalCloseBtn');
+      const loadingOverlay = document.getElementById('loadingOverlay');
+
+      // --- Helper Functions ---
 
       const setLoading = (isLoading) => {
         authBtn.disabled = isLoading;
@@ -203,7 +225,7 @@
         modalMessage.textContent = message;
         
         const icon = modalTitle.querySelector('i');
-        modalTitle.className = "text-lg font-medium mb-2 flex items-center gap-2"; // Reset
+        modalTitle.className = "text-lg font-medium mb-2 flex items-center gap-2"; 
         
         if (isError) {
             modalTitle.classList.add('text-red-400');
@@ -218,6 +240,60 @@
       const hideModal = () => {
         modalContainer.classList.add('hidden');
       };
+
+      // --- Remember Me Logic ---
+
+      const checkSession = async () => {
+        const token = localStorage.getItem("current-token");
+        const isRemembered = localStorage.getItem("remember-me");
+
+        // Only attempt to restore if we have a token AND the user checked "Remember Me"
+        if (token && isRemembered === "true") {
+            try {
+                // Show loading overlay
+                loadingOverlay.classList.remove('hidden');
+                
+                // Set a timeout to prevent infinite loading if the network hangs
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+
+                // Verify Token
+                const response = await fetch(`${serverLink}/auth/check`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+
+                const result = await response.json();
+
+                if (response.ok && result.valid === "true") {
+                    // Valid Token - Redirect
+                    // console.log("Session restored. Expires:", result.expiration);
+                    window.location.href = "n1";
+                } else {
+                    // Invalid Token
+                    throw new Error("Session expired");
+                }
+            } catch (error) {
+                console.warn("Auto-login failed:", error);
+                // Clear invalid session data
+                localStorage.removeItem("current-token");
+                localStorage.removeItem("remember-me");
+                // Hide overlay to show login form
+                loadingOverlay.classList.add('hidden');
+            }
+        }
+      };
+
+      // Run session check immediately
+      await checkSession();
+
+
+      // --- Event Listeners ---
 
       document.getElementById("signup").onclick = () => window.location.href = "signup";
 
@@ -237,6 +313,7 @@
         const email = document.getElementById('loginEmail').value.trim();
         const password = document.getElementById('loginPassword').value;
         const otp = otpInput.value.trim();
+        const rememberMe = document.getElementById('rememberMe').checked;
 
         if (!email || !password) {
           showModal("Input Error", "User identity and credential key are required.");
@@ -297,11 +374,19 @@
 
           const accountDetails = await accRes.json();
 
+          // Store Session Data
           localStorage.setItem("current-account-email", email);
           localStorage.setItem("current-token", token);
           localStorage.setItem("current-account-uid", accountDetails.uid);
           localStorage.setItem("current-account-name", accountDetails.name);
           localStorage.setItem("current-capacity", accountDetails.allocated_storage);
+
+          // Handle "Remember Me"
+          if (rememberMe) {
+            localStorage.setItem("remember-me", "true");
+          } else {
+            localStorage.removeItem("remember-me");
+          }
 
           showModal("Access Granted", "Initializing desktop environment...", false);
 

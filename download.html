@@ -302,7 +302,7 @@
     const metadata = await metadataRes.json();
     const totalSize = metadata.file_size;
 
-    const chunkSize = 1024 * 1024;
+    const chunkSize = 13 *1024 * 1024;
     const concurrency = 8;
     const queue = [];
     for (let offset = 0; offset < totalSize; offset += chunkSize) {

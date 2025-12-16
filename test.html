@@ -1,82 +1,343 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Helldivers Gameplay Video</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #0d0d0d;
-            color: #fff;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>N1 Cloud - Login</title>
+  
+  <!-- Tailwind & Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-        header {
-            background-color: #1a1a1a;
-            padding: 20px;
-            text-align: center;
-            border-bottom: 2px solid #333;
-        }
+  <style>
+    :root {
+      --bg-desktop: #1b2028;
+      --bg-window: #242424;
+      --border-color: #383838;
+      --accent-color: #3b82f6;
+      --text-primary: #e5e5e5;
+    }
 
-        header h1 {
-            margin: 0;
-            font-size: 2em;
-        }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at 50% 50%, #20252e 0%, #111418 100%);
+      background-size: cover;
+      color: var(--text-primary);
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-        main {
-            padding: 20px;
-            max-width: 1200px;
-            margin: auto;
-        }
+    /* Glass Card Style */
+    .login-card {
+      background-color: rgba(36, 36, 36, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
 
-        .video-container {
-            position: relative;
-            padding-bottom: 56.25%; /* 16:9 aspect ratio */
-            height: 0;
-            overflow: hidden;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.7);
-        }
+    /* Input Styling */
+    .n1-input {
+      background-color: #111;
+      border: 1px solid #333;
+      color: #fff;
+      transition: all 0.2s;
+    }
 
-        .video-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
+    .n1-input:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+      outline: none;
+    }
 
-        footer {
-            background-color: #1a1a1a;
-            text-align: center;
-            padding: 10px;
-            font-size: 0.9em;
-            color: #aaa;
-            margin-top: 30px;
-        }
-    </style>
+    /* Animation */
+    .fade-in-up {
+      animation: fadeInUp 0.5s ease-out forwards;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Loading Overlay */
+    #loadingOverlay {
+      position: fixed;
+      inset: 0;
+      background: #111418;
+      z-index: 100;
+      transition: opacity 0.5s ease-out;
+    }
+  </style>
 </head>
+
 <body>
-    <header>
-        <h1>Helldivers Gameplay</h1>
-        <p>Watch the gameplay footage below</p>
-    </header>
 
-    <main>
-        <div class="video-container">
-            <iframe 
-                src="https://litiaina.com/embedded_player?uid=3a6f9913-196c-430d-80f1-95343e556222&path=my-files/helldivers-gameplay-4.mkv&header=Helldivers 2 Gameplay&description=Episode 4 Season 1"
-                title="Custom HLS Video Player"
-                allow="fullscreen"
-                allowfullscreen>
-            </iframe>
+  <!-- Background Wallpaper Effect -->
+  <div class="absolute inset-0 z-0 pointer-events-none" 
+       style="background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop'); background-size: cover; opacity: 0.1;"></div>
+
+  <!-- Session Loading Overlay -->
+  <div id="loadingOverlay" class="hidden flex flex-col items-center justify-center">
+    <div class="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+    <h2 class="text-xl font-light tracking-widest text-white">RESTORING SESSION</h2>
+    <p class="text-xs text-gray-500 mt-2">Verifying credentials...</p>
+  </div>
+
+  <!-- Login Container -->
+  <div class="w-full max-w-md p-6 relative z-10 fade-in-up" id="loginContainer">
+    
+    <!-- OS-Like User Profile Header -->
+    <div class="text-center mb-8 flex flex-col items-center">
+      <div class="w-24 h-24 rounded-full bg-[#1f1f1f] border-2 border-[#383838] p-1 shadow-2xl mb-4 relative group">
+        <div class="w-full h-full rounded-full bg-[#111] flex items-center justify-center overflow-hidden relative">
+          <!-- Placeholder Icon -->
+          <i class="fa-solid fa-user-astronaut text-4xl text-gray-500"></i>
         </div>
-    </main>
+        <!-- Status Indicator -->
+        <div class="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#1f1f1f]"></div>
+      </div>
+      <h1 class="text-2xl font-light tracking-wide text-white">N1 Cloud</h1>
+      <p class="text-xs text-gray-500 mt-1 uppercase tracking-widest">Professional Environment</p>
+    </div>
 
-    <footer>
-        &copy; 2025 Helldivers Fan Page. All Rights Reserved.
-    </footer>
+    <div class="login-card rounded-xl p-8">
+      <form id="loginForm" class="space-y-5">
+        
+        <!-- Email Input -->
+        <div class="relative group">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-user text-gray-500 group-focus-within:text-blue-500 transition-colors"></i>
+          </div>
+          <input type="email" id="loginEmail" placeholder="Username / Email" required
+            class="n1-input w-full pl-10 pr-4 py-3 rounded-lg text-sm placeholder-gray-600" />
+        </div>
+
+        <!-- Password Input -->
+        <div class="relative group">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-lock text-gray-500 group-focus-within:text-blue-500 transition-colors"></i>
+          </div>
+          <input type="password" id="loginPassword" placeholder="Password" required
+            class="n1-input w-full pl-10 pr-4 py-3 rounded-lg text-sm placeholder-gray-600" />
+        </div>
+
+        <!-- OTP Group (Hidden by default) -->
+        <div class="relative hidden" id="otpGroup">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-shield-alt text-gray-500 transition-colors"></i>
+          </div>
+          <input type="text" id="loginOtp" placeholder="Authentication Code (2FA)"
+            class="n1-input w-full pl-10 pr-4 py-3 rounded-lg text-sm placeholder-gray-600" />
+        </div>
+
+        <div class="flex justify-between items-center text-xs text-gray-400">
+            <label class="flex items-center hover:text-gray-300 cursor-pointer">
+                <input type="checkbox" id="rememberMe" class="mr-2 rounded bg-[#111] border-[#333] text-blue-600 focus:ring-0"> Remember me
+            </label>
+            <span id="forgotPassword" class="hover:text-blue-400 cursor-pointer transition-colors">Forgot password?</span>
+        </div>
+
+        <!-- Action Button -->
+        <button type="submit" id="authBtn"
+          class="w-full flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
+          <span id="btnText">SIGN IN</span>
+          <i id="btnSpinner" class="fas fa-circle-notch fa-spin ml-2 hidden"></i>
+        </button>
+
+        <div class="text-center mt-6 pt-4 border-t border-[#333]">
+          <p class="text-xs text-gray-500">Don't have an account?</p>
+          <button type="button" id="signup" class="text-sm font-medium text-gray-300 hover:text-white mt-2 flex items-center justify-center w-full gap-2 transition-colors">
+            Create System Account <i class="fas fa-arrow-right text-xs"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+    
+    <div class="text-center mt-8 text-[10px] text-gray-600 font-mono">
+        SYSTEM VERSION 0.0.1 • SECURE CONNECTION
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modalContainer" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div id="modal" class="bg-[#242424] border border-[#383838] rounded-lg shadow-2xl p-6 max-w-sm w-full transform transition-all scale-100">
+      <h3 id="modalTitle" class="text-lg font-medium text-white mb-2 flex items-center gap-2">
+        <i class="fas fa-info-circle"></i> <span>Notification</span>
+      </h3>
+      <p id="modalMessage" class="text-sm text-gray-400 mb-6 leading-relaxed">Message content.</p>
+      <button id="modalCloseBtn" class="w-full bg-[#333] hover:bg-[#444] text-white font-medium py-2 px-4 rounded transition duration-200 text-sm border border-[#444]">
+        DISMISS
+      </button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async function () {
+      const serverLink = `https://api.litiaina.com`;
+      const loginForm = document.getElementById('loginForm');
+      const otpGroup = document.getElementById('otpGroup');
+      const otpInput = document.getElementById('loginOtp');
+      const authBtn = document.getElementById('authBtn');
+      const btnText = document.getElementById('btnText');
+      const btnSpinner = document.getElementById('btnSpinner');
+      const modalContainer = document.getElementById('modalContainer');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalMessage = document.getElementById('modalMessage');
+      const modalCloseBtn = document.getElementById('modalCloseBtn');
+      const loadingOverlay = document.getElementById('loadingOverlay');
+
+      const setLoading = (isLoading) => {
+        authBtn.disabled = isLoading;
+        if (isLoading) {
+          btnText.textContent = 'AUTHENTICATING...';
+          btnSpinner.classList.remove('hidden');
+        } else {
+          btnText.textContent = 'SIGN IN';
+          btnSpinner.classList.add('hidden');
+        }
+      };
+
+      const showModal = (title, message, isError = true) => {
+        modalTitle.querySelector('span').textContent = title;
+        modalMessage.textContent = message;
+        const icon = modalTitle.querySelector('i');
+        modalTitle.className = "text-lg font-medium mb-2 flex items-center gap-2"; 
+        
+        if (isError) {
+            modalTitle.classList.add('text-red-400');
+            icon.className = "fas fa-exclamation-triangle";
+        } else {
+            modalTitle.classList.add('text-green-400');
+            icon.className = "fas fa-check-circle";
+        }
+        modalContainer.classList.remove('hidden');
+      };
+
+      const hideModal = () => {
+        modalContainer.classList.add('hidden');
+      };
+
+      // Auto-Login Check
+      const checkSession = async () => {
+        const token = localStorage.getItem("current-token");
+        const isRemembered = localStorage.getItem("remember-me");
+
+        if (token && isRemembered === "true") {
+            try {
+                loadingOverlay.classList.remove('hidden');
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+                const response = await fetch(`${serverLink}/auth/check`, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                const result = await response.json();
+
+                if (response.ok && result.valid === "true") {
+                    // Redirect to the Storage Client
+                    window.location.href = "storage_client.html";
+                } else {
+                    throw new Error("Session expired");
+                }
+            } catch (error) {
+                console.warn("Auto-login failed:", error);
+                localStorage.removeItem("current-token");
+                localStorage.removeItem("remember-me");
+                loadingOverlay.classList.add('hidden');
+            }
+        }
+      };
+
+      await checkSession();
+
+      modalCloseBtn.addEventListener('click', hideModal);
+      
+      loginForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        setLoading(true);
+
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        const otp = otpInput.value.trim();
+        const rememberMe = document.getElementById('rememberMe').checked;
+
+        if (!email || !password) {
+          showModal("Input Error", "User identity and credential key are required.");
+          setLoading(false);
+          return;
+        }
+
+        try {
+          // Login Request
+          const loginRes = await fetch(`${serverLink}/auth/login`, {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password, otp: otp || "" })
+          });
+
+          const loginResult = await loginRes.json();
+
+          if (!loginRes.ok || !loginResult.response) {
+            // If OTP needed logic could go here, for now assumes direct failure or success
+            throw new Error(loginResult.message || "Invalid credentials provided.");
+          }
+
+          const token = loginResult.token;
+          
+          // Get Account Details
+          const accRes = await fetch(`${serverLink}/auth/account`, {
+            method: 'POST',
+            headers: {
+              "Content-Type": "application/json",
+              "authorization": `Bearer ${token}`,
+            },
+            body: JSON.stringify({ email })
+          });
+
+          if (!accRes.ok) throw new Error("Failed to retrieve user profile.");
+
+          const accountDetails = await accRes.json();
+
+          // SAVE TO LOCAL STORAGE for storage_client.html to pick up
+          localStorage.setItem("current-account-email", email);
+          localStorage.setItem("current-token", token);
+          localStorage.setItem("current-account-uid", accountDetails.uid);
+          localStorage.setItem("current-account-name", accountDetails.name);
+          localStorage.setItem("current-capacity", accountDetails.allocated_storage);
+
+          if (rememberMe) {
+            localStorage.setItem("remember-me", "true");
+          } else {
+            localStorage.removeItem("remember-me");
+          }
+
+          showModal("Access Granted", "Initializing desktop environment...", false);
+
+          setTimeout(() => {
+            // REDIRECT TO CLIENT
+            window.location.href = "N1.html";
+          }, 1500);
+
+        } catch (err) {
+          showModal("Access Denied", err.message);
+        } finally {
+          setLoading(false);
+        }
+      });
+    });
+  </script>
 </body>
 </html>
