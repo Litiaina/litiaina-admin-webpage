@@ -11,9 +11,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Fonts & Icons -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Libraries -->
@@ -30,43 +28,34 @@
 
     <style>
         :root {
-            /* --- Synology-inspired Dark Theme --- */
-            --bg-desktop: #1b2028;
-            --bg-window: #242424;
-            --bg-sidebar: #1f1f1f;
-            --header-bg: #2d2d2d;
-            --border-color: #383838;
-            --accent-color: #3b82f6;
-            --accent-hover: #2563eb;
-            --text-primary: #e5e5e5;
-            --text-secondary: #a3a3a3;
-            --text-muted: #6b7280;
-            --item-hover: rgba(255, 255, 255, 0.04);
-            --item-active: rgba(59, 130, 246, 0.15);
-            --selection-color: rgba(59, 130, 246, 0.3);
-            --selection-border: #3b82f6;
-        }
-
-        .status-pending {
-            opacity: 0.6;
-        }
-
-        .item-tile {
-            height: 155px;
-        }
-
-        .item-list {
-            height: 42px;
+            /* Windows 11 Dark Theme Inspired */
+            --win-bg-desktop: #202020;
+            --win-glass: rgba(32, 32, 32, 0.75);
+            --win-glass-border: rgba(255, 255, 255, 0.08);
+            --win-header-bg: rgba(32, 32, 32, 0.95);
+            --win-sidebar: #191919;
+            --win-content: #1e1e1e;
+            --accent-color: #60cdff;
+            /* Windows Blue */
+            --accent-hover: #4cc2ff;
+            --text-primary: #ffffff;
+            --text-secondary: #dcdcdc;
+            --text-muted: #9e9e9e;
+            --item-hover: rgba(255, 255, 255, 0.06);
+            --item-active: rgba(255, 255, 255, 0.08);
+            --selection-bg: rgba(96, 205, 255, 0.15);
+            --selection-border: rgba(96, 205, 255, 0.4);
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-desktop);
+            font-family: 'Segoe UI', 'Inter', sans-serif;
+            background-color: var(--win-bg-desktop);
             overflow: hidden;
             height: 100vh;
             width: 100vw;
             user-select: none;
             color: var(--text-primary);
+            cursor: default;
         }
 
         /* --- Desktop --- */
@@ -74,162 +63,179 @@
             position: relative;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at 50% 50%, #20252e 0%, #111418 100%);
+            background: url("../images/n1-cloud-professional-wallpaper.jpg") no-repeat center center fixed;
             background-size: cover;
-            background-image: url("../images/n1-cloud-professional-wallpaper.jpg")
         }
 
-        /* --- Bottom Taskbar --- */
+        /* --- Taskbar (Windows 11 Style) --- */
         #taskbar {
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
             height: 48px;
-            background: rgba(30, 30, 30, 0.75);
-            backdrop-filter: blur(12px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
+            background: rgba(32, 32, 32, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--win-glass-border);
+            display: grid;
+            grid-template-columns: 1fr auto 1fr; /* Center align hack */
             align-items: center;
             padding: 0 12px;
-            z-index: 1000;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+            z-index: 5000;
         }
 
-        .start-btn {
+        /* Start Button Area */
+        .taskbar-start {
             display: flex;
             align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background 0.2s;
-            color: var(--text-primary);
-            margin-right: 8px;
         }
 
-        .start-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
+        /* Center Apps */
         #taskbar-apps {
             display: flex;
-            gap: 4px;
-            margin-left: 4px;
-            flex: 1;
+            gap: 6px;
             height: 100%;
             align-items: center;
+            justify-content: center;
+        }
+
+        /* System Tray */
+        .taskbar-tray {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 12px;
         }
 
         .task-item {
-            height: 38px;
-            padding: 0 12px;
-            background: transparent;
-            border-radius: 4px;
-            font-size: 12px;
-            color: var(--text-secondary);
-            cursor: pointer;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            border-radius: 4px;
             transition: all 0.2s;
-            border-bottom: 2px solid transparent;
-            max-width: 160px;
+            position: relative;
+            color: var(--text-secondary);
+            cursor: pointer;
         }
-
+        
         .task-item:hover {
-            background: rgba(255, 255, 255, 0.08);
-            color: var(--text-primary);
+            background-color: rgba(255, 255, 255, 0.1);
         }
 
         .task-item.active {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-primary);
-            border-bottom: 2px solid var(--accent-color);
+            background-color: rgba(255, 255, 255, 0.08);
         }
 
+        .task-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            width: 16px;
+            height: 3px;
+            background: var(--accent-color);
+            border-radius: 2px;
+        }
+
+        /* Hide text in taskbar for Windows 11 look, show only icon */
         .task-item-text {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            display: none; 
+        }
+
+        .task-item i {
+            font-size: 18px;
+        }
+
+        /* Start Button */
+        .start-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .start-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .start-btn.active {
+             background-color: rgba(255, 255, 255, 0.15);
         }
 
         /* --- Desktop Icons --- */
         #desktop-icons {
             position: absolute;
-            top: 20px;
-            left: 20px;
+            top: 10px;
+            left: 10px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 4px;
             z-index: 10;
         }
 
         .desktop-icon {
-            width: 96px;
+            width: 86px;
+            padding: 8px 4px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            border-radius: 2px;
             cursor: pointer;
-            padding: 10px 4px;
-            border-radius: 8px;
-            transition: background 0.2s, transform 0.1s;
-            text-align: center;
-            background-color: rgba(30, 30, 30, 0.45);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid transparent;
+            transition: background 0.1s;
         }
 
         .desktop-icon:hover {
-            background-color: rgba(60, 60, 60, 0.6);
-            border-color: rgba(255, 255, 255, 0.2);
-            transform: translateY(-1px);
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.05);
         }
 
-        .desktop-icon:active {
-            transform: translateY(1px);
+        .desktop-icon.selected {
+            background-color: rgba(255, 255, 255, 0.15);
         }
 
         .desktop-icon-img {
-            font-size: 32px;
-            margin-bottom: 8px;
-            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.4));
+            font-size: 36px;
+            margin-bottom: 6px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
         }
 
         .desktop-icon-label {
-            color: #e5e5e5;
-            font-size: 11px;
-            font-weight: 500;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            color: white;
+            font-size: 12px;
+            text-align: center;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
             line-height: 1.3;
         }
 
-        /* --- Windows --- */
+        /* --- Windows Structure --- */
         #windows-container {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 48px;
+            inset: 0;
+            bottom: 48px; /* Above taskbar */
             z-index: 50;
             pointer-events: none;
         }
 
         .window {
             position: absolute;
-            background-color: var(--bg-window);
-            border-radius: 6px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            background-color: var(--win-content);
+            border-radius: 8px;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.2), 0 14px 28px rgba(0,0,0,0.4), 0 10px 10px rgba(0,0,0,0.3);
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            min-width: 300px;
+            min-width: 320px;
             min-height: 200px;
             opacity: 0;
-            transform: scale(0.98);
-            transition: opacity 0.15s, transform 0.15s;
+            transform: scale(0.95);
+            transition: opacity 0.15s ease-out, transform 0.15s cubic-bezier(0.1, 0.9, 0.2, 1);
             pointer-events: auto;
         }
 
@@ -238,324 +244,279 @@
             transform: scale(1);
         }
 
+        .window.maximized {
+            border-radius: 0;
+            border: none;
+        }
+
+        /* Window Header (Title Bar) */
         .window-header {
-            height: 36px;
-            background-color: var(--header-bg);
-            border-bottom: 1px solid var(--border-color);
+            height: 38px;
+            background-color: var(--win-header-bg);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 10px;
-            cursor: move;
+            padding-left: 12px;
+            cursor: default; /* Windows doesn't show drag pointer usually */
+            user-select: none;
             flex-shrink: 0;
         }
-
+        
         .window-title {
             font-size: 12px;
-            font-weight: 600;
             color: var(--text-primary);
             display: flex;
             align-items: center;
-            gap: 8px;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            max-width: 80%;
+            gap: 10px;
+            font-weight: 400;
         }
 
         .window-controls {
             display: flex;
-            gap: 8px;
+            height: 100%;
         }
 
-        .win-btn {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            cursor: pointer;
+        .win-control-btn {
+            width: 46px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: var(--text-primary);
+            transition: background 0.1s;
+            cursor: default;
         }
 
-        .win-close {
-            background: #ff5f56;
+        .win-control-btn:hover {
+            background-color: rgba(255, 255, 255, 0.06);
         }
 
-        .win-min {
-            background: #ffbd2e;
-        }
-
-        .win-max {
-            background: #27c93f;
+        .win-control-btn.close-btn:hover {
+            background-color: #e81123;
+            color: white;
         }
 
         .window-body {
             flex: 1;
             display: flex;
             overflow: hidden;
-            background: var(--bg-window);
+            background: var(--win-content);
             position: relative;
         }
 
+        /* Sidebar */
         .window-sidebar {
-            width: 200px;
-            background-color: var(--bg-sidebar);
-            border-right: 1px solid var(--border-color);
-            padding: 10px 0;
+            width: 220px;
+            background-color: var(--win-sidebar);
+            padding: 16px 6px;
             display: flex;
             flex-direction: column;
             gap: 2px;
         }
 
         .nav-item {
-            padding: 6px 16px;
+            padding: 8px 12px;
+            border-radius: 4px;
             color: var(--text-secondary);
             font-size: 13px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             transition: all 0.1s;
-            border-left: 3px solid transparent;
         }
 
         .nav-item:hover {
-            background: var(--item-hover);
-            color: var(--text-primary);
+            background-color: var(--item-hover);
         }
 
         .nav-item.active {
-            background: var(--item-active);
+            background-color: var(--item-active);
             color: var(--accent-color);
-            border-left-color: var(--accent-color);
-            font-weight: 500;
+        }
+        
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 4px;
+            height: 16px;
+            width: 3px;
+            border-radius: 2px;
+            background-color: var(--accent-color);
         }
 
+        /* Explorer Content */
         .window-content {
             flex: 1;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            background-color: #191919;
         }
 
-        .toolbar {
-            height: 40px;
-            border-bottom: 1px solid var(--border-color);
+        /* Toolbar/Address Bar Area */
+        .explorer-toolbar {
+            height: 48px;
+            border-bottom: 1px solid var(--win-glass-border);
             display: flex;
             align-items: center;
-            padding: 0 10px;
-            gap: 10px;
-            background: var(--bg-window);
+            padding: 0 16px;
+            gap: 12px;
+            background: var(--win-content);
         }
 
         .tool-btn {
-            padding: 4px 10px;
+            padding: 6px 12px;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 13px;
             color: var(--text-primary);
-            background: #333;
-            border: 1px solid #444;
+            background: transparent;
+            border: 1px solid transparent;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             transition: background 0.1s;
         }
 
         .tool-btn:hover {
-            background: #444;
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(255,255,255,0.08);
         }
-
+        
         .tool-btn.primary {
-            background: var(--accent-color);
-            border-color: var(--accent-color);
-            color: white;
+            background-color: rgba(96, 205, 255, 0.1);
+            color: var(--accent-color);
         }
 
-        .tool-btn.primary:hover {
-            background: var(--accent-hover);
+        .address-bar {
+            flex: 1;
+            background: #252525;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
         }
 
         .breadcrumb {
             display: flex;
             align-items: center;
-            font-size: 13px;
-            color: var(--text-muted);
-            padding: 0 8px;
+            gap: 6px;
+        }
+        
+        .breadcrumb-segment {
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 2px;
+        }
+        
+        .breadcrumb-segment:hover {
+            background: rgba(255,255,255,0.05);
         }
 
+        /* Main View */
         #browser {
             flex: 1;
             overflow-y: auto;
-            padding: 12px;
+            padding: 16px;
             position: relative;
-            transition: background-color 0.2s, border-color 0.2s;
-            outline: none;
         }
 
-        #browser.drag-active {
-            background-color: rgba(59, 130, 246, 0.1) !important;
-            border: 2px dashed #3b82f6 !important;
-        }
-
+        /* Grid/List Items */
         .file-item {
             border: 1px solid transparent;
             border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.1s;
-            user-select: none;
+            cursor: default;
+            transition: background 0.05s;
         }
 
         .file-item:hover {
-            background: var(--item-hover);
-            border-color: rgba(255, 255, 255, 0.1);
+            background-color: var(--item-hover);
         }
 
-        /* Selection Styles */
         .file-item.selected {
-            background-color: var(--selection-color) !important;
-            border-color: var(--selection-border) !important;
-            box-shadow: inset 0 0 0 1px var(--selection-border);
+            background-color: var(--selection-bg) !important;
+            border-color: transparent !important; /* Windows uses simpler selection */
+        }
+        
+        .file-item.selected:hover {
+            background-color: rgba(96, 205, 255, 0.2) !important;
         }
 
-        .file-item.selected .desktop-icon-label,
-        .file-item.selected .text-gray-300,
-        .file-item.selected .text-gray-500 {
-            color: #fff !important;
+        .item-tile {
+            height: 160px;
         }
 
-        /* Selection Box (Marquee) */
+        /* Selection Marquee */
         #selection-marquee {
             position: absolute;
             border: 1px solid var(--accent-color);
-            background-color: rgba(59, 130, 246, 0.2);
+            background-color: rgba(96, 205, 255, 0.2);
             z-index: 9999;
             pointer-events: none;
             display: none;
         }
 
-        /* Resource Monitor */
-        .res-sidebar {
-            width: 160px;
-            background: var(--bg-sidebar);
-            border-right: 1px solid var(--border-color);
-            padding: 10px;
-        }
-
-        .res-tab {
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-bottom: 2px;
-        }
-
-        .res-tab:hover {
-            background: var(--item-hover);
-            color: var(--text-primary);
-        }
-
-        .res-tab.active {
-            background: var(--item-active);
-            color: var(--accent-color);
-            font-weight: 600;
-        }
-
-        .res-content {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .res-card {
-            background: #2a2a2a;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-
-        .res-label {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-
-        .res-val {
-            font-size: 24px;
-            font-weight: 300;
-            color: var(--text-primary);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid #333;
-        }
-
-        .stat-row:last-child {
-            border-bottom: none;
-        }
-
-        .stat-icon {
-            width: 24px;
-            text-align: center;
-            margin-right: 8px;
-        }
-
+        /* Scrollbars */
         .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
         }
-
         .custom-scrollbar::-webkit-scrollbar-thumb {
             background: #444;
-            border-radius: 4px;
+            border-radius: 5px;
+            border: 2px solid transparent;
+            background-clip: content-box;
         }
-
         .custom-scrollbar::-webkit-scrollbar-track {
             background: transparent;
         }
-
-        .custom-scrollbar::-webkit-scrollbar-corner {
-            background: transparent;
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background-color: #666;
         }
 
+        /* Context Menu */
         #contextMenu {
-            background: #2d2d2d;
-            border: 1px solid #404040;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-            z-index: 5000;
+            background: rgba(40, 40, 40, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+            padding: 4px;
+            z-index: 6000;
         }
 
         .ctx-item {
-            padding: 6px 16px;
-            cursor: pointer;
+            padding: 8px 12px;
+            cursor: default;
             color: var(--text-primary);
             font-size: 13px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
+            border-radius: 4px;
         }
 
         .ctx-item:hover {
-            background: var(--accent-color);
-            color: white;
+            background: rgba(255,255,255,0.08);
         }
 
         .ctx-div {
-            border-top: 1px solid #404040;
-            margin: 4px 0;
+            height: 1px;
+            background: rgba(255,255,255,0.08);
+            margin: 4px 6px;
         }
 
+        /* Boot Screen */
         #boot-screen {
             position: fixed;
             inset: 0;
-            background: #111;
+            background: #000;
             z-index: 9999;
             display: flex;
             flex-direction: column;
@@ -564,18 +525,39 @@
             transition: opacity 0.6s;
         }
 
+        /* Modals */
         .modal-backdrop {
-            background-color: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(2px);
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+        
+        .win-modal {
+            background: #2b2b2b;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
         }
 
-        .zoom-controls {
-            display: flex;
-            gap: 2px;
-            background: #1f1f1f;
-            border: 1px solid #383838;
-            border-radius: 4px;
-            padding: 2px;
+        /* Resource Monitor Specifics */
+        .res-card {
+            background: #252525;
+            border: 1px solid #333;
+            border-radius: 6px;
+        }
+
+        /* Start Menu Styles */
+        #start-menu {
+            transition: all 0.2s cubic-bezier(0.1, 0.9, 0.2, 1);
+            transform-origin: bottom center;
+        }
+        #start-menu.hidden {
+            display: none !important;
+            opacity: 0;
+            transform: translateY(10px) scale(0.95);
+        }
+        #start-menu:not(.hidden) {
+            display: flex !important;
+            opacity: 1;
+            transform: translateY(0) scale(1);
         }
     </style>
 </head>
@@ -583,10 +565,13 @@
 <body class="antialiased text-gray-200" oncontextmenu="return false;">
 
     <!-- Boot Screen -->
-    <div id="boot-screen" class="flex flex-col items-center justify-center">
-        <img src="../images/litiaina_icon_48x48.png" alt="logo" class="w-16 h-16 rounded-lg mb-4" />
-        <h1 class="text-lg font-medium tracking-wide text-gray-300">N1 Cloud</h1>
-        <p class="text-[10px] text-gray-600 mt-2 font-mono">ENGINE VERSION 0.0.4 • LOADING SHELL</p>
+    <div id="boot-screen">
+        <div class="animate-pulse flex flex-col items-center">
+            <img src="../images/litiaina_icon_48x48.png" alt="logo" class="w-20 h-20 mb-6" />
+            <div class="h-1 w-32 bg-gray-800 rounded-full overflow-hidden">
+                <div class="h-full bg-blue-500 w-1/2 animate-[slide_1.5s_infinite_linear]"></div>
+            </div>
+        </div>
     </div>
 
     <!-- Selection Marquee -->
@@ -596,8 +581,16 @@
         <!-- Desktop Icons -->
         <div id="desktop-icons">
             <div class="desktop-icon" onclick="WindowManager.open('file-explorer')">
-                <div class="desktop-icon-img text-blue-500"><i class="fas fa-folder-tree"></i></div>
-                <div class="desktop-icon-label">File Station</div>
+                <div class="desktop-icon-img text-yellow-400"><i class="fas fa-folder"></i></div>
+                <div class="desktop-icon-label">File Explorer</div>
+            </div>
+            <div class="desktop-icon" onclick="WindowManager.open('notepad')">
+                <div class="desktop-icon-img text-white"><i class="fas fa-sticky-note"></i></div>
+                <div class="desktop-icon-label">Notepad</div>
+            </div>
+            <div class="desktop-icon" onclick="WindowManager.open('calendar')">
+                <div class="desktop-icon-img text-blue-400"><i class="fas fa-calendar-alt"></i></div>
+                <div class="desktop-icon-label">Calendar</div>
             </div>
             <div class="desktop-icon" onclick="WindowManager.open('dashboard')">
                 <div class="desktop-icon-img text-green-500"><i class="fas fa-chart-line"></i></div>
@@ -609,20 +602,70 @@
             </div>
         </div>
 
+        <!-- Start Menu -->
+        <div id="start-menu" class="hidden absolute bottom-14 left-0 right-0 mx-auto w-[600px] h-[400px] bg-[#202020]/95 backdrop-blur-xl border border-[#333] rounded-lg shadow-2xl z-[4999] flex flex-col overflow-hidden">
+            <div class="p-6 bg-gradient-to-b from-[#333] to-[#202020] border-b border-white/5">
+                <input type="text" placeholder="Type here to search" class="w-full bg-[#1e1e1e] text-sm text-white px-4 py-2 rounded border border-[#444] focus:border-blue-500 outline-none">
+            </div>
+            <div class="flex-1 p-6 grid grid-cols-2 gap-4 overflow-y-auto custom-scrollbar">
+                 <div>
+                    <div class="text-xs font-semibold text-gray-500 mb-2 uppercase">Pinned</div>
+                    <div class="grid grid-cols-4 gap-2">
+                         <div class="flex flex-col items-center p-2 hover:bg-white/5 rounded cursor-pointer" onclick="WindowManager.open('file-explorer'); StartMenu.toggle();">
+                             <div class="w-8 h-8 bg-yellow-400/20 rounded flex items-center justify-center text-yellow-400 mb-1"><i class="fas fa-folder"></i></div>
+                             <span class="text-[10px]">Explorer</span>
+                         </div>
+                         <div class="flex flex-col items-center p-2 hover:bg-white/5 rounded cursor-pointer" onclick="WindowManager.open('notepad'); StartMenu.toggle();">
+                             <div class="w-8 h-8 bg-white/10 rounded flex items-center justify-center text-white mb-1"><i class="fas fa-sticky-note"></i></div>
+                             <span class="text-[10px]">Notepad</span>
+                         </div>
+                         <div class="flex flex-col items-center p-2 hover:bg-white/5 rounded cursor-pointer" onclick="WindowManager.open('calendar'); StartMenu.toggle();">
+                             <div class="w-8 h-8 bg-blue-500/20 rounded flex items-center justify-center text-blue-400 mb-1"><i class="fas fa-calendar-alt"></i></div>
+                             <span class="text-[10px]">Calendar</span>
+                         </div>
+                         <div class="flex flex-col items-center p-2 hover:bg-white/5 rounded cursor-pointer" onclick="WindowManager.open('dashboard'); StartMenu.toggle();">
+                             <div class="w-8 h-8 bg-green-500/20 rounded flex items-center justify-center text-green-500 mb-1"><i class="fas fa-chart-line"></i></div>
+                             <span class="text-[10px]">Monitor</span>
+                         </div>
+                    </div>
+                 </div>
+            </div>
+            <div class="h-14 bg-[#181818] border-t border-[#333] flex items-center justify-between px-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-xs font-bold">U</div>
+                    <div class="text-xs">
+                        <div class="font-semibold text-white" id="start-menu-username">User</div>
+                    </div>
+                </div>
+                <button onclick="App.logout()" class="p-2 hover:bg-[#333] rounded text-red-400 hover:text-red-300 transition-colors" title="Sign out">
+                    <i class="fas fa-power-off"></i>
+                </button>
+            </div>
+        </div>
+
         <!-- Taskbar -->
         <div id="taskbar">
-            <div class="start-btn" id="start-btn"><i class="fas fa-th text-lg"></i></div>
-            <div id="taskbar-apps"></div>
-            <div class="ml-auto flex items-center gap-4 text-xs font-mono text-gray-400">
-                <div class="cursor-pointer hover:text-white flex items-center gap-2" title="Upload Status"
-                    onclick="WindowManager.open('uploads')">
-                    <i class="fas fa-cloud-upload-alt"></i>
+            <!-- Left Spacer -->
+             <div></div>
+
+            <!-- Center Apps -->
+            <div id="taskbar-apps">
+                <div class="start-btn" id="start-btn" title="Start" onclick="StartMenu.toggle()">
+                    <img src="../images/litiaina_icon_48x48.png" alt="Start" class="w-6 h-6">
                 </div>
-                <div id="clock">12:00 PM</div>
-                <div class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white cursor-pointer hover:bg-blue-500"
-                    id="user-profile-btn" title="Logout">
-                    <i class="fas fa-power-off text-[10px]"></i>
+                <!-- Dynamic Apps go here -->
+            </div>
+
+            <!-- Right Tray -->
+            <div class="taskbar-tray">
+                <div class="cursor-pointer hover:bg-white/10 p-2 rounded" title="Upload Status" onclick="WindowManager.open('uploads')">
+                    <i class="fas fa-cloud-arrow-up text-xs"></i>
                 </div>
+                <div class="flex flex-col items-end mr-2">
+                    <div id="clock" class="text-xs text-white font-medium">12:00 PM</div>
+                    <div class="text-[10px] text-gray-400">12/17/2025</div>
+                </div>
+                <div class="w-1 bg-gray-500 h-full opacity-0"></div> <!-- Show Desktop Area -->
             </div>
         </div>
 
@@ -630,220 +673,179 @@
         <div id="windows-container">
 
             <!-- 1. FILE EXPLORER -->
-            <div id="win-file-explorer" class="window"
-                style="width: 1000px; height: 650px; top: 60px; left: 100px; display: none;">
+            <div id="win-file-explorer" class="window" style="width: 1000px; height: 650px; top: 60px; left: 100px; display: none;">
                 <div class="window-header">
-                    <div class="window-title"><i class="fas fa-folder-tree text-blue-500"></i> File Station</div>
+                    <div class="window-title">
+                        <img src="../images/litiaina_icon_48x48.png" class="w-4 h-4 opacity-70">
+                        File Explorer
+                    </div>
                     <div class="window-controls">
-                        <div class="win-btn win-min" onclick="WindowManager.minimize('file-explorer')"></div>
-                        <div class="win-btn win-max" onclick="WindowManager.maximize('file-explorer')"></div>
-                        <div class="win-btn win-close" onclick="WindowManager.close('file-explorer')"></div>
+                        <div class="win-control-btn" onclick="WindowManager.minimize('file-explorer')"><i class="fas fa-minus"></i></div>
+                        <div class="win-control-btn" onclick="WindowManager.maximize('file-explorer')"><i class="far fa-square"></i></div>
+                        <div class="win-control-btn close-btn" onclick="WindowManager.close('file-explorer')"><i class="fas fa-times"></i></div>
                     </div>
                 </div>
+                
+                <!-- New Ribbon/Toolbar for File Explorer -->
+                <div class="explorer-toolbar">
+                     <div class="flex items-center gap-2 text-gray-400">
+                        <button class="p-1 hover:bg-white/10 rounded disabled:opacity-30" onclick="navigateBack()" id="back-btn"><i class="fas fa-arrow-left"></i></button>
+                        <button class="p-1 hover:bg-white/10 rounded" onclick="listObjects(activeFragment)"><i class="fas fa-rotate-right"></i></button>
+                     </div>
+                     <div class="address-bar">
+                         <i class="fas fa-hard-drive text-gray-400 mr-2"></i>
+                         <div id="breadcrumb" class="breadcrumb w-full">Local Files</div>
+                     </div>
+                     <div class="relative w-48">
+                        <input type="text" id="searchInput" placeholder="Search" class="w-full bg-[#252525] border border-white/10 rounded h-8 px-3 text-xs text-white focus:border-blue-500 outline-none">
+                     </div>
+                </div>
+
+                <!-- Sub-toolbar for actions -->
+                <div class="flex items-center gap-1 px-2 py-1 bg-[#1e1e1e] border-b border-white/5 text-xs">
+                    <button class="tool-btn" onclick="document.getElementById('newFolderBtnAction').click()">
+                        <i class="fas fa-plus text-blue-400"></i> New
+                    </button>
+                    <div class="w-px h-4 bg-white/10 mx-1"></div>
+                    <button class="tool-btn" onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-file-upload"></i> Upload
+                    </button>
+                    <div class="flex-1"></div>
+                    <button id="tiles-view-btn" class="tool-btn"><i class="fas fa-th-large"></i></button>
+                    <button id="list-view-btn" class="tool-btn"><i class="fas fa-list"></i></button>
+                </div>
+
                 <div class="window-body">
-                    <div class="window-sidebar">
-                        <div class="text-[10px] font-bold text-gray-500 uppercase mb-2 px-4 mt-2">Access</div>
+                    <div class="window-sidebar custom-scrollbar overflow-y-auto">
+                        <div class="text-[11px] font-semibold text-gray-500 uppercase px-3 py-2 mt-1">Quick Access</div>
                         <div class="nav-item active" id="nav-my-files" onclick="AppNav.navigate('my-files')">
-                            <i class="fas fa-hard-drive w-4 text-center"></i> Local Files
+                            <i class="fas fa-home text-blue-400"></i> Home
                         </div>
                         <div class="nav-item" id="nav-recent" onclick="AppNav.navigate('recent')">
-                            <i class="fas fa-clock w-4 text-center"></i> Recent
+                            <i class="far fa-clock"></i> Recent
                         </div>
                         <div class="nav-item" id="nav-starred" onclick="AppNav.navigate('starred')">
-                            <i class="fas fa-star w-4 text-center text-yellow-500"></i> Important
+                            <i class="fas fa-star text-yellow-500"></i> Favorites
                         </div>
 
-                        <div class="flex justify-between items-center px-4 mt-6 mb-2">
-                            <div class="text-[10px] font-bold text-gray-500 uppercase">Mounts</div>
-                            <button id="addFragmentBtn" class="text-xs text-gray-400 hover:text-white"><i
-                                    class="fas fa-plus"></i></button>
+                        <div class="flex justify-between items-center px-3 mt-6 mb-1">
+                            <div class="text-[11px] font-semibold text-gray-500 uppercase">Drives</div>
+                            <button id="addFragmentBtn" class="text-xs text-gray-400 hover:text-white px-1"><i class="fas fa-plus"></i></button>
                         </div>
-                        <div id="fragmentList" class="flex flex-col gap-1 overflow-y-auto max-h-40 custom-scrollbar">
-                        </div>
+                        <div id="fragmentList" class="flex flex-col gap-0.5"></div>
 
                         <!-- Storage Quota UI -->
-                        <div class="mt-auto p-4 border-t border-[#383838]">
+                        <div class="mt-auto p-3 m-2 bg-[#252525] rounded border border-white/5">
                             <div class="flex justify-between items-center mb-1 text-[10px] text-gray-400">
                                 <span>Storage</span>
                                 <span id="sidebar-storage-percent">0%</span>
                             </div>
-                            <div class="w-full bg-[#333] rounded-full h-1.5 mb-2">
-                                <div id="sidebar-storage-bar"
-                                    class="bg-blue-500 h-1.5 rounded-full transition-all duration-500"
-                                    style="width: 0%"></div>
+                            <div class="w-full bg-[#333] rounded-full h-1 mb-1">
+                                <div id="sidebar-storage-bar" class="bg-blue-500 h-1 rounded-full transition-all duration-500" style="width: 0%"></div>
                             </div>
                             <div id="sidebar-gb-used" class="text-[10px] text-gray-500">0 GB used</div>
                         </div>
                     </div>
+
                     <div class="window-content">
-                        <div class="toolbar">
-                            <div class="flex items-center gap-2">
-                                <button id="back-btn"
-                                    class="w-7 h-7 flex items-center justify-center rounded hover:bg-[#4a4a4a] text-gray-300 hidden"
-                                    onclick="navigateBack()">
-                                    <i class="fas fa-chevron-left text-xs"></i>
-                                </button>
-                                <button class="tool-btn hover:bg-[#444]" onclick="listObjects(activeFragment)"><i
-                                        class="fas fa-sync-alt"></i></button>
-                                <button class="tool-btn primary"
-                                    onclick="document.getElementById('fileInput').click()"><i class="fas fa-upload"></i>
-                                    Upload</button>
-                                <button class="tool-btn"
-                                    onclick="document.getElementById('newFolderBtnAction').click()"><i
-                                        class="fas fa-folder-plus"></i> New Folder</button>
-                            </div>
-                            <div class="flex-1 mx-4">
-                                <div
-                                    class="bg-[#1f1f1f] border border-[#383838] rounded flex items-center px-3 py-1 w-full max-w-md focus-within:border-blue-500 transition-colors">
-                                    <i class="fas fa-search text-gray-500 mr-2 text-xs"></i>
-                                    <input type="text" id="searchInput" placeholder="Search..."
-                                        class="bg-transparent border-none outline-none text-xs w-full text-white placeholder-gray-600 h-6">
-                                </div>
-                            </div>
-                            <div class="flex bg-[#1f1f1f] rounded border border-[#383838] p-0.5">
-                                <button id="tiles-view-btn"
-                                    class="p-1.5 rounded hover:bg-[#333] text-gray-400 text-xs"><i
-                                        class="fas fa-th-large"></i></button>
-                                <button id="list-view-btn"
-                                    class="p-1.5 rounded hover:bg-[#333] text-gray-400 text-xs"><i
-                                        class="fas fa-list"></i></button>
-                            </div>
-                        </div>
-                        <div class="h-8 border-b border-[#383838] flex items-center px-4 bg-[#242424]">
-                            <div id="breadcrumb" class="breadcrumb">Local Files</div>
-                        </div>
-                        <div id="browser" class="custom-scrollbar bg-[#1e1e1e] relative select-none">
-                            <div id="objectList" class="grid gap-4"
-                                style="grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));"></div>
-                            <div id="browserSpinner"
-                                class="absolute inset-0 flex items-center justify-center bg-[#1e1e1e]/80 hidden z-10">
+                        <div id="browser" class="custom-scrollbar">
+                            <div id="objectList" class="grid gap-1" style="grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));"></div>
+                            <div id="browserSpinner" class="absolute inset-0 flex items-center justify-center bg-[#191919]/80 hidden z-10">
                                 <div class="flex flex-col items-center">
                                     <i class="fas fa-circle-notch fa-spin text-2xl text-blue-500 mb-2"></i>
-                                    <span class="text-xs text-gray-400 font-mono">ACCESSING DISK...</span>
+                                    <span class="text-xs text-gray-400">Working on it...</span>
                                 </div>
                             </div>
                         </div>
-                        <div
-                            class="h-6 bg-[#2d2d2d] border-t border-[#383838] flex items-center px-4 text-[10px] text-gray-500 justify-between">
+                        <div class="h-6 bg-[#1e1e1e] border-t border-white/5 flex items-center px-3 text-[11px] text-gray-500 justify-between select-none">
                             <span id="selection-status">0 items selected</span>
-                            <span id="network-activity-status" class="flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-green-500"></div> Connected
-                            </span>
+                            <div class="flex gap-4">
+                                <span id="network-activity-status" class="flex items-center gap-2">
+                                    Online
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 2. RESOURCE MONITOR (UPDATED) -->
-            <div id="win-dashboard" class="window"
-                style="width: 900px; height: 600px; top: 80px; left: 150px; display: none;">
+            <!-- 2. RESOURCE MONITOR (Windows Style) -->
+            <div id="win-dashboard" class="window" style="width: 900px; height: 600px; top: 80px; left: 150px; display: none;">
                 <div class="window-header">
                     <div class="window-title"><i class="fas fa-chart-line text-green-500"></i> Resource Monitor</div>
                     <div class="window-controls">
-                        <div class="win-btn win-min" onclick="WindowManager.minimize('dashboard')"></div>
-                        <div class="win-btn win-close" onclick="WindowManager.close('dashboard')"></div>
+                        <div class="win-control-btn" onclick="WindowManager.minimize('dashboard')"><i class="fas fa-minus"></i></div>
+                        <div class="win-control-btn close-btn" onclick="WindowManager.close('dashboard')"><i class="fas fa-times"></i></div>
                     </div>
                 </div>
                 <div class="window-body">
-                    <div class="res-sidebar">
-                        <div class="res-tab active" onclick="ResMonitor.showTab('overview')"><i
-                                class="fas fa-tachometer-alt w-5 text-center mr-1"></i> Overview</div>
+                    <div class="window-sidebar" style="width: 200px;">
+                        <div class="nav-item active" onclick="ResMonitor.showTab('overview')">
+                            <i class="fas fa-microchip mr-1"></i> Overview
+                        </div>
                     </div>
-                    <div class="res-content bg-[#1e1e1e] custom-scrollbar">
+                    <div class="flex-1 p-6 overflow-y-auto bg-[#191919] custom-scrollbar">
                         <!-- Overview Tab -->
                         <div id="res-tab-overview" class="block">
-                            <h2 class="text-lg font-light text-white mb-4">System Status: <span
-                                    class="text-green-500">Healthy</span></h2>
+                            <h2 class="text-xl font-light text-white mb-6">System Performance</h2>
                             <div class="grid grid-cols-2 gap-4">
                                 <!-- Account Info -->
-                                <div
-                                    class="res-card col-span-2 flex gap-4 items-center bg-gradient-to-r from-[#2a2a2a] to-[#222]">
-                                    <div
-                                        class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl shadow-lg">
+                                <div class="res-card col-span-2 flex gap-4 items-center p-4 bg-[#252525]">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white text-xl shadow-lg">
                                         <i class="fas fa-user"></i>
                                     </div>
                                     <div>
-                                        <div class="text-sm text-gray-400 uppercase tracking-wider text-[10px]">Current
-                                            Account</div>
-                                        <div class="text-lg font-medium text-white" id="account-name-display">Loading...
-                                        </div>
-                                        <div class="text-xs text-gray-500 font-mono" id="account-email-display">
-                                            Loading...</div>
+                                        <div class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold">User Profile</div>
+                                        <div class="text-lg font-medium text-white" id="account-name-display">Loading...</div>
+                                        <div class="text-xs text-gray-500 font-mono" id="account-email-display">Loading...</div>
                                     </div>
                                 </div>
 
-                                <!-- Network Activity Charts (Replacing CPU/RAM) -->
-                                <div class="res-card">
-                                    <div class="res-label text-blue-400"><i class="fas fa-arrow-down mr-2"></i>Network
-                                        In (Download)</div>
+                                <!-- Network Activity Charts -->
+                                <div class="res-card p-4">
+                                    <div class="text-xs text-gray-400 font-semibold mb-2 uppercase">Throughput (In)</div>
                                     <div class="h-32 w-full relative">
                                         <canvas id="net-in-chart"></canvas>
                                     </div>
-                                    <div class="text-right mt-2 font-mono text-sm text-blue-300" id="net-in-val">0 KB/s
-                                    </div>
+                                    <div class="text-right mt-2 font-mono text-lg text-white" id="net-in-val">0 KB/s</div>
                                 </div>
-                                <div class="res-card">
-                                    <div class="res-label text-green-400"><i class="fas fa-arrow-up mr-2"></i>Network
-                                        Out (Upload)</div>
+                                <div class="res-card p-4">
+                                    <div class="text-xs text-gray-400 font-semibold mb-2 uppercase">Throughput (Out)</div>
                                     <div class="h-32 w-full relative">
                                         <canvas id="net-out-chart"></canvas>
                                     </div>
-                                    <div class="text-right mt-2 font-mono text-sm text-green-300" id="net-out-val">0
-                                        KB/s</div>
+                                    <div class="text-right mt-2 font-mono text-lg text-white" id="net-out-val">0 KB/s</div>
                                 </div>
 
-                                <!-- Storage Analysis with Pie Chart -->
-                                <div class="res-card col-span-2">
-                                    <div class="flex gap-6">
-                                        <!-- Pie Chart Area -->
+                                <!-- Storage Analysis -->
+                                <div class="res-card col-span-2 p-4">
+                                    <div class="flex gap-8">
                                         <div class="w-1/3 flex flex-col items-center justify-center">
-                                            <div class="res-label w-full text-center">File Distribution</div>
-                                            <div class="relative w-40 h-40">
+                                            <div class="text-xs text-gray-400 mb-2">Storage Composition</div>
+                                            <div class="relative w-32 h-32">
                                                 <canvas id="storage-pie-chart"></canvas>
                                             </div>
-                                            <div class="text-xs text-gray-500 mt-2 text-center"
-                                                id="storage-total-label">0 GB Used</div>
+                                            <div class="text-xs text-gray-300 mt-2 font-mono" id="storage-total-label">Calculating...</div>
                                         </div>
 
-                                        <!-- Stats List -->
                                         <div class="flex-1">
-                                            <div class="res-label">Storage Details</div>
+                                            <div class="text-xs text-gray-400 mb-3 font-semibold uppercase border-b border-gray-700 pb-2">Breakdown</div>
                                             <div class="space-y-2 text-xs" id="storage-stats-container">
-                                                <div class="stat-row">
-                                                    <span class="text-gray-400"><i
-                                                            class="fas fa-image stat-icon text-purple-400"></i>Images</span>
-                                                    <span class="text-white font-mono" id="stat-images">0 files (0
-                                                        MB)</span>
+                                                <div class="flex justify-between items-center py-1 border-b border-[#333]">
+                                                    <span class="text-gray-400"><i class="fas fa-image w-5 text-purple-400"></i> Pictures</span>
+                                                    <span class="text-white font-mono" id="stat-images">0 B</span>
                                                 </div>
-                                                <div class="stat-row">
-                                                    <span class="text-gray-400"><i
-                                                            class="fas fa-video stat-icon text-pink-500"></i>Videos</span>
-                                                    <span class="text-white font-mono" id="stat-videos">0 files (0
-                                                        MB)</span>
+                                                <div class="flex justify-between items-center py-1 border-b border-[#333]">
+                                                    <span class="text-gray-400"><i class="fas fa-video w-5 text-pink-500"></i> Video</span>
+                                                    <span class="text-white font-mono" id="stat-videos">0 B</span>
                                                 </div>
-                                                <div class="stat-row">
-                                                    <span class="text-gray-400"><i
-                                                            class="fas fa-music stat-icon text-yellow-500"></i>Audio</span>
-                                                    <span class="text-white font-mono" id="stat-audio">0 files (0
-                                                        MB)</span>
+                                                <div class="flex justify-between items-center py-1 border-b border-[#333]">
+                                                    <span class="text-gray-400"><i class="fas fa-music w-5 text-yellow-500"></i> Music</span>
+                                                    <span class="text-white font-mono" id="stat-audio">0 B</span>
                                                 </div>
-                                                <div class="stat-row">
-                                                    <span class="text-gray-400"><i
-                                                            class="fas fa-file-word stat-icon text-blue-500"></i>Documents</span>
-                                                    <span class="text-white font-mono" id="stat-docs">0 files (0
-                                                        MB)</span>
-                                                </div>
-                                                <div class="stat-row">
-                                                    <span class="text-gray-400"><i
-                                                            class="fas fa-file-zipper stat-icon text-orange-500"></i>Archives</span>
-                                                    <span class="text-white font-mono" id="stat-archives">0 files (0
-                                                        MB)</span>
-                                                </div>
-                                                <div class="stat-row">
-                                                    <span class="text-gray-400"><i
-                                                            class="fas fa-file stat-icon text-gray-500"></i>Others</span>
-                                                    <span class="text-white font-mono" id="stat-others">0 files (0
-                                                        MB)</span>
+                                                <div class="flex justify-between items-center py-1 border-b border-[#333]">
+                                                    <span class="text-gray-400"><i class="fas fa-file-word w-5 text-blue-500"></i> Documents</span>
+                                                    <span class="text-white font-mono" id="stat-docs">0 B</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -854,70 +856,96 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- 3. NOTEPAD (NEW) -->
+            <div id="win-notepad" class="window" style="width: 600px; height: 450px; top: 100px; left: 200px; display: none;">
+                <div class="window-header">
+                    <div class="window-title"><i class="fas fa-sticky-note text-white"></i> Notepad</div>
+                    <div class="window-controls">
+                        <div class="win-control-btn" onclick="WindowManager.minimize('notepad')"><i class="fas fa-minus"></i></div>
+                        <div class="win-control-btn" onclick="WindowManager.maximize('notepad')"><i class="far fa-square"></i></div>
+                        <div class="win-control-btn close-btn" onclick="WindowManager.close('notepad')"><i class="fas fa-times"></i></div>
+                    </div>
+                </div>
+                <div class="explorer-toolbar h-8 bg-[#252525] flex items-center px-2 text-xs gap-1">
+                    <button class="tool-btn" onclick="Notepad.save()"><i class="fas fa-save text-blue-400"></i> Save</button>
+                    <button class="tool-btn" onclick="Notepad.download()"><i class="fas fa-download"></i> Download</button>
+                    <div class="w-px h-4 bg-white/10 mx-1"></div>
+                    <button class="tool-btn hover:text-red-400" onclick="Notepad.clear()"><i class="fas fa-trash"></i> Clear</button>
+                    <span id="notepad-status" class="ml-auto text-gray-500 text-[10px] italic pr-2"></span>
+                </div>
+                <textarea id="notepad-area" class="flex-1 bg-[#1e1e1e] text-white p-4 outline-none resize-none font-mono text-sm border-none" placeholder="Type your notes here..."></textarea>
+            </div>
 
-            <!-- 4. RECYCLE BIN -->
-            <div id="win-recycle-bin" class="window"
-                style="width: 800px; height: 500px; top: 120px; left: 150px; display: none;">
+            <!-- 4. CALENDAR (NEW) -->
+            <div id="win-calendar" class="window" style="width: 320px; height: 380px; top: 100px; left: 300px; display: none;">
+                <div class="window-header">
+                    <div class="window-title"><i class="fas fa-calendar-alt text-blue-400"></i> Calendar</div>
+                    <div class="window-controls">
+                        <div class="win-control-btn" onclick="WindowManager.minimize('calendar')"><i class="fas fa-minus"></i></div>
+                        <div class="win-control-btn close-btn" onclick="WindowManager.close('calendar')"><i class="fas fa-times"></i></div>
+                    </div>
+                </div>
+                <div class="window-body flex-col bg-[#191919] p-4 select-none">
+                     <div class="flex justify-between items-center mb-4">
+                         <button onclick="CalendarApp.changeMonth(-1)" class="hover:bg-white/10 p-2 rounded text-gray-400 w-8 h-8 flex items-center justify-center"><i class="fas fa-chevron-left"></i></button>
+                         <span id="cal-title" class="font-semibold text-lg">Month Year</span>
+                         <button onclick="CalendarApp.changeMonth(1)" class="hover:bg-white/10 p-2 rounded text-gray-400 w-8 h-8 flex items-center justify-center"><i class="fas fa-chevron-right"></i></button>
+                     </div>
+                     <div class="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mb-2 font-semibold">
+                         <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+                     </div>
+                     <div id="cal-grid" class="grid grid-cols-7 gap-1 text-center text-sm"></div>
+                     <div class="mt-auto pt-4 border-t border-white/5 text-center">
+                        <button onclick="CalendarApp.resetToToday()" class="text-xs text-blue-400 hover:text-blue-300">Go to Today</button>
+                     </div>
+                </div>
+            </div>
+
+            <!-- 5. RECYCLE BIN -->
+            <div id="win-recycle-bin" class="window" style="width: 800px; height: 500px; top: 120px; left: 150px; display: none;">
                 <div class="window-header">
                     <div class="window-title"><i class="fas fa-trash-can text-gray-400"></i> Recycle Bin</div>
                     <div class="window-controls">
-                        <div class="win-btn win-min" onclick="WindowManager.minimize('recycle-bin')"></div>
-                        <div class="win-btn win-close" onclick="WindowManager.close('recycle-bin')"></div>
+                        <div class="win-control-btn" onclick="WindowManager.minimize('recycle-bin')"><i class="fas fa-minus"></i></div>
+                        <div class="win-control-btn close-btn" onclick="WindowManager.close('recycle-bin')"><i class="fas fa-times"></i></div>
                     </div>
                 </div>
-                <div class="window-body">
-                    <div class="window-sidebar">
-                        <div class="text-[10px] font-bold text-gray-500 uppercase mb-2 px-4 mt-2">Trash Can</div>
-                        <div class="nav-item active"><i class="fas fa-dumpster w-4 text-center"></i> Recycle Bin</div>
-                        <div class="mt-auto p-4 text-[10px] text-gray-500 text-center">Items are automatically deleted
-                            after 30 days.</div>
+                
+                <div class="explorer-toolbar bg-[#1e1e1e]">
+                    <div class="flex gap-2">
+                        <button id="empty-trash-btn" class="tool-btn hover:text-red-400"><i class="fas fa-trash-arrow-up"></i> Empty Recycle Bin</button>
+                        <button id="restore-all-btn" class="tool-btn hover:text-green-400"><i class="fas fa-rotate-left"></i> Restore all items</button>
                     </div>
-                    <div class="window-content">
-                        <div class="toolbar">
-                            <button id="empty-trash-btn"
-                                class="tool-btn hover:bg-red-900/50 hover:text-red-400 hover:border-red-900"><i
-                                    class="fas fa-dumpster-fire"></i> Empty Bin</button>
-                            <button id="restore-all-btn"
-                                class="tool-btn hover:bg-green-900/50 hover:text-green-400 hover:border-green-900 ml-2"><i
-                                    class="fas fa-trash-restore"></i> Restore All</button>
-                            <div class="flex-1"></div>
-                            <div class="flex bg-[#1f1f1f] rounded border border-[#383838] p-0.5">
-                                <button id="trash-tiles-btn"
-                                    class="p-1.5 rounded hover:bg-[#333] text-gray-400 text-xs"><i
-                                        class="fas fa-th-large"></i></button>
-                                <button id="trash-list-btn" class="p-1.5 rounded bg-blue-600 text-white text-xs"><i
-                                        class="fas fa-list"></i></button>
-                            </div>
-                        </div>
-                        <div
-                            class="h-8 border-b border-[#383838] flex items-center px-4 bg-[#242424] text-xs text-gray-400">
-                            <i class="fas fa-trash-can mr-2"></i> Recycle Bin
-                        </div>
-                        <div id="recycle-bin-content"
-                            class="custom-scrollbar bg-[#1e1e1e] flex-1 overflow-y-auto content-start"></div>
+                     <div class="flex-1"></div>
+                     <div class="flex bg-[#252525] rounded border border-white/5 p-0.5">
+                        <button id="trash-tiles-btn" class="p-1 px-2 rounded hover:bg-[#333] text-gray-400 text-xs"><i class="fas fa-th-large"></i></button>
+                        <button id="trash-list-btn" class="p-1 px-2 rounded bg-white/10 text-white text-xs"><i class="fas fa-list"></i></button>
+                    </div>
+                </div>
+
+                <div class="window-body">
+                    <div class="window-content bg-[#191919]">
+                        <div id="recycle-bin-content" class="custom-scrollbar flex-1 overflow-y-auto content-start p-4"></div>
                     </div>
                 </div>
             </div>
 
             <!-- 6. UPLOAD MANAGER -->
-            <div id="win-uploads" class="window"
-                style="width: 400px; height: 350px; top: 100px; right: 120px; display: none; z-index: 2000;">
+            <div id="win-uploads" class="window" style="width: 400px; height: 350px; top: 100px; right: 120px; display: none; z-index: 2000;">
                 <div class="window-header">
-                    <div class="window-title"><i class="fas fa-cloud-upload-alt text-blue-400"></i> Upload Queue</div>
+                    <div class="window-title">Uploads</div>
                     <div class="window-controls">
-                        <div class="win-btn win-min" onclick="WindowManager.minimize('uploads')"></div>
-                        <div class="win-btn win-close" onclick="WindowManager.close('uploads')"></div>
+                        <div class="win-control-btn" onclick="WindowManager.minimize('uploads')"><i class="fas fa-minus"></i></div>
+                        <div class="win-control-btn close-btn" onclick="WindowManager.close('uploads')"><i class="fas fa-times"></i></div>
                     </div>
                 </div>
-                <div class="window-body flex-col bg-[#242424]">
-                    <div
-                        class="p-2 border-b border-[#383838] flex justify-between items-center text-[10px] text-gray-400 bg-[#2a2a2a]">
+                <div class="window-body flex-col bg-[#202020]">
+                    <div class="p-2 border-b border-white/5 flex justify-between items-center text-[11px] text-gray-400 bg-[#252525]">
                         <span id="upload-status-header">Ready</span>
-                        <button onclick="document.getElementById('upload-items-container').innerHTML=''"
-                            class="hover:text-white">CLEAR LIST</button>
+                        <button onclick="document.getElementById('upload-items-container').innerHTML=''" class="hover:text-white transition-colors">Clear list</button>
                     </div>
-                    <div id="upload-items-container" class="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
-                    </div>
+                    <div id="upload-items-container" class="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar"></div>
                 </div>
             </div>
 
@@ -925,101 +953,83 @@
     </div>
 
     <!-- Modals -->
-    <div id="contextMenu" class="fixed hidden rounded py-1 w-48 text-sm border border-[#404040]"></div>
-    <div id="toast-container" class="fixed top-16 right-5 z-[6000] space-y-2"></div>
+    <div id="contextMenu" class="fixed hidden w-56 text-sm"></div>
+    <div id="toast-container" class="fixed bottom-16 right-5 z-[6000] space-y-2"></div>
 
-    <!-- Modals -->
+    <!-- Win Style Modals -->
     <div id="newFolderModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
-        <div class="bg-[#242424] p-6 rounded-lg shadow-xl border border-[#404040] w-80 text-white">
-            <h3 class="font-bold mb-4">Create New Folder</h3>
-            <input type="text" id="newFolderNameInput" placeholder="Folder Name"
-                class="bg-[#111] border border-[#444] w-full p-2 rounded mb-4 text-sm focus:border-blue-500 outline-none text-white">
+        <div class="win-modal p-6 rounded-lg w-80 text-white">
+            <h3 class="font-semibold mb-4 text-sm">Create New Folder</h3>
+            <input type="text" id="newFolderNameInput" placeholder="Name" class="bg-[#191919] border border-[#444] w-full p-2 rounded mb-6 text-sm focus:border-blue-500 outline-none text-white">
             <div class="flex justify-end gap-2">
-                <button id="cancelNewFolderBtn" class="text-xs text-gray-400 hover:text-white px-3 py-2">CANCEL</button>
-                <button id="confirmNewFolderBtn"
-                    class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">CREATE</button>
+                <button id="cancelNewFolderBtn" class="text-xs bg-[#333] hover:bg-[#444] text-white px-4 py-2 rounded">Cancel</button>
+                <button id="confirmNewFolderBtn" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">Create</button>
             </div>
         </div>
     </div>
 
     <div id="newFragmentModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
-        <div class="bg-[#242424] p-6 rounded-lg shadow-xl border border-[#404040] w-80 text-white">
-            <h3 class="font-bold mb-4">Create New Mount</h3>
-            <input type="text" id="newFragmentNameInput" placeholder="Mount Name"
-                class="bg-[#111] border border-[#444] w-full p-2 rounded mb-4 text-sm focus:border-blue-500 outline-none text-white">
+        <div class="win-modal p-6 rounded-lg w-80 text-white">
+            <h3 class="font-semibold mb-4 text-sm">Map Network Drive (Mount)</h3>
+            <input type="text" id="newFragmentNameInput" placeholder="Mount Name" class="bg-[#191919] border border-[#444] w-full p-2 rounded mb-6 text-sm focus:border-blue-500 outline-none text-white">
             <div class="flex justify-end gap-2">
-                <button id="cancelNewFragmentBtn"
-                    class="text-xs text-gray-400 hover:text-white px-3 py-2">CANCEL</button>
-                <button id="confirmNewFragmentBtn"
-                    class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">CREATE</button>
+                <button id="cancelNewFragmentBtn" class="text-xs bg-[#333] hover:bg-[#444] text-white px-4 py-2 rounded">Cancel</button>
+                <button id="confirmNewFragmentBtn" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">Mount</button>
             </div>
         </div>
     </div>
 
     <div id="renameModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
-        <div class="bg-[#242424] p-6 rounded-lg shadow-xl border border-[#404040] w-96 text-white">
-            <h3 class="font-bold mb-4">Rename Object</h3>
-            <input id="newObjectKeyInput"
-                class="bg-[#111] border border-[#444] w-full p-2 rounded mb-4 text-sm focus:border-blue-500 outline-none text-white">
+        <div class="win-modal p-6 rounded-lg w-96 text-white">
+            <h3 class="font-semibold mb-4 text-sm">Rename</h3>
+            <input id="newObjectKeyInput" class="bg-[#191919] border border-[#444] w-full p-2 rounded mb-6 text-sm focus:border-blue-500 outline-none text-white">
             <div class="flex justify-end gap-2">
-                <button id="cancelRenameBtn" class="text-xs text-gray-400 hover:text-white px-3 py-2">CANCEL</button>
-                <button id="confirmRenameBtn"
-                    class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">RENAME</button>
+                <button id="cancelRenameBtn" class="text-xs bg-[#333] hover:bg-[#444] text-white px-4 py-2 rounded">Cancel</button>
+                <button id="confirmRenameBtn" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">Save</button>
             </div>
         </div>
     </div>
 
     <div id="shareModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
-        <div class="bg-[#242424] p-6 rounded-lg shadow-xl border border-[#404040] w-96 text-white">
-            <h3 class="font-bold mb-4">Share Link</h3>
+        <div class="win-modal p-6 rounded-lg w-96 text-white">
+            <h3 class="font-semibold mb-4 text-sm">Share File</h3>
             <div class="space-y-4">
-                <select id="shareDisposition"
-                    class="w-full bg-[#111] border border-[#444] p-2 rounded text-sm outline-none">
+                <select id="shareDisposition" class="w-full bg-[#191919] border border-[#444] p-2 rounded text-sm outline-none text-white">
                     <option value="view">View Only</option>
                     <option value="stream">Stream (Video)</option>
                     <option value="download">Download</option>
                 </select>
-                <input id="shareExpiry" type="number" value="3600" placeholder="Expires in (seconds)"
-                    class="w-full bg-[#111] border border-[#444] p-2 rounded text-sm outline-none">
+                <input id="shareExpiry" type="number" value="3600" placeholder="Expires in (seconds)" class="w-full bg-[#191919] border border-[#444] p-2 rounded text-sm outline-none text-white">
                 <div class="flex gap-2">
-                    <input id="shareUrl"
-                        class="flex-1 bg-[#111] border border-[#444] p-2 rounded text-xs text-gray-300 font-mono"
-                        readonly placeholder="Generated URL...">
-                    <button id="copyShareUrlBtn" class="bg-[#333] hover:bg-[#444] px-3 rounded text-white"><i
-                            class="fas fa-copy"></i></button>
+                    <input id="shareUrl" class="flex-1 bg-[#191919] border border-[#444] p-2 rounded text-xs text-gray-300 font-mono" readonly placeholder="Link will appear here...">
+                    <button id="copyShareUrlBtn" class="bg-[#333] hover:bg-[#444] px-3 rounded text-white border border-[#444]"><i class="fas fa-copy"></i></button>
                 </div>
             </div>
             <div class="flex justify-end gap-2 mt-6">
-                <button id="closeShareBtn" class="text-xs text-gray-400 hover:text-white px-3 py-2">CLOSE</button>
-                <button id="generateShareBtn"
-                    class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">GENERATE</button>
+                <button id="closeShareBtn" class="text-xs bg-[#333] hover:bg-[#444] text-white px-4 py-2 rounded">Close</button>
+                <button id="generateShareBtn" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">Generate Link</button>
             </div>
         </div>
     </div>
 
-    <div id="genericModal"
-        class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[5000] hidden flex items-center justify-center">
-        <div class="bg-[#242424] p-6 rounded-lg shadow-2xl border border-[#404040] w-96">
-            <h3 id="modalTitle" class="text-sm font-bold text-white mb-4 uppercase tracking-wider">Title</h3>
-            <div id="modalContent" class="text-sm text-gray-300"></div>
-            <div class="flex justify-end gap-2 mt-6">
-                <button id="modalCancel"
-                    class="px-4 py-2 rounded text-xs bg-[#333] hover:bg-[#444] text-gray-200">Cancel</button>
-                <button id="modalConfirm"
-                    class="px-4 py-2 rounded text-xs bg-blue-600 hover:bg-blue-500 text-white">Confirm</button>
+    <div id="genericModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[5000] hidden flex items-center justify-center">
+        <div class="win-modal p-6 rounded-lg w-96">
+            <h3 id="modalTitle" class="text-sm font-bold text-white mb-4">Title</h3>
+            <div id="modalContent" class="text-sm text-gray-300 mb-6"></div>
+            <div class="flex justify-end gap-2">
+                <button id="modalCancel" class="px-4 py-2 rounded text-xs bg-[#333] hover:bg-[#444] text-white border border-[#444]">Cancel</button>
+                <button id="modalConfirm" class="px-4 py-2 rounded text-xs bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/30">Confirm</button>
             </div>
         </div>
     </div>
 
-    <div id="progressModal"
-        class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[6000] hidden flex-col items-center justify-center">
-        <div class="bg-[#242424] p-6 rounded-lg shadow-2xl border border-[#404040] w-96">
-            <h3 id="progressTitle" class="text-sm font-bold text-white mb-2">Processing...</h3>
-            <div class="w-full bg-[#333] rounded-full h-2 mb-3">
-                <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-200"
-                    style="width: 0%"></div>
+    <div id="progressModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[6000] hidden flex-col items-center justify-center">
+        <div class="win-modal p-6 rounded-lg w-96">
+            <h3 id="progressTitle" class="text-sm font-bold text-white mb-4">Processing...</h3>
+            <div class="w-full bg-[#333] rounded-full h-1 mb-3">
+                <div id="progressBar" class="bg-blue-600 h-1 rounded-full transition-all duration-200" style="width: 0%"></div>
             </div>
-            <div class="flex justify-between text-[10px] text-gray-400 font-mono">
+            <div class="flex justify-between text-[11px] text-gray-400">
                 <span id="progressStatus">Initializing...</span>
                 <span id="progressCount">0/0</span>
             </div>
@@ -1044,14 +1054,124 @@
         let currentPath = '';
         let currentView = 'tiles';
         let currentTrashView = 'list';
-        const serverLink = `https://localhost:50001`;
+        // Changed to localhost to match typical N1 backend setups by default
+        const serverLink = `https://localhost:50001`; 
         const token = localStorage.getItem("current-token")?.trim() || "";
         let totalCapacity = Number(localStorage.getItem("current-capacity")?.trim()) || (15 * 1024 * 1024 * 1024);
         let uploadQueue = [];
         let activeUploads = 0;
-        // HTTP/2 Optimization: Increased from 1 to 5 to allow parallel file uploads
-        const MAX_CONCURRENT_UPLOADS = 5;
+        // HTTP/2 Optimization: Increased from 5 to 10 for parallel file uploads
+        const MAX_CONCURRENT_UPLOADS = 10;
         const MB = 1024 * 1024;
+
+        // User Info from LocalStorage
+        const userEmail = localStorage.getItem("current-account-email") || "user@n1cloud.com";
+        const userName = localStorage.getItem("current-account-name") || "N1 User";
+
+        // Global App Logic
+        const App = {
+            logout: function() {
+                localStorage.removeItem("current-token");
+                // Clear other potential session keys if needed
+                window.location.reload();
+            }
+        };
+
+        const StartMenu = {
+            toggle: function() {
+                const menu = document.getElementById('start-menu');
+                const btn = document.getElementById('start-btn');
+                if (menu.classList.contains('hidden')) {
+                    menu.classList.remove('hidden');
+                    btn.classList.add('active');
+                } else {
+                    menu.classList.add('hidden');
+                    btn.classList.remove('active');
+                }
+            },
+            close: function() {
+                document.getElementById('start-menu').classList.add('hidden');
+                document.getElementById('start-btn').classList.remove('active');
+            }
+        };
+
+        // --- Notepad App ---
+        const Notepad = {
+            init: function() {
+                const saved = localStorage.getItem('notepad-content');
+                if (saved) {
+                    document.getElementById('notepad-area').value = saved;
+                }
+                
+                // Auto save on input
+                document.getElementById('notepad-area').addEventListener('input', (e) => {
+                    localStorage.setItem('notepad-content', e.target.value);
+                    document.getElementById('notepad-status').innerText = 'Saved locally';
+                    setTimeout(() => document.getElementById('notepad-status').innerText = '', 2000);
+                });
+            },
+            save: function() {
+                const content = document.getElementById('notepad-area').value;
+                localStorage.setItem('notepad-content', content);
+                showToast('Note saved to local storage', 'success');
+            },
+            download: function() {
+                const content = document.getElementById('notepad-area').value;
+                const blob = new Blob([content], { type: 'text/plain' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `note_${new Date().toISOString().slice(0,10)}.txt`;
+                a.click();
+            },
+            clear: function() {
+                if(confirm('Clear notepad?')) {
+                    document.getElementById('notepad-area').value = '';
+                    localStorage.removeItem('notepad-content');
+                }
+            }
+        };
+
+        // --- Calendar App ---
+        const CalendarApp = {
+            date: new Date(),
+            init: function() {
+                this.render();
+            },
+            render: function() {
+                const year = this.date.getFullYear();
+                const month = this.date.getMonth();
+                const today = new Date();
+
+                // Set Title
+                const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                document.getElementById('cal-title').innerText = `${monthNames[month]} ${year}`;
+
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const grid = document.getElementById('cal-grid');
+                grid.innerHTML = '';
+
+                // Empty slots
+                for (let i = 0; i < firstDay; i++) {
+                    grid.innerHTML += `<div></div>`;
+                }
+
+                // Days
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const isToday = i === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+                    const cls = isToday ? 'bg-blue-600 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center mx-auto' : 'w-8 h-8 flex items-center justify-center mx-auto hover:bg-white/10 rounded-full cursor-pointer text-gray-300';
+                    grid.innerHTML += `<div class="${cls}">${i}</div>`;
+                }
+            },
+            changeMonth: function(delta) {
+                this.date.setMonth(this.date.getMonth() + delta);
+                this.render();
+            },
+            resetToToday: function() {
+                this.date = new Date();
+                this.render();
+            }
+        };
 
         // Stats for Network Graph
         // Removed global variable since each upload calculates its own speed now
@@ -1118,10 +1238,6 @@
                 });
             }
         };
-
-        // User Info from LocalStorage
-        const userEmail = localStorage.getItem("current-account-email") || "user@n1cloud.com";
-        const userName = localStorage.getItem("current-account-name") || "N1 User";
 
         const thumbnailCache = {
             map: new Map(),
@@ -1244,6 +1360,9 @@
         const WindowManager = {
             zIndex: 100,
             open: function (appId, meta = {}) {
+                // Handle Start Menu auto-close logic
+                if (appId !== 'start-menu') StartMenu.close();
+
                 const win = $(`#win-${appId}`);
                 if (win.is(':visible')) {
                     this.focus(appId);
@@ -1253,10 +1372,13 @@
                 setTimeout(() => win.addClass('visible'), 10);
                 this.focus(appId);
                 this.addTaskbarItem(appId, meta);
-                if (appId === 'dashboard') {
-                    setTimeout(() => ResMonitor.init(), 100);
-                }
+                
+                // App Specific Init
+                if (appId === 'dashboard') setTimeout(() => ResMonitor.init(), 100);
                 if (appId === 'recycle-bin') showTrash();
+                if (appId === 'notepad') Notepad.init();
+                if (appId === 'calendar') CalendarApp.init();
+                
                 if (appId === 'file-explorer') {
                     if (activeFragment && currentObjectList.length === 0) listObjects(activeFragment);
                     else setTimeout(() => VirtualScroller.renderVisible(), 50);
@@ -1294,30 +1416,12 @@
                 });
                 else {
                     const defaults = {
-                        'file-explorer': {
-                            w: 1000,
-                            h: 650,
-                            t: 60,
-                            l: 100
-                        },
-                        'dashboard': {
-                            w: 900,
-                            h: 600,
-                            t: 80,
-                            l: 150
-                        },
-                        'recycle-bin': {
-                            w: 800,
-                            h: 500,
-                            t: 120,
-                            l: 150
-                        },
-                        'uploads': {
-                            w: 400,
-                            h: 350,
-                            t: 100,
-                            l: 120
-                        }
+                        'file-explorer': { w: 1000, h: 650, t: 60, l: 100 },
+                        'dashboard': { w: 900, h: 600, t: 80, l: 150 },
+                        'recycle-bin': { w: 800, h: 500, t: 120, l: 150 },
+                        'uploads': { w: 400, h: 350, t: 100, l: 120 },
+                        'notepad': { w: 600, h: 450, t: 100, l: 200 },
+                        'calendar': { w: 320, h: 380, t: 100, l: 300 }
                     }[appId] || {
                         w: 800,
                         h: 550,
@@ -1338,24 +1442,32 @@
                 $(`#win-${appId}`).css('z-index', this.zIndex);
                 $('.task-item').removeClass('active');
                 $(`#task-item-${appId}`).addClass('active');
+                
+                // If it's start menu related, close start menu if clicking window
+                if(appId !== 'start-menu') StartMenu.close();
             },
             addTaskbarItem: function (appId, meta = {}) {
                 if ($(`#task-item-${appId}`).length === 0) {
                     const map = {
-                        'file-explorer': 'File Station',
-                        'dashboard': 'Monitor',
-                        'recycle-bin': 'Trash',
-                        'uploads': 'Upload Queue'
+                        'file-explorer': 'File Explorer',
+                        'dashboard': 'Resource Monitor',
+                        'recycle-bin': 'Recycle Bin',
+                        'uploads': 'Upload Queue',
+                        'notepad': 'Notepad',
+                        'calendar': 'Calendar'
                     };
                     const iconMap = {
-                        'file-explorer': 'fa-folder-tree',
+                        'file-explorer': 'fa-folder',
                         'dashboard': 'fa-chart-line',
                         'recycle-bin': 'fa-trash-can',
-                        'uploads': 'fa-cloud-upload-alt'
+                        'uploads': 'fa-cloud-arrow-up',
+                        'notepad': 'fa-sticky-note',
+                        'calendar': 'fa-calendar-alt'
                     };
                     const label = meta.title || map[appId] || 'App';
                     const icon = meta.icon || iconMap[appId] || 'fa-window-maximize';
-                    $('#taskbar-apps').append(`<div id="task-item-${appId}" class="task-item active" onclick="WindowManager.open('${appId}')" title="${label}"><i class="fas ${icon}"></i> <span class="task-item-text">${label}</span></div>`);
+                    // Updated to match new CSS
+                    $('#taskbar-apps').append(`<div id="task-item-${appId}" class="task-item active" onclick="WindowManager.open('${appId}')" title="${label}"><i class="fas ${icon}"></i></div>`);
                 }
             }
         };
@@ -1382,7 +1494,7 @@
             initCharts: function () {
                 Chart.defaults.color = '#a3a3a3';
                 Chart.defaults.borderColor = '#333';
-                Chart.defaults.font.family = "'Inter', sans-serif";
+                Chart.defaults.font.family = "'Segoe UI', sans-serif";
 
                 const commonOptions = {
                     responsive: true,
@@ -1606,16 +1718,16 @@
             },
             getColumns: function () {
                 if (this.viewType === 'list') return 1;
-                if (this.container) return Math.max(2, Math.floor(this.container.clientWidth / 136));
+                if (this.container) return Math.max(2, Math.floor(this.container.clientWidth / 108)); // Smaller tiles for Windows look
                 return 5;
             },
             getRowHeight: function () {
-                return this.viewType === 'tiles' ? 171 : 46;
+                return this.viewType === 'tiles' ? 164 : 42;
             },
             renderVisible: function (force = false) {
                 if (!this.container || !this.content) return;
                 if (!this.items.length) {
-                    this.content.innerHTML = `<div class="col-span-full py-20 text-center text-gray-600 flex flex-col items-center justify-center h-full"><i class="fas fa-folder-open text-5xl mb-4 opacity-50"></i><p>Empty Folder</p></div>`;
+                    this.content.innerHTML = `<div class="col-span-full py-20 text-center text-gray-500 flex flex-col items-center justify-center h-full"><i class="far fa-folder-open text-5xl mb-4 opacity-30"></i><p>This folder is empty</p></div>`;
                     this.content.style.paddingTop = '0px';
                     this.content.style.paddingBottom = '0px';
                     return;
@@ -1650,9 +1762,9 @@
 
                 // Layout Update
                 if (this.viewType === 'tiles') {
-                    if (this.content.className !== 'grid gap-4 p-4 content-start')
-                        this.content.className = 'grid gap-4 p-4 content-start';
-                    this.content.style.gridTemplateColumns = `repeat(auto-fill, minmax(120px, 1fr))`;
+                    if (this.content.className !== 'grid gap-1 p-2 content-start')
+                        this.content.className = 'grid gap-1 p-2 content-start';
+                    this.content.style.gridTemplateColumns = `repeat(auto-fill, minmax(100px, 1fr))`;
                     this.content.style.display = 'grid';
                 } else {
                     if (this.content.className !== 'flex flex-col gap-1 p-2 content-start')
@@ -1703,30 +1815,32 @@
 
                 // 3. Atomic Update: This removes any nodes left in 'content' (unused ones) and inserts the fragment
                 this.content.replaceChildren(fragment);
-
-                // REMOVED: SelectionManager.updateUI(); 
-                // Calling updateUI here triggered a global querySelectorAll and forced a synchronous layout reflow
-                // immediately after we modified padding, causing the "freeze".
             }
         };
 
         function renderObjects(objects, keepScroll = false) {
             const breadcrumb = document.getElementById('breadcrumb');
             const backBtn = document.getElementById('back-btn');
+            
+            // Generate Breadcrumb UI
             if (currentPath) {
-                backBtn.classList.remove('hidden');
+                backBtn.disabled = false;
+                backBtn.classList.remove('opacity-30');
+                
                 let parts = currentPath.split('/').filter(p => p);
-                let html = `<span class="cursor-pointer hover:text-white" onclick="navigateTo('')">Files</span>`;
+                let html = `<span class="breadcrumb-segment" onclick="navigateTo('')">Local Files</span>`;
                 let acc = '';
                 parts.forEach(p => {
                     acc += p + '/';
-                    html += ` <span class="text-gray-600">/</span> <span class="cursor-pointer hover:text-white" onclick="navigateTo('${acc}')">${p}</span>`;
+                    html += ` <span class="text-gray-500 text-[10px]"><i class="fas fa-chevron-right"></i></span> <span class="breadcrumb-segment" onclick="navigateTo('${acc}')">${p}</span>`;
                 });
                 breadcrumb.innerHTML = html;
             } else {
-                backBtn.classList.add('hidden');
-                breadcrumb.innerHTML = 'Local Files';
+                backBtn.disabled = true;
+                backBtn.classList.add('opacity-30');
+                breadcrumb.innerHTML = '<span class="breadcrumb-segment">Local Files</span>';
             }
+            
             const folders = new Set();
             const files = [];
             objects.forEach(obj => {
@@ -1761,7 +1875,7 @@
 
         function showRecentFiles() {
             $('#breadcrumb').html('Recent Files');
-            $('#back-btn').addClass('hidden');
+            $('#back-btn').addClass('opacity-30');
             const flat = currentObjectList.filter(o => !o.key.endsWith('/')).sort((a, b) => new Date(Number(b.last_modified.$date.$numberLong)) - new Date(Number(a.last_modified.$date.$numberLong))).slice(0, 50);
             VirtualScroller.setItems(flat.map(i => ({
                 type: 'file',
@@ -1771,8 +1885,8 @@
         }
 
         function showStarredFiles() {
-            $('#breadcrumb').html('Important');
-            $('#back-btn').addClass('hidden');
+            $('#breadcrumb').html('Favorites');
+            $('#back-btn').addClass('opacity-30');
             const flat = currentObjectList.filter(o => starredItems.includes(o.key));
             VirtualScroller.setItems(flat.map(i => ({
                 type: 'file',
@@ -1788,23 +1902,23 @@
             const uniqueId = itemData.id;
 
             const isPending = type === 'file' && item.status === 'Pending';
-            div.className = `file-item item-tile p-3 flex flex-col items-center group relative border border-transparent rounded hover:bg-[#2a2a2a] transition-all ${isPending ? 'status-pending' : ''}`;
+            div.className = `file-item item-tile p-2 flex flex-col items-center group relative ${isPending ? 'opacity-50' : ''}`;
             div.dataset.id = uniqueId;
 
             const name = type === 'folder' ? item : item.key.split('/').pop();
             const ext = name.split('.').pop().toLowerCase();
             const isImage = type === 'file' && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'tiff'].includes(ext);
-            const iconHtml = type === 'folder' ? '<i class="fas fa-folder text-4xl text-yellow-500 mb-2 shadow-sm"></i>' : getFileIconHTML(name);
+            const iconHtml = type === 'folder' ? '<i class="fas fa-folder text-6xl text-yellow-400 mb-2 drop-shadow-md"></i>' : getFileIconHTML(name);
 
             let visualContent;
             if (isImage && !isPending) {
                 const cachedUrl = thumbnailCache.get(item.key);
-                visualContent = `<div class="relative w-full h-20 mb-2 flex items-center justify-center"><div class="icon-placeholder transition-opacity duration-300 ${cachedUrl ? 'opacity-0' : ''}">${iconHtml}</div><img class="img-preview absolute inset-0 w-full h-full object-contain rounded transition-opacity duration-300 ${cachedUrl ? '' : 'opacity-0'}" alt="${name}" src="${cachedUrl || ''}" data-key="${item.key}" data-fragment="${item.fragment}" loading="lazy"></div>`;
+                visualContent = `<div class="relative w-full h-24 mb-2 flex items-center justify-center bg-[#252525] rounded"><div class="icon-placeholder absolute transition-opacity duration-300 ${cachedUrl ? 'opacity-0' : ''}">${iconHtml}</div><img class="img-preview absolute inset-0 w-full h-full object-contain p-1 rounded transition-opacity duration-300 ${cachedUrl ? '' : 'opacity-0'}" alt="${name}" src="${cachedUrl || ''}" data-key="${item.key}" data-fragment="${item.fragment}" loading="lazy"></div>`;
             } else {
-                visualContent = `<div class="mb-2 h-20 flex items-center justify-center">${iconHtml}</div>`;
+                visualContent = `<div class="mb-2 h-24 flex items-center justify-center">${iconHtml}</div>`;
             }
 
-            div.innerHTML = `${visualContent}${isPending ? `<div class="absolute bottom-10 right-2 text-yellow-500"><i class="fas fa-clock"></i></div>` : ''}<span class="text-xs text-center break-all line-clamp-2 leading-tight w-full text-gray-300 group-hover:text-white mt-1 max-h-8 overflow-hidden" title="${name}">${name}</span>${type === 'file' ? `<span class="text-[10px] text-gray-600">${formatBytes(item.size_bytes)}</span>` : ''}`;
+            div.innerHTML = `${visualContent}${isPending ? `<div class="absolute top-2 right-2 text-yellow-500"><i class="fas fa-clock"></i></div>` : ''}<span class="text-[11px] text-center break-all line-clamp-2 leading-tight w-full text-gray-300 mt-1 max-h-8 overflow-hidden" title="${name}">${name}</span>`;
             if (isImage && !isPending && !thumbnailCache.has(item.key)) imageObserver.observe(div.querySelector('.img-preview'));
 
             // Event Listeners for Interaction
@@ -1818,15 +1932,29 @@
             const uniqueId = itemData.id;
 
             const isPending = type === 'file' && item.status === 'Pending';
-            div.className = `file-item item-list flex items-center p-2 hover:bg-[#333] ${isPending ? 'status-pending' : ''}`;
+            div.className = `file-item item-list flex items-center px-4 py-2 ${isPending ? 'opacity-50' : ''}`;
             div.dataset.id = uniqueId;
 
             const name = type === 'folder' ? item : item.key.split('/').pop();
             const ext = name.split('.').pop().toLowerCase();
             const isImage = type === 'file' && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'tiff'].includes(ext);
-            const iconHtml = type === 'folder' ? '<i class="fas fa-folder text-yellow-500 w-6 text-center mr-3"></i>' : getFileIconHTML(name, true);
+            const iconHtml = type === 'folder' ? '<i class="fas fa-folder text-yellow-400 w-6 text-center mr-3"></i>' : getFileIconHTML(name, true);
             let iconSection = isImage && !isPending ? `<div class="relative w-6 h-6 mr-3 flex-shrink-0 flex items-center justify-center"><div class="icon-placeholder absolute inset-0 flex items-center justify-center ${thumbnailCache.has(item.key) ? 'opacity-0' : ''}">${iconHtml}</div><img class="img-preview absolute inset-0 w-full h-full object-cover rounded transition-opacity duration-300 ${thumbnailCache.has(item.key) ? '' : 'opacity-0'}" alt="${name}" src="${thumbnailCache.get(item.key) || ''}" data-key="${item.key}" data-fragment="${item.fragment}" loading="lazy"></div>` : iconHtml;
-            div.innerHTML = `${iconSection}<div class="flex-1 min-w-0 flex items-center"><span class="text-sm text-gray-300 truncate">${name}</span>${isPending ? `<i class="fas fa-clock text-yellow-500 ml-2 text-xs"></i>` : ''}</div>${type === 'file' ? `<span class="text-xs text-gray-500 w-20 text-right">${formatBytes(item.size_bytes)}</span>` : ''}`;
+            
+            // Windows Details View Layout
+            div.innerHTML = `
+                <div class="flex-1 min-w-0 flex items-center">
+                    ${iconSection}
+                    <span class="text-xs text-gray-300 truncate">${name}</span>
+                    ${isPending ? `<i class="fas fa-clock text-yellow-500 ml-2 text-xs"></i>` : ''}
+                </div>
+                <div class="w-32 text-xs text-gray-500 text-right">
+                   ${type === 'file' ? new Date(Number(item.last_modified.$date.$numberLong)).toLocaleDateString() : ''}
+                </div>
+                <div class="w-24 text-xs text-gray-500 text-right">
+                    ${type === 'file' ? formatBytes(item.size_bytes) : ''}
+                </div>
+            `;
             if (isImage && !isPending && !thumbnailCache.has(item.key)) imageObserver.observe(div.querySelector('.img-preview'));
 
             attachItemListeners(div, uniqueId, type, item);
@@ -1895,10 +2023,34 @@
             const isXlsx = ['xlsx', 'xls', 'csv'].includes(ext);
 
             // Zoom controls (Images only)
-            let zoomControls = isImage ? `<div class="zoom-controls mr-2"><button class="tool-btn zoom-out-btn" title="Zoom Out"><i class="fas fa-search-minus"></i></button><button class="tool-btn zoom-reset-btn" title="Reset">100%</button><button class="tool-btn zoom-in-btn" title="Zoom In"><i class="fas fa-search-plus"></i></button></div>` : '';
+            let zoomControls = isImage ? `<div class="zoom-controls mr-2 flex border border-white/10 rounded overflow-hidden"><button class="tool-btn zoom-out-btn px-2" title="Zoom Out"><i class="fas fa-search-minus"></i></button><button class="tool-btn zoom-reset-btn px-2 text-[10px]" title="Reset">100%</button><button class="tool-btn zoom-in-btn px-2" title="Zoom In"><i class="fas fa-search-plus"></i></button></div>` : '';
 
-            // Added "Print / PDF" button to toolbar
-            const windowHtml = `<div id="win-${viewerId}" class="window" style="width: 900px; height: 600px; top: 100px; left: 100px; display: none;"><div class="window-header"><div class="window-title"><i class="fas fa-eye text-yellow-500"></i> ${fileName}</div><div class="window-controls"><div class="win-btn win-min" onclick="WindowManager.minimize('${viewerId}')"></div><div class="win-btn win-max" onclick="WindowManager.maximize('${viewerId}')"></div><div class="win-btn win-close" onclick="WindowManager.close('${viewerId}')"></div></div></div><div class="window-body flex-col bg-[#111]"><div class="toolbar bg-[#222]">${zoomControls}<button class="tool-btn print-btn"><i class="fas fa-print"></i> Print / PDF</button><button class="tool-btn download-btn"><i class="fas fa-download"></i> Download</button><button class="tool-btn share-btn"><i class="fas fa-share-alt"></i> Share</button><div class="h-4 w-px bg-[#444] mx-2"></div><button class="tool-btn hover:text-red-400 delete-btn"><i class="fas fa-trash"></i> Delete</button><button class="tool-btn rename-btn"><i class="fas fa-pencil-alt"></i> Rename</button></div><div class="viewer-content flex-1 flex items-center justify-center overflow-hidden p-0 relative w-full h-full bg-[#0d0d0d]"><i class="fas fa-circle-notch fa-spin text-3xl text-blue-500"></i></div></div></div>`;
+            // Window Template matching new Windows Style
+            const windowHtml = `
+            <div id="win-${viewerId}" class="window" style="width: 900px; height: 600px; top: 100px; left: 100px; display: none;">
+                <div class="window-header">
+                    <div class="window-title"><i class="fas fa-eye text-blue-400"></i> ${fileName}</div>
+                    <div class="window-controls">
+                        <div class="win-control-btn" onclick="WindowManager.minimize('${viewerId}')"><i class="fas fa-minus"></i></div>
+                        <div class="win-control-btn" onclick="WindowManager.maximize('${viewerId}')"><i class="far fa-square"></i></div>
+                        <div class="win-control-btn close-btn" onclick="WindowManager.close('${viewerId}')"><i class="fas fa-times"></i></div>
+                    </div>
+                </div>
+                <div class="window-body flex-col bg-[#111]">
+                    <div class="explorer-toolbar h-10 bg-[#252525]">
+                        ${zoomControls}
+                        <button class="tool-btn print-btn"><i class="fas fa-print"></i> Print</button>
+                        <button class="tool-btn download-btn"><i class="fas fa-download"></i> Save</button>
+                        <button class="tool-btn share-btn"><i class="fas fa-share-alt"></i> Share</button>
+                        <div class="h-4 w-px bg-white/10 mx-2"></div>
+                        <button class="tool-btn hover:text-red-400 delete-btn"><i class="fas fa-trash"></i> Delete</button>
+                        <button class="tool-btn rename-btn"><i class="fas fa-pen"></i> Rename</button>
+                    </div>
+                    <div class="viewer-content flex-1 flex items-center justify-center overflow-hidden p-0 relative w-full h-full bg-[#101010]">
+                        <i class="fas fa-circle-notch fa-spin text-3xl text-blue-500"></i>
+                    </div>
+                </div>
+            </div>`;
 
             $('#windows-container').append(windowHtml);
             $(`#win-${viewerId}`).draggable({
@@ -2058,13 +2210,21 @@
         }
 
         // --- Data Fetching & Stats ---
+        let fetchController = null; // Controller to abort pending fetches
+
         async function listObjects(fragment, options = { render: true }) {
             if (!fragment) return;
             if (options.render) $('#browserSpinner').removeClass('hidden').addClass('flex');
 
-            // Clear list initially if this is a fresh load request
-            currentObjectList = [];
+            // --- RACE CONDITION FIX ---
+            // If a previous fetch is running, cancel it.
+            if (fetchController) fetchController.abort();
+            fetchController = new AbortController();
+            const signal = fetchController.signal;
 
+            // Clear list only for fresh loads, but ensure UI reflects it immediately
+            currentObjectList = [];
+            
             // Reset view initially (clear old items)
             if (options.render) {
                 if ($('#nav-my-files').hasClass('active')) renderObjects(getActiveObjectList(), false);
@@ -2075,10 +2235,15 @@
                 let isFirstPage = true;
 
                 while (true) {
+                    if (signal.aborted) throw new Error("Aborted");
+
                     let url = `${serverLink}/v4/fragment/object/metadata/${fragment}?show_all=true&limit=100`;
                     if (marker) url += `&marker=${encodeURIComponent(marker)}`;
 
-                    const res = await fetch(url, { headers: { authorization: `Bearer ${token}` } });
+                    const res = await fetch(url, { 
+                        headers: { authorization: `Bearer ${token}` },
+                        signal: signal
+                    });
                     if (!res.ok) break;
 
                     const page = await res.json();
@@ -2107,10 +2272,15 @@
 
                     if (page.length < 100) break;
                 }
+                
+                // After full load, ensure capacity sync
+                updateCapacityDisplay();
+
             } catch (e) {
-                console.error(e);
+                if (e.message !== "Aborted") console.error(e);
             } finally {
-                if (options.render) $('#browserSpinner').addClass('hidden');
+                // Only hide spinner if this is the active request
+                if (options.render && !signal.aborted) $('#browserSpinner').addClass('hidden');
             }
         }
 
@@ -2169,20 +2339,13 @@
                 }
             });
 
-            const pct = Math.min(100, (totalBytes / totalCapacity) * 100);
-            $('#gb-used').text(formatBytes(totalBytes));
-            $('#storage-percentage').text(Math.round(pct) + '%');
-            $('#sidebar-gb-used').text(`${formatBytes(totalBytes)} of ${formatBytes(totalCapacity)}`);
-            $('#sidebar-storage-percent').text(`${Math.round(pct)}%`);
-            $('#sidebar-storage-bar').css('width', `${pct}%`);
-            $('#storage-total-label').text(`${formatBytes(totalBytes)} / ${formatBytes(totalCapacity)}`);
-
-            $('#stat-images').text(`${stats.images.count} files (${formatBytes(stats.images.size)})`);
-            $('#stat-videos').text(`${stats.videos.count} files (${formatBytes(stats.videos.size)})`);
-            $('#stat-audio').text(`${stats.audio.count} files (${formatBytes(stats.audio.size)})`);
-            $('#stat-docs').text(`${stats.docs.count} files (${formatBytes(stats.docs.size)})`);
-            $('#stat-archives').text(`${stats.archives.count} files (${formatBytes(stats.archives.size)})`);
-            $('#stat-others').text(`${stats.others.count} files (${formatBytes(stats.others.size)})`);
+            // Note: Sidebar and Top stats now rely on updateCapacityDisplay() for TOTAL usage.
+            // This function focuses on the BREAKDOWN (Pie Chart & Stats List).
+            
+            $('#stat-images').text(`${formatBytes(stats.images.size)}`);
+            $('#stat-videos').text(`${formatBytes(stats.videos.size)}`);
+            $('#stat-audio').text(`${formatBytes(stats.audio.size)}`);
+            $('#stat-docs').text(`${formatBytes(stats.docs.size)}`);
 
             ResMonitor.updatePieChart(stats);
         }
@@ -2198,11 +2361,19 @@
                     const data = await res.json();
                     const used = data.capacity_used;
                     
-                    // Update UI elements if they exist (dashboard might not be open)
+                    // Update UI elements with AUTHORITATIVE server data
                     const pct = Math.min(100, (used / totalCapacity) * 100);
+                    
+                    // Sidebar
                     $('#sidebar-gb-used').text(`${formatBytes(used)} of ${formatBytes(totalCapacity)}`);
                     $('#sidebar-storage-percent').text(`${Math.round(pct)}%`);
                     $('#sidebar-storage-bar').css('width', `${pct}%`);
+                    
+                    // Dashboard Top Stats
+                    $('#gb-used').text(formatBytes(used));
+                    $('#storage-percentage').text(Math.round(pct) + '%');
+                    
+                    // Dashboard Pie Chart Center
                     $('#storage-total-label').text(`${formatBytes(used)} / ${formatBytes(totalCapacity)}`);
                 }
             } catch (e) {
@@ -2270,7 +2441,7 @@
                 'rar': ['fa-file-zipper', 'text-orange-500']
             };
             const [icon, color] = map[ext] || ['fa-file', 'text-gray-400'];
-            const cls = isList ? `far ${icon} ${color} w-6 text-center mr-3` : `far ${icon} text-4xl ${color} mb-2 drop-shadow-md`;
+            const cls = isList ? `far ${icon} ${color} w-6 text-center mr-3` : `far ${icon} text-5xl ${color} mb-2 drop-shadow-md`;
             return `<i class="${cls}"></i>`;
         }
 
@@ -2313,8 +2484,12 @@
                         disposition
                     })
                 });
+                
+                if (!res.ok) throw new Error("Failed to generate link");
                 return (await res.json()).url;
             } catch (e) {
+                console.error(e);
+                showToast("Failed to create share link", "error");
                 return null;
             }
         }
@@ -2354,11 +2529,11 @@
                     `;
             } else if (data.type === 'file') {
                 const isStarred = starredItems.includes(data.data.key);
-                html = `<div class="ctx-item" onclick="openFileViewer('${data.data.fragment}','${data.data.key}')"><i class="fas fa-eye w-4"></i> Preview</div><div class="ctx-item" onclick="showShareModal('${data.data.fragment}','${data.data.key}')"><i class="fas fa-share-alt w-4"></i> Share</div><div class="ctx-item" onclick="showRenameModal('${data.data.fragment}','${data.data.key}')"><i class="fas fa-pencil-alt w-4"></i> Rename</div><div class="ctx-item" onclick="performDirectDownload('${data.data.fragment}','${data.data.key}')"><i class="fas fa-download w-4"></i> Download</div><div class="ctx-item" onclick="toggleStar('${data.data.key}')"><i class="${isStarred ? 'fas' : 'far'} fa-star w-4 text-yellow-500"></i> ${isStarred ? 'Unstar' : 'Star'}</div><div class="ctx-div"></div><div class="ctx-item text-red-400" onclick="moveToTrash('${data.data.key}','file')"><i class="fas fa-trash w-4"></i> Delete</div>`;
+                html = `<div class="ctx-item" onclick="openFileViewer('${data.data.fragment}','${data.data.key}')"><i class="fas fa-eye w-4"></i> Open</div><div class="ctx-div"></div><div class="ctx-item" onclick="showShareModal('${data.data.fragment}','${data.data.key}')"><i class="fas fa-share-alt w-4"></i> Share</div><div class="ctx-item" onclick="showRenameModal('${data.data.fragment}','${data.data.key}')"><i class="fas fa-pen w-4"></i> Rename</div><div class="ctx-item" onclick="performDirectDownload('${data.data.fragment}','${data.data.key}')"><i class="fas fa-download w-4"></i> Download</div><div class="ctx-item" onclick="toggleStar('${data.data.key}')"><i class="${isStarred ? 'fas' : 'far'} fa-star w-4 text-yellow-500"></i> ${isStarred ? 'Unfavorite' : 'Favorite'}</div><div class="ctx-div"></div><div class="ctx-item text-red-400" onclick="moveToTrash('${data.data.key}','file')"><i class="fas fa-trash w-4"></i> Delete</div>`;
             } else {
                 // BUG FIX: data.data is the string name for folders, not an object with a .name property
                 const folderName = data.data;
-                html = `<div class="ctx-item text-red-400" onclick="moveToTrash('${currentPath + folderName}/','folder')"><i class="fas fa-trash w-4"></i> Delete Folder</div>`;
+                html = `<div class="ctx-item" onclick="navigateTo('${currentPath + folderName}/')"><i class="fas fa-folder-open w-4"></i> Open</div><div class="ctx-div"></div><div class="ctx-item text-red-400" onclick="moveToTrash('${currentPath + folderName}/','folder')"><i class="fas fa-trash w-4"></i> Delete Folder</div>`;
             }
             menu.html(html).css({
                 top: y,
@@ -2457,9 +2632,9 @@
                 const expires_in = parseInt(document.getElementById('shareExpiry').value, 10) || 3600;
                 try {
                     const url = await getShareableUrl(fragment, key, disposition, expires_in);
-                    urlInput.value = url;
+                    if (url) urlInput.value = url;
                 } catch (err) {
-                    showToast('Failed to generate link.', 'error');
+                    // Toast handled in getShareableUrl
                 }
             };
             document.getElementById('copyShareUrlBtn').onclick = () => {
@@ -2518,6 +2693,8 @@
                 showTrash();
                 hideProgressModal();
                 showToast('Recycle Bin emptied.', 'success');
+                // Ensure capacity is updated after bulk delete
+                updateCapacityDisplay();
             });
         }
 
@@ -2559,6 +2736,7 @@
                     localStorage.setItem('trashedItems', JSON.stringify(trashedItems));
                     showTrash();
                     showToast('File deleted.', 'success');
+                    updateCapacityDisplay();
                 } catch (e) {
                     showToast('Failed.', 'error');
                 }
@@ -2596,14 +2774,14 @@
             const header = document.getElementById('trash-list-header');
             container.innerHTML = '';
             if (currentTrashView === 'tiles') {
-                container.className = 'grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4 custom-scrollbar bg-[#1e1e1e] flex-1 overflow-y-auto content-start';
+                container.className = 'grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4 custom-scrollbar flex-1 overflow-y-auto content-start';
                 if (header) header.classList.add('hidden');
             } else {
-                container.className = 'flex flex-col gap-0 custom-scrollbar bg-[#1e1e1e] flex-1 overflow-y-auto';
+                container.className = 'flex flex-col gap-0 custom-scrollbar flex-1 overflow-y-auto';
                 if (header) header.classList.remove('hidden');
             }
             if (trashedItems.length === 0) {
-                container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-600 flex flex-col items-center justify-center h-full"><i class="fas fa-trash-can text-5xl mb-4 opacity-50"></i><p>Recycle Bin is empty</p></div>`;
+                container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-500 flex flex-col items-center justify-center h-full"><i class="fas fa-trash-can text-5xl mb-4 opacity-30"></i><p>Recycle Bin is empty</p></div>`;
                 return;
             }
             trashedItems.forEach(item => {
@@ -2635,7 +2813,7 @@
             if (starredItems.includes(key)) starredItems = starredItems.filter(k => k !== key);
             else starredItems.push(key);
             localStorage.setItem('starredItems', JSON.stringify(starredItems));
-            showToast(starredItems.includes(key) ? 'Added to Important' : 'Removed from Important', 'success');
+            showToast(starredItems.includes(key) ? 'Added to Favorites' : 'Removed from Favorites', 'success');
             if ($('#nav-starred').hasClass('active')) showStarredFiles();
             else if ($('#nav-my-files').hasClass('active')) renderObjects(getActiveObjectList());
         }
@@ -2745,7 +2923,7 @@
             const container = document.getElementById('upload-items-container');
             const el = document.createElement('div');
             el.id = item.id || `upload-${crypto.randomUUID()}`;
-            el.className = 'bg-[#1f1f1f] p-2 rounded border border-[#333] mb-1';
+            el.className = 'bg-[#191919] p-2 rounded border border-[#333] mb-1';
             let progressBar = `<div class="w-full bg-[#333] h-1 rounded-full overflow-hidden mb-1"><div class="progress-bar bg-blue-600 h-full w-0 transition-all"></div></div>`;
             let actions = item.isRecovery ? `<div class="flex gap-2 mt-1"><button class="text-[10px] bg-green-600 hover:bg-green-500 text-white px-2 py-0.5 rounded resume-btn">Resume</button><button class="text-[10px] bg-red-600 hover:bg-red-500 text-white px-2 py-0.5 rounded cancel-btn">Cancel</button></div>` : '';
             el.innerHTML = `<div class="flex justify-between mb-1 text-[10px]"><span class="font-medium text-gray-300 truncate w-24">${item.file.name}</span><span class="${item.isRecovery ? 'text-yellow-500' : 'text-gray-400'} status-text"><i class="far fa-clock mr-1"></i>${item.isRecovery ? 'Interrupted' : 'Pending'}</span></div>${item.isRecovery ? '' : progressBar}<div class="flex justify-end text-[9px] text-gray-500 details-text">${item.isRecovery ? '<span>Waiting...</span>' : '<span>-- MB/s</span><span>--</span>'}</div>${actions}`;
@@ -2782,9 +2960,8 @@
                         processUploadQueue();
                     });
 
-                    // Throttling Start (Auth Limit 2/s)
-                    // We pause 500ms between starting uploads to ensure we don't burst the auth/init limit
-                    await new Promise(r => setTimeout(r, 500));
+                    // Reduced throttling: 500ms -> 100ms
+                    await new Promise(r => setTimeout(r, 100));
                 }
             } finally {
                 isProcessingQueue = false;
@@ -2879,9 +3056,10 @@
 
                 statusText.textContent = "Uploading...";
                 const buffer = [],
-                    maxBuffer = 4,
-                    // UPDATED: maxWorkers increased to take advantage of HTTP/2 multiplexing
-                    maxWorkers = 24;
+                    // Optimization: Increased buffer size to prevent starvation
+                    maxBuffer = 10,
+                    // Optimization: 32 workers to saturate HTTP/2 multiplexing
+                    maxWorkers = 32;
 
                 let hashingDone = false;
 
@@ -2910,7 +3088,7 @@
                         }
                         try {
                             // NEW API: PUT /v4/fragment/object/upload/chunk/{fragment}/{version_id}/{part_index}?object_key={key}
-                            const res = await fetch(`${serverLink}/v4/fragment/object/upload/chunk/${item.fragment}/${version_id}/${chunk.index}?object_key=${encodeURIComponent(item.objectKey)}`, {
+                            const res = await fetch(`${serverLink}/v4/fragment/object/upload/chunk/${item.fragment}/${version_id}/${chunk.index}?object_key=${encodeURIComponent(item.objectKey)}&buffer_size=${chunkSize}`, {
                                 method: 'PUT',
                                 headers: {
                                     authorization: `Bearer ${token}`,
@@ -2978,6 +3156,7 @@
                 item.currentSpeed = 0; // Reset speed on completion
                 localStorage.removeItem(sessionKey);
                 listObjects(activeFragment);
+                updateCapacityDisplay(); // Update capacity after successful upload
 
             } catch (e) {
                 console.error(e);
@@ -3042,13 +3221,9 @@
         // --- Init ---
         $(document).ready(() => {
             VirtualScroller.init('browser', 'objectList');
-            const logoutBtn = document.getElementById("user-profile-btn");
-            if (logoutBtn) logoutBtn.addEventListener("click", () => {
-                const modal = document.createElement("div");
-                modal.className = "fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[7000]";
-                modal.innerHTML = `<div class="bg-[#242424]/95 p-6 rounded-xl shadow-2xl w-80 border border-[#383838]"><h2 class="text-white font-medium mb-2">Confirm Logout</h2><div class="flex justify-end gap-3 mt-4"><button class="px-4 py-2 rounded-lg bg-[#333] hover:bg-[#444] text-gray-200 text-xs" onclick="this.closest('.fixed').remove()">Cancel</button><button class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs" onclick="localStorage.removeItem('current-account-email'); localStorage.removeItem('current-token'); localStorage.removeItem('current-account-uid'); localStorage.removeItem('current-account-name'); localStorage.removeItem('current-capacity'); window.location.href='../';">Logout</button></div></div>`;
-                document.body.appendChild(modal);
-            });
+            
+            // Start Menu User
+            $('#start-menu-username').text(userName);
 
             // Drag Drop
             const dz = document.getElementById('browser');
@@ -3057,17 +3232,17 @@
             dz.addEventListener('dragover', (e) => e.preventDefault());
             dz.addEventListener('dragenter', (e) => {
                 dc++;
-                dz.classList.add('drag-active');
+                dz.classList.add('bg-[#252525]');
             });
             dz.addEventListener('dragleave', (e) => {
                 dc--;
-                if (dc === 0) dz.classList.remove('drag-active');
+                if (dc === 0) dz.classList.remove('bg-[#252525]');
             });
 
             dz.addEventListener('drop', async (e) => {
                 e.preventDefault();
                 dc = 0;
-                dz.classList.remove('drag-active');
+                dz.classList.remove('bg-[#252525]');
 
                 const items = e.dataTransfer.items;
                 const files = [];
@@ -3173,6 +3348,11 @@
             });
             $(document).on('click', (e) => {
                 if (!$(e.target).closest('#contextMenu').length) $('#contextMenu').addClass('hidden');
+                
+                // Close start menu if clicked outside
+                if (!$(e.target).closest('#start-menu').length && !$(e.target).closest('#start-btn').length) {
+                    StartMenu.close();
+                }
             });
             $('#folderInput').off('change');
             $('#browser').off('contextmenu');
@@ -3196,7 +3376,8 @@
                 if (y + 200 > window.innerHeight) y -= 200;
 
                 const html = `
-                    <div class="ctx-item" onclick="document.getElementById('newFolderBtnAction').click()"><i class="fas fa-folder-plus w-4"></i> New Folder</div>
+                    <div class="ctx-item" onclick="document.getElementById('newFolderBtnAction').click()"><i class="fas fa-folder-plus w-4 text-yellow-500"></i> New Folder</div>
+                    <div class="ctx-div"></div>
                     <div class="ctx-item" onclick="document.getElementById('fileInput').click()"><i class="fas fa-upload w-4"></i> Upload File</div>
                     <div class="ctx-item" onclick="document.getElementById('folderInput').click()"><i class="fas fa-file-zipper w-4"></i> Upload Folder as Zip</div>
                     <div class="ctx-div"></div>
@@ -3346,7 +3527,7 @@
 
                 function pushFrag(f) {
                     if (document.getElementById(`frag-${f}`)) return;
-                    const el = $(`<div id="frag-${f}" class="nav-item fragment-item"><i class="fas fa-database w-4 text-center"></i> ${f}</div>`).click(function () {
+                    const el = $(`<div id="frag-${f}" class="nav-item fragment-item text-[11px]"><i class="fas fa-hard-drive text-gray-400"></i> ${f}</div>`).click(function () {
                         $('#fragmentList .fragment-item').removeClass('active');
                         $(this).addClass('active');
                         activeFragment = f;
