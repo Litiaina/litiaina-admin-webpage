@@ -1055,13 +1055,13 @@
         let currentView = 'tiles';
         let currentTrashView = 'list';
         // Changed to localhost to match typical N1 backend setups by default
-        const serverLink = `https://localhost:50001`; 
+        const serverLink = `https://storage.litiaina.com`; 
         const token = localStorage.getItem("current-token")?.trim() || "";
         let totalCapacity = Number(localStorage.getItem("current-capacity")?.trim()) || (15 * 1024 * 1024 * 1024);
         let uploadQueue = [];
         let activeUploads = 0;
         // HTTP/2 Optimization: Increased from 5 to 10 for parallel file uploads
-        const MAX_CONCURRENT_UPLOADS = 10;
+        const MAX_CONCURRENT_UPLOADS = 1;
         const MB = 1024 * 1024;
 
         // User Info from LocalStorage
@@ -1071,9 +1071,13 @@
         // Global App Logic
         const App = {
             logout: function() {
-                localStorage.removeItem("current-token");
-                // Clear other potential session keys if needed
+                localStorage.removeItem('current-token'); 
+                localStorage.removeItem('current-account-email'); 
+                localStorage.removeItem('current-account-uid'); 
+                localStorage.removeItem('current-account-name'); 
+                localStorage.removeItem('current-capacity');
                 window.location.reload();
+                window.location.href='../';
             }
         };
 

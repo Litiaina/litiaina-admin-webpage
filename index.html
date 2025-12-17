@@ -2,405 +2,512 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>N1 Cloud</title>
-  <link rel="icon" type="image/png" href="images/litiaina_icon.png">
-  
-  <!-- Tailwind & Fonts -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>N1 Cloud - Login</title>
+    <link rel="icon" type="image/png" href="images/litiaina_icon_48x48.png">
 
-  <style>
-    :root {
-      --bg-desktop: #1b2028;
-      --bg-window: #242424;
-      --border-color: #383838;
-      --accent-color: #3b82f6;
-      --text-primary: #e5e5e5;
-    }
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-    body {
-      font-family: 'Inter', sans-serif;
-      background: radial-gradient(circle at 50% 50%, #20252e 0%, #111418 100%);
-      background-size: cover;
-      color: var(--text-primary);
-      overflow: hidden;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    /* Glass Card Style */
-    .login-card {
-      background-color: rgba(36, 36, 36, 0.85);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-    }
+    <style>
+        :root {
+            --win-bg-desktop: #202020;
+            --win-glass: rgba(32, 32, 32, 0.60);
+            --win-glass-border: rgba(255, 255, 255, 0.08);
+            --accent-color: #60cdff;
+            --accent-hover: #4cc2ff;
+            --text-primary: #ffffff;
+            --input-bg: rgba(0, 0, 0, 0.3);
+            --input-border: #555;
+            --input-focus: rgba(0, 0, 0, 0.5);
+        }
 
-    /* Input Styling */
-    .n1-input {
-      background-color: #111;
-      border: 1px solid #333;
-      color: #fff;
-      transition: all 0.2s;
-    }
+        body {
+            font-family: 'Segoe UI', 'Inter', sans-serif;
+            background-color: var(--win-bg-desktop);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            margin: 0;
+            padding: 0;
+        }
 
-    .n1-input:focus {
-      border-color: var(--accent-color);
-      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-      outline: none;
-    }
+        /* Wallpaper Background */
+        #wallpaper {
+            position: absolute;
+            inset: 0;
+            background-image: url('images/n1-cloud-professional-wallpaper.jpg');
+            background-size: cover;
+            background-position: center;
+            /* Overlay to match the desktop tint */
+            box-shadow: inset 0 0 0 100vmax rgba(0, 0, 0, 0.2); 
+            z-index: -1;
+            transition: transform 0.5s cubic-bezier(0.1, 0.9, 0.2, 1), filter 0.5s ease;
+        }
 
-    /* Animation */
-    .fade-in-up {
-      animation: fadeInUp 0.5s ease-out forwards;
-      opacity: 0;
-      transform: translateY(20px);
-    }
+        /* Input Styling - Matching Index.html feel */
+        .n1-input {
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-bottom: 2px solid var(--input-border);
+            color: white;
+            transition: all 0.2s cubic-bezier(0.1, 0.9, 0.2, 1);
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+        }
 
-    @keyframes fadeInUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
+        .n1-input:focus {
+            background-color: var(--input-focus);
+            border-color: #666;
+            border-bottom-color: var(--accent-color);
+            outline: none;
+        }
 
-    /* Custom Scrollbar for Modal content if needed */
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #444;
-      border-radius: 4px;
-    }
+        .n1-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 300;
+        }
 
-    /* Loading Overlay for Session Check */
-    #loadingOverlay {
-      position: fixed;
-      inset: 0;
-      background: #111418;
-      z-index: 100;
-      /* Removed display: flex here to allow Tailwind's 'hidden' class to work */
-      transition: opacity 0.5s ease-out;
-    }
-  </style>
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.8s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Boot Screen */
+        #boot-screen {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        /* Loading Spinner (Windows Style Dots) */
+        .dots-loader {
+            display: flex;
+            gap: 5px;
+            margin-top: 40px;
+        }
+        .dot {
+            width: 5px;
+            height: 5px;
+            background: white;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); opacity: 0; }
+            40% { transform: scale(1.5); opacity: 1; }
+        }
+
+        /* Lock Screen Clock Positioning */
+        #lock-clock {
+            transition: all 0.5s cubic-bezier(0.1, 0.9, 0.2, 1);
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        /* Custom Checkbox */
+        .custom-checkbox {
+            appearance: none;
+            background-color: transparent;
+            margin: 0;
+            width: 18px;
+            height: 18px;
+            border: 1px solid #999;
+            border-radius: 2px;
+            display: grid;
+            place-content: center;
+            transition: all 0.1s;
+        }
+        .custom-checkbox:hover { border-color: white; }
+        .custom-checkbox::before {
+            content: "\2713";
+            font-size: 14px;
+            color: black;
+            font-weight: 700;
+            transform: scale(0);
+            transition: 0.1s transform ease-in-out;
+        }
+        .custom-checkbox:checked {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        .custom-checkbox:checked::before { transform: scale(1); }
+
+    </style>
 </head>
 
 <body>
 
-  <!-- Background Wallpaper Effect -->
-  <div class="absolute inset-0 z-0 pointer-events-none" 
-       style="background-image: url('images/n1-cloud-professional-wallpaper.jpg'); background-size: cover; opacity: 0.1;"></div>
+    <!-- Background -->
+    <div id="wallpaper"></div>
 
-  <!-- Session Loading Overlay -->
-  <!-- Added flex classes here so they apply when 'hidden' is removed -->
-  <div id="loadingOverlay" class="hidden flex flex-col items-center justify-center">
-    <div class="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-    <h2 class="text-xl font-light tracking-widest text-white">RESTORING SESSION</h2>
-    <p class="text-xs text-gray-500 mt-2">Verifying credentials...</p>
-  </div>
-
-  <!-- Login Container -->
-  <div class="w-full max-w-md p-6 relative z-10 fade-in-up" id="loginContainer">
-    
-    <!-- OS-Like User Profile Header -->
-    <div class="text-center mb-8 flex flex-col items-center">
-      <div class="w-24 h-24 rounded-full bg-[#1f1f1f] border-2 border-[#383838] p-1 shadow-2xl mb-4 relative group">
-        <div class="w-full h-full rounded-full bg-[#111] flex items-center justify-center overflow-hidden relative">
-          <img src="images/litiaina_icon.png" onerror="this.src='https://placehold.co/100x100/333/888?text=N1'" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity">
+    <!-- Boot Screen -->
+    <div id="boot-screen">
+        <div class="flex flex-col items-center mb-10">
+            <img src="images/litiaina_icon_48x48.png" alt="logo" class="w-16 h-16 object-contain mb-8" />
+            <div class="dots-loader">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
         </div>
-        <!-- Status Indicator -->
-        <div class="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#1f1f1f]"></div>
-      </div>
-      <h1 class="text-2xl font-light tracking-wide text-white">N1 Cloud</h1>
-      <p class="text-xs text-gray-500 mt-1 uppercase tracking-widest">Professional Environment</p>
     </div>
 
-    <div class="login-card rounded-xl p-8">
-      <form id="loginForm" class="space-y-5">
+    <!-- Session Restoration Overlay -->
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-black/60 z-[8000] flex flex-col items-center justify-center backdrop-blur-xl transition-all duration-500">
+        <div class="w-10 h-10 border-[3px] border-[#60cdff] border-t-transparent rounded-full animate-spin mb-6"></div>
+        <h2 class="text-xl font-light tracking-wide text-white">Welcome</h2>
+    </div>
+
+    <!-- Lock Screen Clock -->
+    <div id="lock-clock" class="absolute top-[15%] text-center z-0 select-none">
+        <div id="clock-time" class="text-[6rem] leading-none font-light tracking-tighter text-white font-[Segoe UI Light]">12:00</div>
+        <div id="clock-date" class="text-2xl font-normal text-white mt-2">Wednesday, December 17</div>
+    </div>
+
+    <!-- Login Container -->
+    <div class="relative z-10 w-full max-w-[360px] fade-in flex flex-col items-center justify-center" id="loginContainer">
         
-        <!-- Email Input -->
-        <div class="relative group">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <i class="fas fa-user text-gray-500 group-focus-within:text-blue-500 transition-colors"></i>
-          </div>
-          <input type="email" id="loginEmail" placeholder="Username / Email" required
-            class="n1-input w-full pl-10 pr-4 py-3 rounded-lg text-sm placeholder-gray-600" />
+        <!-- User Profile -->
+        <div class="flex flex-col items-center mb-8 w-full group">
+            <div class="w-40 h-40 rounded-full p-1 mb-4 relative transition-transform duration-300 group-hover:scale-105">
+                <!-- User Avatar Ring -->
+                <div class="absolute inset-0 rounded-full border border-white/10"></div>
+                <div class="w-full h-full rounded-full bg-[#333] overflow-hidden relative shadow-2xl">
+                    <img src="images/litiaina_icon.png" onerror="this.src='https://placehold.co/160x160/333/888?text=U'" class="w-full h-full object-cover">
+                </div>
+            </div>
+            <h1 class="text-2xl font-semibold text-white tracking-wide mb-1">N1 User</h1>
+            <p id="auth-status-text" class="text-sm text-gray-300 font-light" style="min-height: 20px;">Locked</p>
         </div>
 
-        <!-- Password Input -->
-        <div class="relative group">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <i class="fas fa-lock text-gray-500 group-focus-within:text-blue-500 transition-colors"></i>
-          </div>
-          <input type="password" id="loginPassword" placeholder="Password" required
-            class="n1-input w-full pl-10 pr-4 py-3 rounded-lg text-sm placeholder-gray-600" />
-        </div>
+        <!-- Login Form -->
+        <form id="loginForm" class="w-full space-y-4">
+            
+            <div class="space-y-2">
+                <!-- Email Input -->
+                <div class="relative w-full">
+                    <input type="email" id="loginEmail" placeholder="Email" required
+                        class="n1-input w-full px-4 py-2.5 rounded-md" />
+                </div>
 
-        <!-- OTP Group (Hidden by default) -->
-        <div class="relative hidden" id="otpGroup">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <i class="fas fa-shield-alt text-gray-500 transition-colors"></i>
-          </div>
-          <input type="text" id="loginOtp" placeholder="Authentication Code (2FA)"
-            class="n1-input w-full pl-10 pr-4 py-3 rounded-lg text-sm placeholder-gray-600" />
-        </div>
+                <!-- Password Input -->
+                <div class="relative w-full">
+                    <input type="password" id="loginPassword" placeholder="Password" required
+                        class="n1-input w-full px-4 py-2.5 rounded-md" />
+                </div>
 
-        <div class="flex justify-between items-center text-xs text-gray-400">
-            <label class="flex items-center hover:text-gray-300 cursor-pointer">
-                <!-- Added ID to checkbox -->
-                <input type="checkbox" id="rememberMe" class="mr-2 rounded bg-[#111] border-[#333] text-blue-600 focus:ring-0"> Remember me
-            </label>
-            <span id="forgotPassword" class="hover:text-blue-400 cursor-pointer transition-colors">Forgot password?</span>
-        </div>
+                <!-- OTP (Hidden by default) -->
+                <div class="relative hidden slide-up" id="otpGroup">
+                    <input type="text" id="loginOtp" placeholder="Authentication Code"
+                        class="n1-input w-full px-4 py-2.5 rounded-md text-center tracking-widest font-mono" />
+                </div>
+            </div>
 
-        <!-- Action Button -->
-        <button type="submit" id="authBtn"
-          class="w-full flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
-          <span id="btnText">SIGN IN</span>
-          <i id="btnSpinner" class="fas fa-circle-notch fa-spin ml-2 hidden"></i>
-        </button>
+            <!-- Action Button -->
+            <button type="submit" id="authBtn"
+                class="w-full bg-white/10 hover:bg-white/20 text-white font-normal py-2 rounded-md border border-white/5 transition-all duration-200 backdrop-blur-sm flex items-center justify-center gap-2 group active:scale-95">
+                <span id="btnText">Sign In</span>
+                <i class="fas fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity -ml-4 group-hover:ml-0 text-sm"></i>
+                <i id="btnSpinner" class="fas fa-circle-notch fa-spin hidden"></i>
+            </button>
 
-        <div class="text-center mt-6 pt-4 border-t border-[#333]">
-          <p class="text-xs text-gray-500">Don't have an account?</p>
-          <button type="button" id="signup" class="text-sm font-medium text-gray-300 hover:text-white mt-2 flex items-center justify-center w-full gap-2 transition-colors">
-            Create System Account <i class="fas fa-arrow-right text-xs"></i>
-          </button>
-        </div>
-      </form>
-    </div>
-    
-    <div class="text-center mt-8 text-[10px] text-gray-600 font-mono">
-        SYSTEM VERSION 0.0.1 • SECURE CONNECTION
-    </div>
-  </div>
+            <!-- Controls -->
+            <div class="flex justify-between items-center text-xs mt-6 px-1">
+                <label class="flex items-center text-gray-300 hover:text-white cursor-pointer transition-colors gap-2 select-none">
+                    <input type="checkbox" id="rememberMe" class="custom-checkbox"> 
+                    <span>Keep me signed in</span>
+                </label>
+                <span id="forgotPassword" class="text-gray-300 hover:text-[#60cdff] cursor-pointer transition-colors">I forgot my password</span>
+            </div>
 
-  <!-- Modal (Styled for N1 Cloud) -->
-  <div id="modalContainer" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
-    <div id="modal" class="bg-[#242424] border border-[#383838] rounded-lg shadow-2xl p-6 max-w-sm w-full transform transition-all scale-100">
-      <h3 id="modalTitle" class="text-lg font-medium text-white mb-2 flex items-center gap-2">
-        <i class="fas fa-info-circle"></i> <span>Notification</span>
-      </h3>
-      <p id="modalMessage" class="text-sm text-gray-400 mb-6 leading-relaxed">Message content goes here.</p>
-      <button id="modalCloseBtn" class="w-full bg-[#333] hover:bg-[#444] text-white font-medium py-2 px-4 rounded transition duration-200 text-sm border border-[#444]">
-        DISMISS
-      </button>
-    </div>
-  </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', async function () {
-      const serverLink = `https://api.litiaina.com`;
-      const loginForm = document.getElementById('loginForm');
-      const otpGroup = document.getElementById('otpGroup');
-      const otpInput = document.getElementById('loginOtp');
-      const authBtn = document.getElementById('authBtn');
-      const btnText = document.getElementById('btnText');
-      const btnSpinner = document.getElementById('btnSpinner');
-      const modalContainer = document.getElementById('modalContainer');
-      const modalTitle = document.getElementById('modalTitle');
-      const modalMessage = document.getElementById('modalMessage');
-      const modalCloseBtn = document.getElementById('modalCloseBtn');
-      const loadingOverlay = document.getElementById('loadingOverlay');
-
-      // --- Helper Functions ---
-
-      const setLoading = (isLoading) => {
-        authBtn.disabled = isLoading;
-        if (isLoading) {
-          btnText.textContent = 'AUTHENTICATING...';
-          btnSpinner.classList.remove('hidden');
-        } else {
-          btnText.textContent = 'SIGN IN';
-          btnSpinner.classList.add('hidden');
-        }
-      };
-
-      const showModal = (title, message, isError = true) => {
-        modalTitle.querySelector('span').textContent = title;
-        modalMessage.textContent = message;
+        </form>
         
-        const icon = modalTitle.querySelector('i');
-        modalTitle.className = "text-lg font-medium mb-2 flex items-center gap-2"; 
-        
-        if (isError) {
-            modalTitle.classList.add('text-red-400');
-            icon.className = "fas fa-exclamation-triangle";
-        } else {
-            modalTitle.classList.add('text-green-400');
-            icon.className = "fas fa-check-circle";
-        }
-        modalContainer.classList.remove('hidden');
-      };
+        <!-- Create Account Link -->
+        <div class="mt-8">
+            <button type="button" id="signup" class="text-sm text-gray-400 hover:text-white transition-colors">
+                Create a new account
+            </button>
+        </div>
 
-      const hideModal = () => {
-        modalContainer.classList.add('hidden');
-      };
+    </div>
 
-      // --- Remember Me Logic ---
+    <!-- Notification Modal (Windows Style) -->
+    <div id="modalContainer" class="fixed inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center p-4 z-[9000] hidden opacity-0 transition-opacity duration-200">
+        <div id="modal" class="bg-[#1f1f1f] border border-[#333] rounded-lg shadow-2xl overflow-hidden max-w-sm w-full transform scale-95 transition-transform duration-200">
+            <div class="p-6">
+                <h3 id="modalTitle" class="text-lg font-semibold text-white mb-2">Notification</h3>
+                <p id="modalMessage" class="text-sm text-gray-300 leading-relaxed">Message content.</p>
+            </div>
+            <div class="bg-[#252525] p-4 flex justify-end">
+                <button id="modalCloseBtn" class="bg-[#60cdff] hover:bg-[#4cc2ff] text-black font-medium py-1.5 px-6 rounded text-sm transition-colors">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
 
-      const checkSession = async () => {
-        const token = localStorage.getItem("current-token");
-        const isRemembered = localStorage.getItem("remember-me");
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            const serverLink = `https://api.litiaina.com`;
+            const loginForm = document.getElementById('loginForm');
+            const otpGroup = document.getElementById('otpGroup');
+            const otpInput = document.getElementById('loginOtp');
+            const authBtn = document.getElementById('authBtn');
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+            const authStatusText = document.getElementById('auth-status-text');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            
+            // --- Boot Animation ---
+            setTimeout(() => {
+                const boot = document.getElementById('boot-screen');
+                boot.style.opacity = '0';
+                setTimeout(() => boot.remove(), 800);
+            }, 1200);
 
-        // Only attempt to restore if we have a token AND the user checked "Remember Me"
-        if (token && isRemembered === "true") {
-            try {
-                // Show loading overlay
-                loadingOverlay.classList.remove('hidden');
-                
-                // Set a timeout to prevent infinite loading if the network hangs
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+            // --- Clock Logic ---
+            const updateClock = () => {
+                const now = new Date();
+                document.getElementById('clock-time').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                const options = { weekday: 'long', month: 'long', day: 'numeric' };
+                document.getElementById('clock-date').textContent = now.toLocaleDateString(undefined, options);
+            };
+            setInterval(updateClock, 1000);
+            updateClock();
 
-                // Verify Token
-                const response = await fetch(`${serverLink}/auth/check`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    },
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId);
-
-                const result = await response.json();
-
-                if (response.ok && result.valid === "true") {
-                    // Valid Token - Redirect
-                    // console.log("Session restored. Expires:", result.expiration);
-                    window.location.href = "n1";
+            // --- UI Helpers ---
+            const setLoading = (isLoading) => {
+                authBtn.disabled = isLoading;
+                if (isLoading) {
+                    btnText.classList.add('hidden');
+                    btnSpinner.classList.remove('hidden');
+                    authStatusText.textContent = "Verifying credentials...";
                 } else {
-                    // Invalid Token
-                    throw new Error("Session expired");
+                    btnText.classList.remove('hidden');
+                    btnSpinner.classList.add('hidden');
+                    authStatusText.textContent = "Locked";
                 }
-            } catch (error) {
-                console.warn("Auto-login failed:", error);
-                // Clear invalid session data
-                localStorage.removeItem("current-token");
-                localStorage.removeItem("remember-me");
-                // Hide overlay to show login form
-                loadingOverlay.classList.add('hidden');
-            }
-        }
-      };
+            };
 
-      // Run session check immediately
-      await checkSession();
+            const showModal = (title, message, isError = true) => {
+                const titleEl = document.getElementById('modalTitle');
+                titleEl.textContent = title;
+                titleEl.className = isError ? "text-lg font-semibold text-red-400 mb-2" : "text-lg font-semibold text-white mb-2";
+                
+                document.getElementById('modalMessage').textContent = message;
+                const c = document.getElementById('modalContainer');
+                const m = document.getElementById('modal');
+                c.classList.remove('hidden');
+                void c.offsetWidth;
+                c.classList.remove('opacity-0');
+                m.classList.remove('scale-95');
+                m.classList.add('scale-100');
+            };
 
+            document.getElementById('modalCloseBtn').onclick = () => {
+                const c = document.getElementById('modalContainer');
+                c.classList.add('opacity-0');
+                setTimeout(() => c.classList.add('hidden'), 200);
+            };
 
-      // --- Event Listeners ---
+            // --- Focus Effects (Move Clock) ---
+            const inputs = document.querySelectorAll('.n1-input');
+            const clock = document.getElementById('lock-clock');
+            const wallpaper = document.getElementById('wallpaper');
 
-      document.getElementById("signup").onclick = () => window.location.href = "signup";
-
-      document.getElementById("forgotPassword").onclick = () => {
-        showModal("System Notice", "Password recovery protocols are offline. Contact the administrator.");
-      };
-
-      modalCloseBtn.addEventListener('click', hideModal);
-      modalContainer.addEventListener('click', (e) => {
-        if (e.target === modalContainer) hideModal();
-      });
-
-      loginForm.addEventListener('submit', async function (e) {
-        e.preventDefault();
-        setLoading(true);
-
-        const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPassword').value;
-        const otp = otpInput.value.trim();
-        const rememberMe = document.getElementById('rememberMe').checked;
-
-        if (!email || !password) {
-          showModal("Input Error", "User identity and credential key are required.");
-          setLoading(false);
-          return;
-        }
-
-        try {
-          // Check 2FA
-          let otpRequired = false;
-          try {
-            const checkRes = await fetch(`${serverLink}/auth/account/2fa`, {
-              method: 'POST',
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email, password })
+            inputs.forEach(input => {
+                input.addEventListener('focus', () => {
+                    clock.style.transform = "translateY(-150px) scale(0.8)";
+                    clock.style.opacity = "0.3";
+                    wallpaper.style.filter = "blur(10px)"; // Windows blur effect
+                    wallpaper.style.transform = "scale(1.05)";
+                });
+                input.addEventListener('blur', () => {
+                    setTimeout(() => {
+                        if(!document.activeElement.classList.contains('n1-input')) {
+                            clock.style.transform = "translateY(0) scale(1)";
+                            clock.style.opacity = "1";
+                            wallpaper.style.filter = "blur(0px)";
+                            wallpaper.style.transform = "scale(1)";
+                        }
+                    }, 100);
+                });
             });
-            if (checkRes.ok) {
-              const result = await checkRes.json();
-              otpRequired = result.enabled === true;
-            }
-          } catch (e) { console.warn("2FA check skipped", e); }
 
-          if (otpRequired) {
-            otpGroup.classList.remove('hidden');
-            if (!otp) {
-              showModal("Security Challenge", "Two-Factor Authentication is active for this account. Please provide your token.");
-              setLoading(false);
-              return;
-            }
-          }
+            // --- Navigation ---
+            document.getElementById("signup").onclick = () => {
+                // Fade out effect
+                document.body.style.opacity = 0;
+                setTimeout(() => window.location.href = "../signup", 400); 
+            };
 
-          // Login
-          const loginRes = await fetch(`${serverLink}/auth/login`, {
-            method: 'POST',
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password, otp: otp || "" })
-          });
+            // --- Session Check ---
+            const checkSession = async () => {
+                const token = localStorage.getItem("current-token");
+                const isRemembered = localStorage.getItem("remember-me");
+                if (token && isRemembered === "true") {
+                    document.getElementById('loginContainer').style.display = 'none';
+                    document.getElementById('lock-clock').style.display = 'none';
+                    loadingOverlay.classList.remove('hidden');
+                    
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 8000); 
 
-          const loginResult = await loginRes.json();
+                        const response = await fetch(`${serverLink}/auth/check`, {
+                            method: 'GET',
+                            headers: { 'Authorization': `Bearer ${token}` },
+                            signal: controller.signal
+                        });
+                        
+                        clearTimeout(timeoutId);
+                        const result = await response.json();
 
-          if (!loginRes.ok || !loginResult.response) {
-            throw new Error(loginResult.message || "Invalid credentials provided.");
-          }
+                        if (response.ok && result.valid === "true") {
+                            setTimeout(() => window.location.href = "../n1", 800);
+                        } else {
+                            throw new Error("Expired");
+                        }
+                    } catch (e) {
+                        loadingOverlay.classList.add('hidden');
+                        document.getElementById('loginContainer').style.display = 'flex';
+                        document.getElementById('lock-clock').style.display = 'block';
+                        localStorage.removeItem("current-token");
+                        localStorage.removeItem("remember-me");
+                    }
+                }
+            };
+            await checkSession();
 
-          const token = loginResult.token;
-          
-          // Get Account Details
-          const accRes = await fetch(`${serverLink}/auth/account`, {
-            method: 'POST',
-            headers: {
-              "Content-Type": "application/json",
-              "authorization": `Bearer ${token}`,
-            },
-            body: JSON.stringify({ email })
-          });
+            // --- Login Logic ---
+            loginForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                setLoading(true);
 
-          if (!accRes.ok) throw new Error("Failed to retrieve user profile.");
+                const email = document.getElementById('loginEmail').value.trim();
+                const password = document.getElementById('loginPassword').value;
+                const otp = otpInput.value.trim();
+                const rememberMe = document.getElementById('rememberMe').checked;
 
-          const accountDetails = await accRes.json();
+                if (!email || !password) {
+                    showModal("Attention", "Please enter both your email and password.");
+                    setLoading(false);
+                    return;
+                }
 
-          // Store Session Data
-          localStorage.setItem("current-account-email", email);
-          localStorage.setItem("current-token", token);
-          localStorage.setItem("current-account-uid", accountDetails.uid);
-          localStorage.setItem("current-account-name", accountDetails.name);
-          localStorage.setItem("current-capacity", accountDetails.allocated_storage);
+                try {
+                    // Check 2FA
+                    let otpRequired = false;
+                    try {
+                        const checkRes = await fetch(`${serverLink}/auth/account/2fa`, {
+                            method: 'POST',
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ email, password })
+                        });
+                        if (checkRes.ok) {
+                            const result = await checkRes.json();
+                            otpRequired = result.enabled === true;
+                        }
+                    } catch (e) { console.warn("2FA check skipped", e); }
 
-          // Handle "Remember Me"
-          if (rememberMe) {
-            localStorage.setItem("remember-me", "true");
-          } else {
-            localStorage.removeItem("remember-me");
-          }
+                    if (otpRequired) {
+                        otpGroup.classList.remove('hidden');
+                        if (!otp) {
+                            showModal("Security Verification", "Enter your 2FA code.", false);
+                            otpInput.focus();
+                            setLoading(false);
+                            return;
+                        }
+                    }
 
-          showModal("Access Granted", "Initializing desktop environment...", false);
+                    // Login
+                    const loginRes = await fetch(`${serverLink}/auth/login`, {
+                        method: 'POST',
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email, password, otp: otp || "" })
+                    });
 
-          setTimeout(() => {
-            window.location.href = "n1";
-          }, 1500);
+                    const loginResult = await loginRes.json();
 
-        } catch (err) {
-          showModal("Access Denied", err.message);
-        } finally {
-          setLoading(false);
-        }
-      });
-    });
-  </script>
+                    if (!loginRes.ok || !loginResult.response) {
+                        throw new Error(loginResult.message || "Incorrect email or password.");
+                    }
+
+                    const token = loginResult.token;
+                    
+                    // Get Account Details
+                    const accRes = await fetch(`${serverLink}/auth/account`, {
+                        method: 'POST',
+                        headers: {
+                            "Content-Type": "application/json",
+                            "authorization": `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({ email })
+                    });
+
+                    if (!accRes.ok) throw new Error("Failed to retrieve user profile.");
+
+                    const accountDetails = await accRes.json();
+
+                    // Store Session Data
+                    localStorage.setItem("current-account-email", email);
+                    localStorage.setItem("current-token", token);
+                    localStorage.setItem("current-account-uid", accountDetails.uid);
+                    localStorage.setItem("current-account-name", accountDetails.name);
+                    localStorage.setItem("current-capacity", accountDetails.allocated_storage);
+
+                    // Handle "Remember Me"
+                    if (rememberMe) {
+                        localStorage.setItem("remember-me", "true");
+                    } else {
+                        localStorage.removeItem("remember-me");
+                    }
+
+                    authStatusText.textContent = `Welcome, ${accountDetails.name}`;
+                    
+                    // Artificial delay for "logging in" feel
+                    loadingOverlay.classList.remove('hidden');
+                    document.getElementById('loginContainer').style.opacity = '0';
+                    document.getElementById('lock-clock').style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        window.location.href = "../n1";
+                    }, 1000);
+
+                } catch (err) {
+                    showModal("Login Failed", err.message);
+                    setLoading(false);
+                }
+            });
+        });
+    </script>
 </body>
 </html>
