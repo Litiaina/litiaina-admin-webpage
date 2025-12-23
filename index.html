@@ -3,8 +3,8 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>N1 Cloud - Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Litiaina N1</title>
     <link rel="icon" type="image/png" href="images/litiaina_icon_48x48.png">
 
     <!-- Tailwind CSS -->
@@ -15,149 +15,159 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        :root {
-            --win-bg-desktop: #202020;
-            --win-glass: rgba(32, 32, 32, 0.60);
-            --win-glass-border: rgba(255, 255, 255, 0.08);
-            --accent-color: #60cdff;
-            --accent-hover: #4cc2ff;
-            --text-primary: #ffffff;
-            --input-bg: rgba(0, 0, 0, 0.3);
-            --input-border: #555;
-            --input-focus: rgba(0, 0, 0, 0.5);
-        }
-
-        body {
-            font-family: 'Segoe UI', 'Inter', sans-serif;
-            background-color: var(--win-bg-desktop);
-            color: var(--text-primary);
-            overflow: hidden;
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            user-select: none;
+        /* CRITICAL CSS: Runs immediately to prevent raw HTML flash */
+        html, body {
             margin: 0;
             padding: 0;
-        }
-
-        /* Wallpaper Background */
-        #wallpaper {
-            position: absolute;
-            inset: 0;
-            background-image: url('images/n1-cloud-professional-wallpaper.jpg');
-            background-size: cover;
-            background-position: center;
-            /* Overlay to match the desktop tint */
-            box-shadow: inset 0 0 0 100vmax rgba(0, 0, 0, 0.2); 
-            z-index: -1;
-            transition: transform 0.5s cubic-bezier(0.1, 0.9, 0.2, 1), filter 0.5s ease;
-        }
-
-        /* Input Styling - Matching Index.html feel */
-        .n1-input {
-            background-color: var(--input-bg);
-            border: 1px solid var(--input-border);
-            border-bottom: 2px solid var(--input-border);
+            width: 100%;
+            height: 100%;
+            background-color: #000000; /* True Black */
             color: white;
-            transition: all 0.2s cubic-bezier(0.1, 0.9, 0.2, 1);
-            font-size: 14px;
-            backdrop-filter: blur(10px);
+            font-family: 'Segoe UI', 'Inter', sans-serif;
+            overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .n1-input:focus {
-            background-color: var(--input-focus);
-            border-color: #666;
-            border-bottom-color: var(--accent-color);
-            outline: none;
-        }
-
-        .n1-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-            font-weight: 300;
-        }
-
-        /* Animations */
-        .fade-in {
-            animation: fadeIn 0.8s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
-            opacity: 0;
-            transform: translateY(20px);
-        }
-
-        @keyframes fadeIn {
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Boot Screen */
+        /* Pure CSS Boot Screen */
         #boot-screen {
             position: fixed;
-            inset: 0;
-            background: #000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000000; 
             z-index: 9999;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: opacity 0.8s ease-in-out;
+            transition: opacity 0.8s ease-out, visibility 0.8s;
         }
 
-        /* Loading Spinner (Windows Style Dots) */
-        .dots-loader {
-            display: flex;
-            gap: 5px;
-            margin-top: 40px;
+        /* Cloak Main Content Initially */
+        #main-content {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        .dot {
-            width: 5px;
-            height: 5px;
-            background: white;
+
+        #main-content.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- Theme Variables --- */
+        :root {
+            --glass-bg: rgba(0, 0, 0, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent-color: #60cdff;
+            --accent-glow: rgba(96, 205, 255, 0.4);
+            --text-primary: #ffffff;
+        }
+
+        /* Wallpaper Background */
+        #wallpaper {
+            position: fixed;
+            inset: 0;
+            /* Ensure visibility over body background */
+            z-index: 0;
+            /* Neutral Dark Gradient Fallback */
+            background: radial-gradient(circle at top right, #1a1a1a, #000000);
+            /* Local Image Path */
+            background-image: url('images/n1-cloud-professional-wallpaper.jpg'); 
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: transform 0.6s ease, filter 0.6s ease;
+        }
+
+        #wallpaper::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            /* Neutral Black Overlay */
+            background: rgba(0, 0, 0, 0.6); 
+            backdrop-filter: blur(0px);
+        }
+
+        /* --- Components --- */
+
+        .n1-input {
+            width: 100%;
+            /* Neutral dark glass */
+            background-color: rgba(0, 0, 0, 0.6); 
+            border: 1px solid var(--glass-border);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 16px; 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+        }
+
+        .n1-input::placeholder { color: rgba(255, 255, 255, 0.5); }
+
+        .n1-input:focus {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-color: rgba(255, 255, 255, 0.4);
+            border-bottom-color: var(--accent-color);
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        .glass-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        .glass-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 15px rgba(96, 205, 255, 0.2);
+        }
+
+        .glass-btn:active { transform: scale(0.98); }
+
+        .profile-container {
+            position: relative;
             border-radius: 50%;
+            padding: 4px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s ease;
+        }
+        .profile-container:hover { transform: scale(1.05); border-color: rgba(255,255,255,0.3); }
+
+        .custom-checkbox {
+            appearance: none;
+            background-color: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 3px;
+            width: 16px; height: 16px;
+            display: grid; place-content: center;
+            cursor: pointer;
+        }
+        .custom-checkbox::before {
+            content: "\2713"; font-size: 10px; color: black; font-weight: 800;
+            transform: scale(0); transition: 0.1s;
+        }
+        .custom-checkbox:checked { background-color: var(--accent-color); border-color: var(--accent-color); }
+        .custom-checkbox:checked::before { transform: scale(1); }
+
+        .dots-loader { display: flex; gap: 6px; }
+        .dots-loader .dot {
+            width: 8px; height: 8px; background: white; border-radius: 50%;
             animation: bounce 1.4s infinite ease-in-out both;
         }
         .dot:nth-child(1) { animation-delay: -0.32s; }
         .dot:nth-child(2) { animation-delay: -0.16s; }
-        
-        @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); opacity: 0; }
-            40% { transform: scale(1.5); opacity: 1; }
-        }
-
-        /* Lock Screen Clock Positioning */
-        #lock-clock {
-            transition: all 0.5s cubic-bezier(0.1, 0.9, 0.2, 1);
-            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-
-        /* Custom Checkbox */
-        .custom-checkbox {
-            appearance: none;
-            background-color: transparent;
-            margin: 0;
-            width: 18px;
-            height: 18px;
-            border: 1px solid #999;
-            border-radius: 2px;
-            display: grid;
-            place-content: center;
-            transition: all 0.1s;
-        }
-        .custom-checkbox:hover { border-color: white; }
-        .custom-checkbox::before {
-            content: "\2713";
-            font-size: 14px;
-            color: black;
-            font-weight: 700;
-            transform: scale(0);
-            transition: 0.1s transform ease-in-out;
-        }
-        .custom-checkbox:checked {
-            background-color: var(--accent-color);
-            border-color: var(--accent-color);
-        }
-        .custom-checkbox:checked::before { transform: scale(1); }
-
+        .dot:nth-child(3) { animation-delay: 0s; }
+        .dot:nth-child(4) { animation-delay: 0.16s; }
+        .dot:nth-child(5) { animation-delay: 0.32s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); opacity: 0; } 40% { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 
@@ -168,107 +178,93 @@
 
     <!-- Boot Screen -->
     <div id="boot-screen">
-        <div class="flex flex-col items-center mb-10">
-            <img src="images/litiaina_icon_48x48.png" alt="logo" class="w-16 h-16 object-contain mb-8" />
-            <div class="dots-loader">
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
-            </div>
+        <img src="images/litiaina_icon_48x48.png" alt="logo" style="width: 64px; height: 64px; margin-bottom: 32px; opacity: 0.9;" />
+        <div class="dots-loader">
+            <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
         </div>
     </div>
 
-    <!-- Session Restoration Overlay -->
-    <div id="loadingOverlay" class="hidden fixed inset-0 bg-black/60 z-[8000] flex flex-col items-center justify-center backdrop-blur-xl transition-all duration-500">
-        <div class="w-10 h-10 border-[3px] border-[#60cdff] border-t-transparent rounded-full animate-spin mb-6"></div>
-        <h2 class="text-xl font-light tracking-wide text-white">Welcome</h2>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-black/80 z-[8000] flex flex-col items-center justify-center backdrop-blur-md transition-all duration-300">
+        <div class="w-10 h-10 border-2 border-t-transparent border-[#60cdff] rounded-full animate-spin mb-4"></div>
+        <h2 class="text-lg font-light tracking-wide text-white">Loading...</h2>
     </div>
 
-    <!-- Lock Screen Clock -->
-    <div id="lock-clock" class="absolute top-[15%] text-center z-0 select-none">
-        <div id="clock-time" class="text-[6rem] leading-none font-light tracking-tighter text-white font-[Segoe UI Light]">12:00</div>
-        <div id="clock-date" class="text-2xl font-normal text-white mt-2">Wednesday, December 17</div>
-    </div>
+    <!-- Main Container -->
+    <main id="main-content" class="relative z-10 w-full min-h-screen flex flex-col items-center justify-center p-6">
 
-    <!-- Login Container -->
-    <div class="relative z-10 w-full max-w-[360px] fade-in flex flex-col items-center justify-center" id="loginContainer">
-        
-        <!-- User Profile -->
-        <div class="flex flex-col items-center mb-8 w-full group">
-            <div class="w-40 h-40 rounded-full p-1 mb-4 relative transition-transform duration-300 group-hover:scale-105">
-                <!-- User Avatar Ring -->
-                <div class="absolute inset-0 rounded-full border border-white/10"></div>
-                <div class="w-full h-full rounded-full bg-[#333] overflow-hidden relative shadow-2xl">
-                    <img src="images/litiaina_icon.png" onerror="this.src='https://placehold.co/160x160/333/888?text=U'" class="w-full h-full object-cover">
-                </div>
+        <!-- Clock Section -->
+        <div id="clock-container" class="w-full flex flex-col items-center select-none text-center mb-8 md:mb-12 transition-all duration-300">
+            <div id="clock-time" class="text-6xl sm:text-7xl md:text-8xl lg:text-9xl leading-none font-light tracking-tight text-white font-[Segoe UI Light] drop-shadow-lg">
+                12:00
             </div>
-            <h1 class="text-2xl font-semibold text-white tracking-wide mb-1">N1 User</h1>
-            <p id="auth-status-text" class="text-sm text-gray-300 font-light" style="min-height: 20px;">Locked</p>
+            <div id="clock-date" class="text-lg sm:text-xl md:text-2xl font-normal text-white/80 mt-2 drop-shadow-md">
+                Wednesday, December 17
+            </div>
         </div>
 
-        <!-- Login Form -->
-        <form id="loginForm" class="w-full space-y-4">
+        <!-- Login Card -->
+        <div id="loginContainer" class="w-full max-w-sm flex flex-col items-center">
             
-            <div class="space-y-2">
-                <!-- Email Input -->
-                <div class="relative w-full">
-                    <input type="email" id="loginEmail" placeholder="Email" required
-                        class="n1-input w-full px-4 py-2.5 rounded-md" />
+            <!-- User Profile -->
+            <div class="flex flex-col items-center mb-6 w-full group">
+                <div class="profile-container mb-4 w-24 h-24 sm:w-32 sm:h-32">
+                    <div class="w-full h-full rounded-full bg-[#333] overflow-hidden relative shadow-2xl">
+                        <!-- Path to User Image -->
+                        <img src="images/litiaina_icon.png" 
+                                onerror="this.src='https://placehold.co/150x150/333/FFF?text=User'" 
+                                class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity">
+                    </div>
                 </div>
-
-                <!-- Password Input -->
-                <div class="relative w-full">
-                    <input type="password" id="loginPassword" placeholder="Password" required
-                        class="n1-input w-full px-4 py-2.5 rounded-md" />
-                </div>
-
-                <!-- OTP (Hidden by default) -->
-                <div class="relative hidden slide-up" id="otpGroup">
-                    <input type="text" id="loginOtp" placeholder="Authentication Code"
-                        class="n1-input w-full px-4 py-2.5 rounded-md text-center tracking-widest font-mono" />
-                </div>
+                <h1 class="text-xl sm:text-2xl font-semibold text-white tracking-wide mb-1 drop-shadow-md">N1</h1>
+                <p id="auth-status-text" class="text-sm text-gray-300 font-light min-h-[1.25rem]">Locked</p>
             </div>
 
-            <!-- Action Button -->
-            <button type="submit" id="authBtn"
-                class="w-full bg-white/10 hover:bg-white/20 text-white font-normal py-2 rounded-md border border-white/5 transition-all duration-200 backdrop-blur-sm flex items-center justify-center gap-2 group active:scale-95">
-                <span id="btnText">Sign In</span>
-                <i class="fas fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity -ml-4 group-hover:ml-0 text-sm"></i>
-                <i id="btnSpinner" class="fas fa-circle-notch fa-spin hidden"></i>
-            </button>
+            <!-- Login Form -->
+            <form id="loginForm" class="w-full space-y-4">
+                
+                <div class="space-y-3">
+                    <input type="email" id="loginEmail" placeholder="Email" required class="n1-input" autocomplete="email" />
+                    <input type="password" id="loginPassword" placeholder="Password" required class="n1-input" autocomplete="current-password" />
+                    
+                    <div class="hidden" id="otpGroup">
+                        <input type="text" id="loginOtp" placeholder="Code" maxlength="6" class="n1-input text-center tracking-[0.5em] font-mono" />
+                    </div>
+                </div>
 
-            <!-- Controls -->
-            <div class="flex justify-between items-center text-xs mt-6 px-1">
-                <label class="flex items-center text-gray-300 hover:text-white cursor-pointer transition-colors gap-2 select-none">
-                    <input type="checkbox" id="rememberMe" class="custom-checkbox"> 
-                    <span>Keep me signed in</span>
-                </label>
-                <span id="forgotPassword" class="text-gray-300 hover:text-[#60cdff] cursor-pointer transition-colors">I forgot my password</span>
+                <button type="submit" id="authBtn" class="glass-btn w-full mt-2 text-white font-medium py-3 rounded-md backdrop-blur-sm flex items-center justify-center gap-2">
+                    <span id="btnText">Sign In</span>
+                    <i id="btnSpinner" class="fas fa-circle-notch fa-spin hidden"></i>
+                </button>
+
+                <div class="flex flex-row justify-between items-center text-xs mt-6 px-1 text-gray-400">
+                    <label class="flex items-center hover:text-white cursor-pointer transition-colors gap-2 select-none">
+                        <input type="checkbox" id="rememberMe" class="custom-checkbox"> 
+                        <span>Keep me signed in</span>
+                    </label>
+                    <span id="forgotPassword" class="hover:text-[#60cdff] cursor-pointer transition-colors">Forgot password?</span>
+                </div>
+            </form>
+            
+            <div class="mt-8 mb-4">
+                <button type="button" id="signup" class="text-sm text-gray-500 hover:text-white transition-colors">
+                    Create a new account
+                </button>
             </div>
-
-        </form>
-        
-        <!-- Create Account Link -->
-        <div class="mt-8">
-            <button type="button" id="signup" class="text-sm text-gray-400 hover:text-white transition-colors">
-                Create a new account
-            </button>
         </div>
 
-    </div>
+    </main>
 
-    <!-- Notification Modal (Windows Style) -->
-    <div id="modalContainer" class="fixed inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center p-4 z-[9000] hidden opacity-0 transition-opacity duration-200">
-        <div id="modal" class="bg-[#1f1f1f] border border-[#333] rounded-lg shadow-2xl overflow-hidden max-w-sm w-full transform scale-95 transition-transform duration-200">
+    <!-- Modal -->
+    <div id="modalContainer" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-[9000] hidden opacity-0 transition-all duration-300">
+        <div id="modal" class="bg-[#1f1f1f] border border-white/10 rounded-lg shadow-2xl max-w-sm w-full transform scale-95 transition-all duration-300">
             <div class="p-6">
                 <h3 id="modalTitle" class="text-lg font-semibold text-white mb-2">Notification</h3>
                 <p id="modalMessage" class="text-sm text-gray-300 leading-relaxed">Message content.</p>
             </div>
-            <div class="bg-[#252525] p-4 flex justify-end">
-                <button id="modalCloseBtn" class="bg-[#60cdff] hover:bg-[#4cc2ff] text-black font-medium py-1.5 px-6 rounded text-sm transition-colors">
-                    OK
+            <div class="bg-[#252525] p-4 flex justify-end rounded-b-lg">
+                <button id="modalCloseBtn" class="bg-white/10 hover:bg-white/20 text-white py-1.5 px-4 rounded text-sm transition-colors border border-white/5">
+                    Close
                 </button>
             </div>
         </div>
@@ -277,6 +273,10 @@
     <script>
         document.addEventListener('DOMContentLoaded', async function () {
             const serverLink = `https://api.litiaina.com`;
+            
+            // DOM Elements
+            const bootScreen = document.getElementById('boot-screen');
+            const mainContent = document.getElementById('main-content');
             const loginForm = document.getElementById('loginForm');
             const otpGroup = document.getElementById('otpGroup');
             const otpInput = document.getElementById('loginOtp');
@@ -285,15 +285,23 @@
             const btnSpinner = document.getElementById('btnSpinner');
             const authStatusText = document.getElementById('auth-status-text');
             const loadingOverlay = document.getElementById('loadingOverlay');
+            const wallpaper = document.getElementById('wallpaper');
+            const clockContainer = document.getElementById('clock-container');
+            const loginContainer = document.getElementById('loginContainer');
             
-            // --- Boot Animation ---
-            setTimeout(() => {
-                const boot = document.getElementById('boot-screen');
-                boot.style.opacity = '0';
-                setTimeout(() => boot.remove(), 800);
-            }, 1200);
+            // Boot Sequence
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    bootScreen.style.opacity = '0';
+                    bootScreen.style.visibility = 'hidden';
+                    setTimeout(() => {
+                        mainContent.classList.add('visible');
+                        setTimeout(() => bootScreen.remove(), 800);
+                    }, 200);
+                }, 800); 
+            });
 
-            // --- Clock Logic ---
+            // Clock Logic
             const updateClock = () => {
                 const now = new Date();
                 document.getElementById('clock-time').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -303,13 +311,13 @@
             setInterval(updateClock, 1000);
             updateClock();
 
-            // --- UI Helpers ---
+            // UI Helpers
             const setLoading = (isLoading) => {
                 authBtn.disabled = isLoading;
                 if (isLoading) {
                     btnText.classList.add('hidden');
                     btnSpinner.classList.remove('hidden');
-                    authStatusText.textContent = "Verifying credentials...";
+                    authStatusText.textContent = "Verifying...";
                 } else {
                     btnText.classList.remove('hidden');
                     btnSpinner.classList.add('hidden');
@@ -321,7 +329,6 @@
                 const titleEl = document.getElementById('modalTitle');
                 titleEl.textContent = title;
                 titleEl.className = isError ? "text-lg font-semibold text-red-400 mb-2" : "text-lg font-semibold text-white mb-2";
-                
                 document.getElementById('modalMessage').textContent = message;
                 const c = document.getElementById('modalContainer');
                 const m = document.getElementById('modal');
@@ -332,50 +339,54 @@
                 m.classList.add('scale-100');
             };
 
-            document.getElementById('modalCloseBtn').onclick = () => {
+            const hideModal = () => {
                 const c = document.getElementById('modalContainer');
+                const m = document.getElementById('modal');
                 c.classList.add('opacity-0');
-                setTimeout(() => c.classList.add('hidden'), 200);
+                m.classList.add('scale-95');
+                m.classList.remove('scale-100');
+                setTimeout(() => c.classList.add('hidden'), 300);
             };
+            document.getElementById('modalCloseBtn').onclick = hideModal;
 
-            // --- Focus Effects (Move Clock) ---
+            // Focus Effects
             const inputs = document.querySelectorAll('.n1-input');
-            const clock = document.getElementById('lock-clock');
-            const wallpaper = document.getElementById('wallpaper');
-
             inputs.forEach(input => {
                 input.addEventListener('focus', () => {
-                    clock.style.transform = "translateY(-150px) scale(0.8)";
-                    clock.style.opacity = "0.3";
-                    wallpaper.style.filter = "blur(10px)"; // Windows blur effect
-                    wallpaper.style.transform = "scale(1.05)";
+                    wallpaper.style.filter = "blur(5px)";
+                    wallpaper.style.transform = "scale(1.02)";
+                    if(window.innerHeight > 600) { 
+                        clockContainer.style.opacity = "0.5";
+                        clockContainer.style.transform = "translateY(-10px)";
+                    }
                 });
                 input.addEventListener('blur', () => {
                     setTimeout(() => {
                         if(!document.activeElement.classList.contains('n1-input')) {
-                            clock.style.transform = "translateY(0) scale(1)";
-                            clock.style.opacity = "1";
                             wallpaper.style.filter = "blur(0px)";
                             wallpaper.style.transform = "scale(1)";
+                            clockContainer.style.opacity = "1";
+                            clockContainer.style.transform = "translateY(0)";
                         }
                     }, 100);
                 });
             });
 
-            // --- Navigation ---
+            // Navigation - Signup
             document.getElementById("signup").onclick = () => {
-                // Fade out effect
-                document.body.style.opacity = 0;
-                setTimeout(() => window.location.href = "../signup", 400); 
+                mainContent.style.opacity = '0';
+                mainContent.style.transform = 'translateY(20px)';
+                // PATH FIX: signup is a folder
+                setTimeout(() => window.location.href = "signup/", 400); 
             };
 
-            // --- Session Check ---
+            // Session Check
             const checkSession = async () => {
                 const token = localStorage.getItem("current-token");
                 const isRemembered = localStorage.getItem("remember-me");
+                
                 if (token && isRemembered === "true") {
-                    document.getElementById('loginContainer').style.display = 'none';
-                    document.getElementById('lock-clock').style.display = 'none';
+                    mainContent.style.display = 'none'; 
                     loadingOverlay.classList.remove('hidden');
                     
                     try {
@@ -392,22 +403,21 @@
                         const result = await response.json();
 
                         if (response.ok && result.valid === "true") {
-                            setTimeout(() => window.location.href = "../n1", 800);
+                            // PATH FIX: n1 is a folder
+                            setTimeout(() => window.location.href = "n1/", 800);
                         } else {
                             throw new Error("Expired");
                         }
                     } catch (e) {
                         loadingOverlay.classList.add('hidden');
-                        document.getElementById('loginContainer').style.display = 'flex';
-                        document.getElementById('lock-clock').style.display = 'block';
+                        mainContent.style.display = 'flex';
                         localStorage.removeItem("current-token");
-                        localStorage.removeItem("remember-me");
                     }
                 }
             };
             await checkSession();
 
-            // --- Login Logic ---
+            // Login Logic
             loginForm.addEventListener('submit', async function (e) {
                 e.preventDefault();
                 setLoading(true);
@@ -424,7 +434,6 @@
                 }
 
                 try {
-                    // Check 2FA
                     let otpRequired = false;
                     try {
                         const checkRes = await fetch(`${serverLink}/auth/account/2fa`, {
@@ -440,15 +449,16 @@
 
                     if (otpRequired) {
                         otpGroup.classList.remove('hidden');
+                        otpGroup.style.display = 'block'; 
+                        
                         if (!otp) {
-                            showModal("Security Verification", "Enter your 2FA code.", false);
+                            showModal("Security Verification", "This account is protected by 2FA. Please enter your code.", false);
                             otpInput.focus();
                             setLoading(false);
                             return;
                         }
                     }
 
-                    // Login
                     const loginRes = await fetch(`${serverLink}/auth/login`, {
                         method: 'POST',
                         headers: { "Content-Type": "application/json" },
@@ -463,7 +473,6 @@
 
                     const token = loginResult.token;
                     
-                    // Get Account Details
                     const accRes = await fetch(`${serverLink}/auth/account`, {
                         method: 'POST',
                         headers: {
@@ -477,14 +486,12 @@
 
                     const accountDetails = await accRes.json();
 
-                    // Store Session Data
                     localStorage.setItem("current-account-email", email);
                     localStorage.setItem("current-token", token);
                     localStorage.setItem("current-account-uid", accountDetails.uid);
                     localStorage.setItem("current-account-name", accountDetails.name);
                     localStorage.setItem("current-capacity", accountDetails.allocated_storage);
 
-                    // Handle "Remember Me"
                     if (rememberMe) {
                         localStorage.setItem("remember-me", "true");
                     } else {
@@ -492,14 +499,16 @@
                     }
 
                     authStatusText.textContent = `Welcome, ${accountDetails.name}`;
+                    authStatusText.classList.add('text-green-400');
                     
-                    // Artificial delay for "logging in" feel
                     loadingOverlay.classList.remove('hidden');
-                    document.getElementById('loginContainer').style.opacity = '0';
-                    document.getElementById('lock-clock').style.opacity = '0';
+                    
+                    mainContent.style.opacity = '0';
+                    mainContent.style.transform = 'translateY(20px)';
                     
                     setTimeout(() => {
-                        window.location.href = "../n1";
+                        // PATH FIX: n1 is a folder
+                        window.location.href = "n1/";
                     }, 1000);
 
                 } catch (err) {
