@@ -3817,7 +3817,6 @@
             }
             localStorage.setItem('starredItems', JSON.stringify(starredItems));
             
-            // Re-render if in Starred view or to update context menu icons
             if ($('#nav-starred').hasClass('active')) {
                 showStarredFiles();
             }
