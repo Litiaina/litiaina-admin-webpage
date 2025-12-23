@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>N1 Cloud</title>
+    <title>Litiaina</title>
     <link rel="icon" type="image/png" href="../images/litiaina_icon_48x48.png">
 
     <!-- Tailwind CSS -->
@@ -56,6 +56,7 @@
             user-select: none;
             color: var(--text-primary);
             cursor: default;
+            overscroll-behavior: none; /* Prevents bounce effect on mobile */
         }
 
         /* --- Desktop --- */
@@ -231,7 +232,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            min-width: 320px;
+            min-width: 300px; /* Lowered min-width for small phones */
             min-height: 200px;
             opacity: 0;
             transform: scale(0.95);
@@ -567,7 +568,7 @@
     <!-- Boot Screen -->
     <div id="boot-screen">
         <div class="animate-pulse flex flex-col items-center">
-            <img src="../images/litiaina_icon_48x48.png" alt="logo" class="w-20 h-20 mb-6" />
+            <img src="../images/litiaina_icon.png" alt="logo" class="w-20 h-20 mb-6" />
             <div class="h-1 w-32 bg-gray-800 rounded-full overflow-hidden">
                 <div class="h-full bg-blue-500 w-1/2 animate-[slide_1.5s_infinite_linear]"></div>
             </div>
@@ -603,7 +604,7 @@
         </div>
 
         <!-- Start Menu -->
-        <div id="start-menu" class="hidden absolute bottom-14 left-0 right-0 mx-auto w-[600px] h-[400px] bg-[#202020]/95 backdrop-blur-xl border border-[#333] rounded-lg shadow-2xl z-[4999] flex flex-col overflow-hidden">
+        <div id="start-menu" class="hidden absolute bottom-14 left-0 right-0 mx-auto w-[90vw] max-w-[600px] h-[400px] bg-[#202020]/95 backdrop-blur-xl border border-[#333] rounded-lg shadow-2xl z-[4999] flex flex-col overflow-hidden">
             <div class="p-6 bg-gradient-to-b from-[#333] to-[#202020] border-b border-white/5">
                 <input type="text" placeholder="Type here to search" class="w-full bg-[#1e1e1e] text-sm text-white px-4 py-2 rounded border border-[#444] focus:border-blue-500 outline-none">
             </div>
@@ -651,7 +652,7 @@
             <!-- Center Apps -->
             <div id="taskbar-apps">
                 <div class="start-btn" id="start-btn" title="Start" onclick="StartMenu.toggle()">
-                    <img src="../images/litiaina_icon_48x48.png" alt="Start" class="w-6 h-6">
+                    <img src="../images/litiaina_icon.png" alt="Start" class="w-6 h-6">
                 </div>
                 <!-- Dynamic Apps go here -->
             </div>
@@ -673,7 +674,7 @@
         <div id="windows-container">
 
             <!-- 1. FILE EXPLORER -->
-            <div id="win-file-explorer" class="window" style="width: 1000px; height: 650px; top: 60px; left: 100px; display: none;">
+            <div id="win-file-explorer" class="window" style="width: 80vw; height: 80vh; top: 10%; left: 10%; display: none;">
                 <div class="window-header">
                     <div class="window-title">
                         <img src="../images/litiaina_icon_48x48.png" class="w-4 h-4 opacity-70">
@@ -696,13 +697,13 @@
                          <i class="fas fa-hard-drive text-gray-400 mr-2"></i>
                          <div id="breadcrumb" class="breadcrumb w-full">Local Files</div>
                      </div>
-                     <div class="relative w-48">
+                     <div class="relative w-48 hidden sm:block">
                         <input type="text" id="searchInput" placeholder="Search" class="w-full bg-[#252525] border border-white/10 rounded h-8 px-3 text-xs text-white focus:border-blue-500 outline-none">
                      </div>
                 </div>
 
                 <!-- Sub-toolbar for actions -->
-                <div class="flex items-center gap-1 px-2 py-1 bg-[#1e1e1e] border-b border-white/5 text-xs">
+                <div class="flex items-center gap-1 px-2 py-1 bg-[#1e1e1e] border-b border-white/5 text-xs overflow-x-auto">
                     <button class="tool-btn" onclick="document.getElementById('newFolderBtnAction').click()">
                         <i class="fas fa-plus text-blue-400"></i> New
                     </button>
@@ -716,7 +717,7 @@
                 </div>
 
                 <div class="window-body">
-                    <div class="window-sidebar custom-scrollbar overflow-y-auto">
+                    <div class="window-sidebar custom-scrollbar overflow-y-auto hidden sm:flex">
                         <div class="text-[11px] font-semibold text-gray-500 uppercase px-3 py-2 mt-1">Quick Access</div>
                         <div class="nav-item active" id="nav-my-files" onclick="AppNav.navigate('my-files')">
                             <i class="fas fa-home text-blue-400"></i> Home
@@ -770,7 +771,7 @@
             </div>
 
             <!-- 2. RESOURCE MONITOR (Windows Style) -->
-            <div id="win-dashboard" class="window" style="width: 900px; height: 600px; top: 80px; left: 150px; display: none;">
+            <div id="win-dashboard" class="window" style="width: 80vw; height: 80vh; top: 10%; left: 10%; display: none;">
                 <div class="window-header">
                     <div class="window-title"><i class="fas fa-chart-line text-green-500"></i> Resource Monitor</div>
                     <div class="window-controls">
@@ -779,7 +780,7 @@
                     </div>
                 </div>
                 <div class="window-body">
-                    <div class="window-sidebar" style="width: 200px;">
+                    <div class="window-sidebar hidden sm:flex" style="width: 200px;">
                         <div class="nav-item active" onclick="ResMonitor.showTab('overview')">
                             <i class="fas fa-microchip mr-1"></i> Overview
                         </div>
@@ -788,9 +789,9 @@
                         <!-- Overview Tab -->
                         <div id="res-tab-overview" class="block">
                             <h2 class="text-xl font-light text-white mb-6">System Performance</h2>
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <!-- Account Info -->
-                                <div class="res-card col-span-2 flex gap-4 items-center p-4 bg-[#252525]">
+                                <div class="res-card col-span-1 md:col-span-2 flex gap-4 items-center p-4 bg-[#252525]">
                                     <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white text-xl shadow-lg">
                                         <i class="fas fa-user"></i>
                                     </div>
@@ -818,9 +819,9 @@
                                 </div>
 
                                 <!-- Storage Analysis -->
-                                <div class="res-card col-span-2 p-4">
-                                    <div class="flex gap-8">
-                                        <div class="w-1/3 flex flex-col items-center justify-center">
+                                <div class="res-card col-span-1 md:col-span-2 p-4">
+                                    <div class="flex flex-col sm:flex-row gap-8">
+                                        <div class="w-full sm:w-1/3 flex flex-col items-center justify-center">
                                             <div class="text-xs text-gray-400 mb-2">Storage Composition</div>
                                             <div class="relative w-32 h-32">
                                                 <canvas id="storage-pie-chart"></canvas>
@@ -858,7 +859,7 @@
             </div>
             
             <!-- 3. NOTEPAD (NEW) -->
-            <div id="win-notepad" class="window" style="width: 600px; height: 450px; top: 100px; left: 200px; display: none;">
+            <div id="win-notepad" class="window" style="width: 50vw; height: 50vh; top: 25%; left: 25%; display: none;">
                 <div class="window-header">
                     <div class="window-title"><i class="fas fa-sticky-note text-white"></i> Notepad</div>
                     <div class="window-controls">
@@ -903,7 +904,7 @@
             </div>
 
             <!-- 5. RECYCLE BIN -->
-            <div id="win-recycle-bin" class="window" style="width: 800px; height: 500px; top: 120px; left: 150px; display: none;">
+            <div id="win-recycle-bin" class="window" style="width: 80vw; height: 80vh; top: 10%; left: 10%; display: none;">
                 <div class="window-header">
                     <div class="window-title"><i class="fas fa-trash-can text-gray-400"></i> Recycle Bin</div>
                     <div class="window-controls">
@@ -958,7 +959,7 @@
 
     <!-- Win Style Modals -->
     <div id="newFolderModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
-        <div class="win-modal p-6 rounded-lg w-80 text-white">
+        <div class="win-modal p-6 rounded-lg w-full max-w-sm mx-4 text-white">
             <h3 class="font-semibold mb-4 text-sm">Create New Folder</h3>
             <input type="text" id="newFolderNameInput" placeholder="Name" class="bg-[#191919] border border-[#444] w-full p-2 rounded mb-6 text-sm focus:border-blue-500 outline-none text-white">
             <div class="flex justify-end gap-2">
@@ -969,7 +970,7 @@
     </div>
 
     <div id="newFragmentModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
-        <div class="win-modal p-6 rounded-lg w-80 text-white">
+        <div class="win-modal p-6 rounded-lg w-full max-w-sm mx-4 text-white">
             <h3 class="font-semibold mb-4 text-sm">Map Network Drive (Mount)</h3>
             <input type="text" id="newFragmentNameInput" placeholder="Mount Name" class="bg-[#191919] border border-[#444] w-full p-2 rounded mb-6 text-sm focus:border-blue-500 outline-none text-white">
             <div class="flex justify-end gap-2">
@@ -980,7 +981,7 @@
     </div>
 
     <div id="renameModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
-        <div class="win-modal p-6 rounded-lg w-96 text-white">
+        <div class="win-modal p-6 rounded-lg w-full max-w-sm mx-4 text-white">
             <h3 class="font-semibold mb-4 text-sm">Rename</h3>
             <input id="newObjectKeyInput" class="bg-[#191919] border border-[#444] w-full p-2 rounded mb-6 text-sm focus:border-blue-500 outline-none text-white">
             <div class="flex justify-end gap-2">
@@ -991,7 +992,7 @@
     </div>
 
     <div id="shareModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
-        <div class="win-modal p-6 rounded-lg w-96 text-white">
+        <div class="win-modal p-6 rounded-lg w-full max-w-sm mx-4 text-white">
             <h3 class="font-semibold mb-4 text-sm">Share File</h3>
             <div class="space-y-4">
                 <select id="shareDisposition" class="w-full bg-[#191919] border border-[#444] p-2 rounded text-sm outline-none text-white">
@@ -1012,8 +1013,22 @@
         </div>
     </div>
 
+    <div id="versionsModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
+        <div class="win-modal p-6 rounded-lg w-full max-w-md mx-4 text-white flex flex-col h-[600px]">
+            <h3 class="font-semibold mb-4 text-sm flex items-center gap-2"><i class="fas fa-history text-blue-400"></i> Version History</h3>
+            <div class="flex-1 overflow-y-auto custom-scrollbar border border-white/5 rounded p-2 mb-4 bg-[#191919]">
+                <div id="versionsList" class="flex flex-col gap-2">
+                    <div class="text-center text-gray-500 py-10">Loading versions...</div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button onclick="$('#versionsModal').addClass('hidden')" class="text-xs bg-[#333] hover:bg-[#444] text-white px-4 py-2 rounded">Close</button>
+            </div>
+        </div>
+    </div>
+
     <div id="genericModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[5000] hidden flex items-center justify-center">
-        <div class="win-modal p-6 rounded-lg w-96">
+        <div class="win-modal p-6 rounded-lg w-full max-w-sm mx-4">
             <h3 id="modalTitle" class="text-sm font-bold text-white mb-4">Title</h3>
             <div id="modalContent" class="text-sm text-gray-300 mb-6"></div>
             <div class="flex justify-end gap-2">
@@ -1023,8 +1038,8 @@
         </div>
     </div>
 
-    <div id="progressModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[6000] hidden flex-col items-center justify-center">
-        <div class="win-modal p-6 rounded-lg w-96">
+    <div id="progressModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[6000] hidden flex flex-col items-center justify-center">
+        <div class="win-modal p-6 rounded-lg w-full max-w-sm mx-4">
             <h3 id="progressTitle" class="text-sm font-bold text-white mb-4">Processing...</h3>
             <div class="w-full bg-[#333] rounded-full h-1 mb-3">
                 <div id="progressBar" class="bg-blue-600 h-1 rounded-full transition-all duration-200" style="width: 0%"></div>
@@ -1048,27 +1063,23 @@
         let clientSideFolders = [];
         let clientSideFragments = [];
         let starredItems = JSON.parse(localStorage.getItem('starredItems')) || [];
-        let trashedItems = JSON.parse(localStorage.getItem('trashedItems')) || [];
+        let trashedItems = [];
         let openFilesMap = new Map();
         let activeFragment = 'My Files';
         let currentPath = '';
         let currentView = 'tiles';
         let currentTrashView = 'list';
-        // Changed to localhost to match typical N1 backend setups by default
-        const serverLink = `https://storage.litiaina.com`; 
+        const serverLink = `https://drive.mch.local:50001`; 
         const token = localStorage.getItem("current-token")?.trim() || "";
         let totalCapacity = Number(localStorage.getItem("current-capacity")?.trim()) || (15 * 1024 * 1024 * 1024);
         let uploadQueue = [];
         let activeUploads = 0;
-        // HTTP/2 Optimization: Increased from 5 to 10 for parallel file uploads
         const MAX_CONCURRENT_UPLOADS = 1;
         const MB = 1024 * 1024;
 
-        // User Info from LocalStorage
         const userEmail = localStorage.getItem("current-account-email") || "user@n1cloud.com";
         const userName = localStorage.getItem("current-account-name") || "N1 User";
 
-        // Global App Logic
         const App = {
             logout: function() {
                 localStorage.removeItem('current-token'); 
@@ -1099,15 +1110,12 @@
             }
         };
 
-        // --- Notepad App ---
         const Notepad = {
             init: function() {
                 const saved = localStorage.getItem('notepad-content');
                 if (saved) {
                     document.getElementById('notepad-area').value = saved;
                 }
-                
-                // Auto save on input
                 document.getElementById('notepad-area').addEventListener('input', (e) => {
                     localStorage.setItem('notepad-content', e.target.value);
                     document.getElementById('notepad-status').innerText = 'Saved locally';
@@ -1135,7 +1143,6 @@
             }
         };
 
-        // --- Calendar App ---
         const CalendarApp = {
             date: new Date(),
             init: function() {
@@ -1145,22 +1152,15 @@
                 const year = this.date.getFullYear();
                 const month = this.date.getMonth();
                 const today = new Date();
-
-                // Set Title
                 const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
                 document.getElementById('cal-title').innerText = `${monthNames[month]} ${year}`;
-
                 const firstDay = new Date(year, month, 1).getDay();
                 const daysInMonth = new Date(year, month + 1, 0).getDate();
                 const grid = document.getElementById('cal-grid');
                 grid.innerHTML = '';
-
-                // Empty slots
                 for (let i = 0; i < firstDay; i++) {
                     grid.innerHTML += `<div></div>`;
                 }
-
-                // Days
                 for (let i = 1; i <= daysInMonth; i++) {
                     const isToday = i === today.getDate() && month === today.getMonth() && year === today.getFullYear();
                     const cls = isToday ? 'bg-blue-600 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center mx-auto' : 'w-8 h-8 flex items-center justify-center mx-auto hover:bg-white/10 rounded-full cursor-pointer text-gray-300';
@@ -1177,12 +1177,9 @@
             }
         };
 
-        // Stats for Network Graph
-        // Removed global variable since each upload calculates its own speed now
-
-        // Selection Manager State
+        // --- Selection Manager ---
         const SelectionManager = {
-            selectedItems: new Set(), // Set of strings: "folder:name" or "file:key"
+            selectedItems: new Set(),
             lastSelectedIndex: -1,
             clear: function () {
                 this.selectedItems.clear();
@@ -1190,7 +1187,6 @@
             },
             toggle: function (id, isRange = false, allItems = []) {
                 if (isRange && this.lastSelectedIndex !== -1 && allItems.length > 0) {
-                    // Range logic
                     const currentIndex = allItems.findIndex(i => i.id === id);
                     if (currentIndex !== -1) {
                         const start = Math.min(this.lastSelectedIndex, currentIndex);
@@ -1204,7 +1200,6 @@
                         this.selectedItems.delete(id);
                     } else {
                         this.selectedItems.add(id);
-                        // Find index for range selection
                         if (allItems.length) {
                             this.lastSelectedIndex = allItems.findIndex(i => i.id === id);
                         }
@@ -1221,13 +1216,11 @@
                 this.updateUI();
             },
             updateUI: function () {
-                // Update Visuals
                 document.querySelectorAll('.file-item').forEach(el => {
                     const id = el.dataset.id;
                     if (this.selectedItems.has(id)) el.classList.add('selected');
                     else el.classList.remove('selected');
                 });
-                // Update Status Bar
                 const count = this.selectedItems.size;
                 document.getElementById('selection-status').textContent = `${count} item${count !== 1 ? 's' : ''} selected`;
             },
@@ -1250,7 +1243,6 @@
             has(key) { return this.map.has(key); },
             set(key, url) {
                 if (this.map.has(key)) return;
-
                 if (this.map.size >= this.maxSize) {
                     const firstKey = this.map.keys().next().value;
                     const oldUrl = this.map.get(firstKey);
@@ -1261,77 +1253,51 @@
             }
         };
 
-        // --- Thumbnail Queue System ---
         const ThumbnailLoader = {
             queue: [],
             processing: new Set(),
-            maxConcurrent: 4, // Reduced from 8 to keep UI responsive
-
+            maxConcurrent: 4,
             enqueue: function (imgElement, fragment, key) {
                 if (thumbnailCache.has(key)) {
                     this.apply(imgElement, thumbnailCache.get(key));
                     return;
                 }
-
-                // Avoid adding duplicates to queue
                 if (this.queue.some(item => item.key === key)) return;
-
-                // Add to queue
                 this.queue.push({ imgElement, fragment, key });
                 this.process();
             },
-
             process: async function () {
                 if (this.processing.size >= this.maxConcurrent || this.queue.length === 0) return;
-
                 const item = this.queue.shift();
                 const { imgElement, fragment, key } = item;
-
-                // --- PERFORMANCE FIX ---
-                // If the element is no longer in the DOM (user scrolled past it), 
-                // DROP the request. Do not download.
                 if (!imgElement.isConnected) {
-                    this.process(); // Skip to next
+                    this.process();
                     return;
                 }
-
                 this.processing.add(key);
-
                 try {
-                    // Fetch logic
                     const directUrl = `${serverLink}/v4/fragment/object/get/${fragment}/${key}`;
                     const res = await fetch(directUrl, {
                         headers: { 'Authorization': `Bearer ${token}` },
-                        // Optional: Add AbortSignal here if you want to cancel mid-flight requests
                     });
-
                     if (!res.ok) throw new Error('Fetch failed');
-
                     const blob = await res.blob();
-
-                    // Double-check: Did the user scroll away while we were downloading?
                     if (!imgElement.isConnected) {
-                        // If yes, discard the blob without creating a URL
                         this.processing.delete(key);
                         this.process();
                         return;
                     }
-
                     const objectUrl = URL.createObjectURL(blob);
                     thumbnailCache.set(key, objectUrl);
                     this.apply(imgElement, objectUrl);
-
                 } catch (e) {
-                    // Silently fail or log debug
                 } finally {
                     this.processing.delete(key);
-                    this.process(); // Trigger next
+                    this.process();
                 }
             },
-
             apply: function (img, url) {
                 if (!img.isConnected) return;
-                // Use requestAnimationFrame for smoother UI updates
                 requestAnimationFrame(() => {
                     img.src = url;
                     img.onload = () => {
@@ -1342,13 +1308,11 @@
             }
         };
 
-        // --- IMAGE OBSERVER ---
         const imageObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const img = entry.target;
                 const key = img.getAttribute('data-key');
                 const fragment = img.getAttribute('data-fragment');
-
                 if (entry.isIntersecting) {
                     ThumbnailLoader.enqueue(img, fragment, key);
                     imageObserver.unobserve(img);
@@ -1356,7 +1320,7 @@
             });
         }, {
             root: document.getElementById('browser'),
-            rootMargin: '200px', // Preload a bit more ahead since we are throttling
+            rootMargin: '200px',
             threshold: 0.01
         });
 
@@ -1364,25 +1328,40 @@
         const WindowManager = {
             zIndex: 100,
             open: function (appId, meta = {}) {
-                // Handle Start Menu auto-close logic
                 if (appId !== 'start-menu') StartMenu.close();
-
                 const win = $(`#win-${appId}`);
                 if (win.is(':visible')) {
                     this.focus(appId);
                     return;
                 }
+                
+                const isMobile = window.innerWidth < 768;
+                if (isMobile) {
+                    win.css({
+                        top: '0',
+                        left: '0',
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: '0'
+                    }).addClass('maximized');
+                } else {
+                    const w = Math.min(win.width() || 800, window.innerWidth - 40);
+                    const h = Math.min(win.height() || 600, window.innerHeight - 100);
+                    const t = Math.max(10, Math.min(parseInt(win.css('top')) || 60, window.innerHeight - h - 60));
+                    const l = Math.max(10, Math.min(parseInt(win.css('left')) || 100, window.innerWidth - w - 20));
+                    
+                    win.css({ width: w, height: h, top: t, left: l, borderRadius: '8px' }).removeClass('maximized');
+                }
+
                 win.show();
                 setTimeout(() => win.addClass('visible'), 10);
                 this.focus(appId);
                 this.addTaskbarItem(appId, meta);
                 
-                // App Specific Init
                 if (appId === 'dashboard') setTimeout(() => ResMonitor.init(), 100);
                 if (appId === 'recycle-bin') showTrash();
                 if (appId === 'notepad') Notepad.init();
                 if (appId === 'calendar') CalendarApp.init();
-                
                 if (appId === 'file-explorer') {
                     if (activeFragment && currentObjectList.length === 0) listObjects(activeFragment);
                     else setTimeout(() => VirtualScroller.renderVisible(), 50);
@@ -1411,33 +1390,35 @@
             maximize: function (appId) {
                 const win = $(`#win-${appId}`);
                 win.toggleClass('maximized');
-                if (win.hasClass('maximized')) win.css({
-                    top: '0',
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    borderRadius: 0
-                });
-                else {
-                    const defaults = {
-                        'file-explorer': { w: 1000, h: 650, t: 60, l: 100 },
-                        'dashboard': { w: 900, h: 600, t: 80, l: 150 },
-                        'recycle-bin': { w: 800, h: 500, t: 120, l: 150 },
-                        'uploads': { w: 400, h: 350, t: 100, l: 120 },
-                        'notepad': { w: 600, h: 450, t: 100, l: 200 },
-                        'calendar': { w: 320, h: 380, t: 100, l: 300 }
-                    }[appId] || {
-                        w: 800,
-                        h: 550,
-                        t: 100,
-                        l: 100
-                    };
+                if (win.hasClass('maximized')) {
                     win.css({
-                        width: defaults.w,
-                        height: defaults.h,
-                        top: defaults.t,
-                        left: defaults.l,
-                        borderRadius: '6px'
+                        top: '0',
+                        left: 0,
+                        width: '100%',
+                        height: '100%', // Changed from calc(100% - 48px) to 100%
+                        borderRadius: 0
+                    });
+                } else {
+                    const defaults = {
+                        'file-explorer': { w: 1000, h: 650 },
+                        'dashboard': { w: 900, h: 600 },
+                        'recycle-bin': { w: 800, h: 500 },
+                        'uploads': { w: 400, h: 350 },
+                        'notepad': { w: 600, h: 450 },
+                        'calendar': { w: 320, h: 380 }
+                    }[appId] || { w: 800, h: 550 };
+
+                    const targetW = Math.min(defaults.w, window.innerWidth - 20);
+                    const targetH = Math.min(defaults.h, window.innerHeight - 80);
+                    const targetL = (window.innerWidth - targetW) / 2;
+                    const targetT = Math.max(10, (window.innerHeight - targetH) / 2 - 20);
+
+                    win.css({
+                        width: targetW,
+                        height: targetH,
+                        top: targetT,
+                        left: targetL,
+                        borderRadius: '8px'
                     });
                 }
             },
@@ -1446,8 +1427,6 @@
                 $(`#win-${appId}`).css('z-index', this.zIndex);
                 $('.task-item').removeClass('active');
                 $(`#task-item-${appId}`).addClass('active');
-                
-                // If it's start menu related, close start menu if clicking window
                 if(appId !== 'start-menu') StartMenu.close();
             },
             addTaskbarItem: function (appId, meta = {}) {
@@ -1470,26 +1449,22 @@
                     };
                     const label = meta.title || map[appId] || 'App';
                     const icon = meta.icon || iconMap[appId] || 'fa-window-maximize';
-                    // Updated to match new CSS
                     $('#taskbar-apps').append(`<div id="task-item-${appId}" class="task-item active" onclick="WindowManager.open('${appId}')" title="${label}"><i class="fas ${icon}"></i></div>`);
                 }
             }
         };
-
-        // --- Resource Monitor (Chart.js) ---
+        
+        // --- Resource Monitor ---
         const ResMonitor = {
             charts: {},
             init: function () {
                 if (!document.getElementById('net-in-chart').offsetParent) return;
                 if (this.charts['net-in']) return;
-
-                // Update Account Info
                 $('#account-name-display').text(userName);
                 $('#account-email-display').text(userEmail);
-
                 this.initCharts();
                 updateCapacityDisplay();
-                updateStorageStats(); // Initial Draw of Pie Chart
+                updateStorageStats();
             },
             showTab: function (tabId) {
                 $('.res-tab').removeClass('active');
@@ -1499,7 +1474,6 @@
                 Chart.defaults.color = '#a3a3a3';
                 Chart.defaults.borderColor = '#333';
                 Chart.defaults.font.family = "'Segoe UI', sans-serif";
-
                 const commonOptions = {
                     responsive: true,
                     maintainAspectRatio: false,
@@ -1541,8 +1515,6 @@
                         }
                     }
                 };
-
-                // Net In Chart
                 this.charts['net-in'] = new Chart(document.getElementById('net-in-chart'), {
                     type: 'line',
                     data: {
@@ -1563,10 +1535,8 @@
                                 max: 20 * 1024 * 1024
                             }
                         }
-                    } // Cap axis for visuals
+                    }
                 });
-
-                // Net Out Chart
                 this.charts['net-out'] = new Chart(document.getElementById('net-out-chart'), {
                     type: 'line',
                     data: {
@@ -1589,14 +1559,12 @@
                         }
                     }
                 });
-
-                // Pie Chart
                 this.charts['pie'] = new Chart(document.getElementById('storage-pie-chart'), {
                     type: 'doughnut',
                     data: {
                         labels: ['Images', 'Videos', 'Audio', 'Docs', 'Archives', 'Other'],
                         datasets: [{
-                            data: [1, 1, 1, 1, 1, 1], // Placeholders
+                            data: [1, 1, 1, 1, 1, 1],
                             backgroundColor: ['#c084fc', '#ec4899', '#eab308', '#3b82f6', '#f97316', '#6b7280'],
                             borderWidth: 0
                         }]
@@ -1612,27 +1580,17 @@
                         }
                     }
                 });
-
-                // Simulation Loop
                 setInterval(() => {
                     this.updateNetworkCharts();
                 }, 1000);
             },
             updateNetworkCharts: function () {
                 if (!this.charts['net-in']) return;
-
-                // Simulate Network Traffic (Base noise + active upload speed)
-                // Base noise: 100KB - 500KB download (idle chatter), 10KB - 50KB upload
                 const baseDown = Math.random() * 400 * 1024 + 100 * 1024;
                 const baseUp = Math.random() * 40 * 1024 + 10 * 1024;
-
-                // Calculate total upload speed from all active uploads
                 const totalUploadSpeed = uploadQueue.reduce((acc, item) => acc + (item.currentSpeed || 0), 0);
-
                 const totalUp = baseUp + totalUploadSpeed;
-                const totalDown = baseDown; // We don't track download speed variable yet
-
-                // Update Data Arrays
+                const totalDown = baseDown;
                 const update = (chart, val, labelId) => {
                     const data = chart.data.datasets[0].data;
                     data.push(val);
@@ -1640,21 +1598,18 @@
                     chart.update('none');
                     document.getElementById(labelId).innerText = formatBytes(val) + '/s';
                 };
-
                 update(this.charts['net-in'], totalDown, 'net-in-val');
                 update(this.charts['net-out'], totalUp, 'net-out-val');
             },
             updatePieChart: function (stats) {
                 if (!this.charts['pie']) return;
                 const data = [stats.images.size, stats.videos.size, stats.audio.size, stats.docs.size, stats.archives.size, stats.others.size];
-                // If all zero, show placeholder
                 if (data.every(v => v === 0)) this.charts['pie'].data.datasets[0].data = [1, 0, 0, 0, 0, 0];
                 else this.charts['pie'].data.datasets[0].data = data;
                 this.charts['pie'].update();
             }
         };
 
-        // --- Core File System ---
         const AppNav = {
             navigate: function (view) {
                 $('.nav-item').not('.fragment-item').removeClass('active');
@@ -1668,8 +1623,9 @@
         };
 
         function getActiveObjectList() {
-            const trashKeys = new Set(trashedItems.map(t => t.key));
-            return currentObjectList.filter(o => !trashKeys.has(o.key));
+            // trashedItems are managed separately now via API
+            // We just ensure we filter out any lingering deleted items if they are fetched in normal list
+            return currentObjectList.filter(o => !o.is_delete_marker);
         }
 
         const VirtualScroller = {
@@ -1680,7 +1636,6 @@
             ticking: false,
             lastStartIndex: -1,
             lastEndIndex: -1,
-
             init: function (containerId, contentId) {
                 this.container = document.getElementById(containerId);
                 this.content = document.getElementById(contentId);
@@ -1705,16 +1660,15 @@
                     });
                 }
             },
-            setItems: function (items, viewType) {
+            setItems: function (items, viewType, keepScroll = false) {
                 this.items = items;
-                // If view type changes, we must clear the DOM to prevent recycling wrong element types
                 if (this.viewType !== viewType && this.content) {
                     this.content.innerHTML = '';
                 }
                 this.viewType = viewType;
-                if (this.container) this.container.scrollTop = 0;
+                if (this.container && !keepScroll) this.container.scrollTop = 0;
                 this.forceRender();
-                SelectionManager.clear();
+                if(!keepScroll) SelectionManager.clear();
             },
             forceRender: function () {
                 this.lastStartIndex = -1;
@@ -1722,7 +1676,7 @@
             },
             getColumns: function () {
                 if (this.viewType === 'list') return 1;
-                if (this.container) return Math.max(2, Math.floor(this.container.clientWidth / 108)); // Smaller tiles for Windows look
+                if (this.container) return Math.max(2, Math.floor(this.container.clientWidth / 108));
                 return 5;
             },
             getRowHeight: function () {
@@ -1736,35 +1690,24 @@
                     this.content.style.paddingBottom = '0px';
                     return;
                 }
-
                 const columns = this.getColumns();
                 const rowHeight = this.getRowHeight();
                 const totalItems = this.items.length;
                 const totalRows = Math.ceil(totalItems / columns);
                 const scrollTop = this.container.scrollTop;
                 const clientHeight = this.container.clientHeight;
-
-                // Increased buffer to 4 to prevent gray zones during fast scrolling
                 const buffer = 4;
                 const startRow = Math.max(0, Math.floor(scrollTop / rowHeight) - buffer);
                 const endRow = Math.min(totalRows, Math.ceil((scrollTop + clientHeight) / rowHeight) + buffer);
-
                 const startIndex = startRow * columns;
                 const endIndex = Math.min(totalItems, endRow * columns);
-
                 if (!force && startIndex === this.lastStartIndex && endIndex === this.lastEndIndex) return;
-
                 this.lastStartIndex = startIndex;
                 this.lastEndIndex = endIndex;
-
                 const paddingTop = startRow * rowHeight;
                 const paddingBottom = Math.max(0, (totalRows * rowHeight) - (endRow * rowHeight));
-
-                // Apply padding changes only if necessary to avoid reflows
                 if (this.content.style.paddingTop !== `${paddingTop}px`) this.content.style.paddingTop = `${paddingTop}px`;
                 if (this.content.style.paddingBottom !== `${paddingBottom}px`) this.content.style.paddingBottom = `${paddingBottom}px`;
-
-                // Layout Update
                 if (this.viewType === 'tiles') {
                     if (this.content.className !== 'grid gap-1 p-2 content-start')
                         this.content.className = 'grid gap-1 p-2 content-start';
@@ -1776,48 +1719,30 @@
                     this.content.style.gridTemplateColumns = 'none';
                     this.content.style.display = 'flex';
                 }
-
-                // --- DOM Recycling Logic ---
-
-                // 1. Snapshot currently rendered nodes by ID
                 const existingNodes = new Map();
-                // Convert HTMLCollection to Array to avoid live collection issues
                 Array.from(this.content.children).forEach(child => {
                     if (child.dataset.id) existingNodes.set(child.dataset.id, child);
                 });
-
-                // 2. Build Fragment with recycled or new nodes
                 const fragment = document.createDocumentFragment();
                 const slice = this.items.slice(startIndex, endIndex);
-
                 slice.forEach(itemData => {
                     const id = itemData.id;
                     let el = existingNodes.get(id);
-
                     if (el) {
-                        // Reuse existing node (moves it from current parent to fragment)
-                        // This preserves the <img> state so it doesn't reload/flash
                         fragment.appendChild(el);
-                        existingNodes.delete(id); // Mark as claimed
+                        existingNodes.delete(id);
                     } else {
-                        // Create new node only if it doesn't exist
                         el = itemData.type === 'folder'
                             ? (this.viewType === 'tiles' ? createTile(itemData, 'folder') : createRow(itemData, 'folder'))
                             : (this.viewType === 'tiles' ? createTile(itemData, 'file') : createRow(itemData, 'file'));
                         fragment.appendChild(el);
                     }
-
-                    // CRITICAL FIX: Update selection state inline.
-                    // Checking selection map is fast (O(1)).
-                    // Updating classList on a detached/fragment element is fast (no reflow).
                     if (SelectionManager.selectedItems.has(id)) {
                         el.classList.add('selected');
                     } else {
                         el.classList.remove('selected');
                     }
                 });
-
-                // 3. Atomic Update: This removes any nodes left in 'content' (unused ones) and inserts the fragment
                 this.content.replaceChildren(fragment);
             }
         };
@@ -1825,12 +1750,9 @@
         function renderObjects(objects, keepScroll = false) {
             const breadcrumb = document.getElementById('breadcrumb');
             const backBtn = document.getElementById('back-btn');
-            
-            // Generate Breadcrumb UI
             if (currentPath) {
                 backBtn.disabled = false;
                 backBtn.classList.remove('opacity-30');
-                
                 let parts = currentPath.split('/').filter(p => p);
                 let html = `<span class="breadcrumb-segment" onclick="navigateTo('')">Local Files</span>`;
                 let acc = '';
@@ -1844,7 +1766,6 @@
                 backBtn.classList.add('opacity-30');
                 breadcrumb.innerHTML = '<span class="breadcrumb-segment">Local Files</span>';
             }
-            
             const folders = new Set();
             const files = [];
             objects.forEach(obj => {
@@ -1858,7 +1779,6 @@
             clientSideFolders.filter(f => f.path === currentPath && f.fragment === activeFragment).forEach(f => folders.add(f.name));
             const sortedFolders = Array.from(folders).sort();
             const sortedFiles = files.sort((a, b) => new Date(Number(b.last_modified.$date.$numberLong)) - new Date(Number(a.last_modified.$date.$numberLong)));
-
             const items = [
                 ...sortedFolders.map(f => ({
                     type: 'folder',
@@ -1871,11 +1791,8 @@
                     id: `file:${f.key}`
                 }))
             ];
-
-            // Pass keepScroll to VirtualScroller to prevent jumping
             VirtualScroller.setItems(items, currentView, keepScroll);
         }
-
 
         function showRecentFiles() {
             $('#breadcrumb').html('Recent Files');
@@ -1901,19 +1818,15 @@
 
         function createTile(itemData, type) {
             const div = document.createElement('div');
-            // Extract data depending on wrapper from VirtualScroller
             const item = type === 'folder' ? itemData.name : itemData.data;
             const uniqueId = itemData.id;
-
             const isPending = type === 'file' && item.status === 'Pending';
             div.className = `file-item item-tile p-2 flex flex-col items-center group relative ${isPending ? 'opacity-50' : ''}`;
             div.dataset.id = uniqueId;
-
             const name = type === 'folder' ? item : item.key.split('/').pop();
             const ext = name.split('.').pop().toLowerCase();
             const isImage = type === 'file' && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'tiff'].includes(ext);
             const iconHtml = type === 'folder' ? '<i class="fas fa-folder text-6xl text-yellow-400 mb-2 drop-shadow-md"></i>' : getFileIconHTML(name);
-
             let visualContent;
             if (isImage && !isPending) {
                 const cachedUrl = thumbnailCache.get(item.key);
@@ -1921,11 +1834,8 @@
             } else {
                 visualContent = `<div class="mb-2 h-24 flex items-center justify-center">${iconHtml}</div>`;
             }
-
             div.innerHTML = `${visualContent}${isPending ? `<div class="absolute top-2 right-2 text-yellow-500"><i class="fas fa-clock"></i></div>` : ''}<span class="text-[11px] text-center break-all line-clamp-2 leading-tight w-full text-gray-300 mt-1 max-h-8 overflow-hidden" title="${name}">${name}</span>`;
             if (isImage && !isPending && !thumbnailCache.has(item.key)) imageObserver.observe(div.querySelector('.img-preview'));
-
-            // Event Listeners for Interaction
             attachItemListeners(div, uniqueId, type, item);
             return div;
         }
@@ -1934,18 +1844,14 @@
             const div = document.createElement('div');
             const item = type === 'folder' ? itemData.name : itemData.data;
             const uniqueId = itemData.id;
-
             const isPending = type === 'file' && item.status === 'Pending';
             div.className = `file-item item-list flex items-center px-4 py-2 ${isPending ? 'opacity-50' : ''}`;
             div.dataset.id = uniqueId;
-
             const name = type === 'folder' ? item : item.key.split('/').pop();
             const ext = name.split('.').pop().toLowerCase();
             const isImage = type === 'file' && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'tiff'].includes(ext);
             const iconHtml = type === 'folder' ? '<i class="fas fa-folder text-yellow-400 w-6 text-center mr-3"></i>' : getFileIconHTML(name, true);
             let iconSection = isImage && !isPending ? `<div class="relative w-6 h-6 mr-3 flex-shrink-0 flex items-center justify-center"><div class="icon-placeholder absolute inset-0 flex items-center justify-center ${thumbnailCache.has(item.key) ? 'opacity-0' : ''}">${iconHtml}</div><img class="img-preview absolute inset-0 w-full h-full object-cover rounded transition-opacity duration-300 ${thumbnailCache.has(item.key) ? '' : 'opacity-0'}" alt="${name}" src="${thumbnailCache.get(item.key) || ''}" data-key="${item.key}" data-fragment="${item.fragment}" loading="lazy"></div>` : iconHtml;
-            
-            // Windows Details View Layout
             div.innerHTML = `
                 <div class="flex-1 min-w-0 flex items-center">
                     ${iconSection}
@@ -1960,7 +1866,6 @@
                 </div>
             `;
             if (isImage && !isPending && !thumbnailCache.has(item.key)) imageObserver.observe(div.querySelector('.img-preview'));
-
             attachItemListeners(div, uniqueId, type, item);
             return div;
         }
@@ -1976,13 +1881,11 @@
                     SelectionManager.selectSingle(id, VirtualScroller.items);
                 }
             };
-
             div.ondblclick = (e) => {
                 e.stopPropagation();
                 if (type === 'folder') navigateTo(currentPath + item + '/');
                 else openFileViewer(item.fragment, item.key);
             };
-
             div.oncontextmenu = (e) => {
                 if (!SelectionManager.selectedItems.has(id)) {
                     SelectionManager.selectSingle(id, VirtualScroller.items);
@@ -2017,21 +1920,15 @@
             openFilesMap.set(key, viewerId);
             const fileName = key.split('/').pop();
             const ext = key.split('.').pop().toLowerCase();
-
-            // File Type Detection
             const isImage = ['jpg', 'png', 'jpeg', 'gif', 'svg', 'webp', 'bmp', 'tiff'].includes(ext);
             const isVideo = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv', 'm3u8'].includes(ext);
             const isAudio = ['mp3', 'wav', 'flac', 'aac', 'm4a', 'ogg'].includes(ext);
             const isPdf = ['pdf'].includes(ext);
             const isDocx = ['docx'].includes(ext);
             const isXlsx = ['xlsx', 'xls', 'csv'].includes(ext);
-
-            // Zoom controls (Images only)
             let zoomControls = isImage ? `<div class="zoom-controls mr-2 flex border border-white/10 rounded overflow-hidden"><button class="tool-btn zoom-out-btn px-2" title="Zoom Out"><i class="fas fa-search-minus"></i></button><button class="tool-btn zoom-reset-btn px-2 text-[10px]" title="Reset">100%</button><button class="tool-btn zoom-in-btn px-2" title="Zoom In"><i class="fas fa-search-plus"></i></button></div>` : '';
-
-            // Window Template matching new Windows Style
             const windowHtml = `
-            <div id="win-${viewerId}" class="window" style="width: 900px; height: 600px; top: 100px; left: 100px; display: none;">
+            <div id="win-${viewerId}" class="window" style="width: 80vw; height: 80vh; top: 10%; left: 10%; display: none;">
                 <div class="window-header">
                     <div class="window-title"><i class="fas fa-eye text-blue-400"></i> ${fileName}</div>
                     <div class="window-controls">
@@ -2055,7 +1952,6 @@
                     </div>
                 </div>
             </div>`;
-
             $('#windows-container').append(windowHtml);
             $(`#win-${viewerId}`).draggable({
                 handle: ".window-header",
@@ -2063,9 +1959,7 @@
                 start: function () { WindowManager.focus(viewerId); }
             }).resizable({ minHeight: 200, minWidth: 300 });
             $(`#win-${viewerId}`).on('mousedown', function () { WindowManager.focus(viewerId); });
-
             WindowManager.open(viewerId, { title: fileName, icon: 'fa-eye' });
-
             const winContext = $(`#win-${viewerId}`);
             winContext.find('.download-btn').click(() => performDirectDownload(fragment, key));
             winContext.find('.share-btn').click(() => showShareModal(fragment, key));
@@ -2076,11 +1970,8 @@
                     WindowManager.close(viewerId);
                 });
             });
-
-            // --- Print / Save as PDF Logic ---
             winContext.find('.print-btn').click(() => {
                 if (isPdf) {
-                    // PDFs have their own print button inside the embed usually, but we can try to trigger it
                     const iframe = winContext.find('embed')[0];
                     if (iframe) iframe.contentWindow.print();
                 } else if (isImage) {
@@ -2090,7 +1981,6 @@
                     w.print();
                     w.close();
                 } else if (isDocx || isXlsx) {
-                    // For Docs/Excel, we print the rendered HTML
                     const content = winContext.find('.viewer-content').html();
                     const w = window.open("", "_blank", "width=800,height=600");
                     w.document.write(`<html><head><title>${fileName}</title><style>body { font-family: sans-serif; } table { border-collapse: collapse; width: 100%; } td, th { border: 1px solid #ccc; padding: 4px; }</style></head><body>${content}</body></html>`);
@@ -2100,19 +1990,14 @@
                     showToast('Printing not supported for this file type', 'error');
                 }
             });
-
             try {
-                // For Viewer, we can still use Signed URL or Blob. Blob is faster.
-                // Let's check cache first.
                 let url;
                 if (thumbnailCache.has(key)) {
                     url = thumbnailCache.get(key);
                 } else {
                     url = await getShareableUrl(fragment, key);
                 }
-
                 const contentDiv = winContext.find('.viewer-content');
-
                 if (isImage) {
                     const imgId = `img-${viewerId}`;
                     contentDiv.html(`<div class="zoom-container overflow-hidden w-full h-full relative flex items-center justify-center cursor-grab" id="container-${imgId}"><img id="${imgId}" src="${url}" class="transition-transform duration-100 ease-out max-h-full max-w-full object-contain origin-center select-none" draggable="false"></div>`);
@@ -2133,11 +2018,9 @@
                     contentDiv.html(`<div class="flex flex-col items-center justify-center text-center p-10"><div class="w-32 h-32 bg-[#222] rounded-full flex items-center justify-center mb-6 shadow-xl border border-[#333]"><i class="fas fa-music text-5xl text-blue-500"></i></div><h3 class="text-xl text-white mb-6 font-light tracking-wide">${fileName}</h3><audio src="${url}" controls autoplay class="w-96"></audio></div>`);
                 }
                 else if (isPdf) {
-                    // Native PDF
                     contentDiv.html(`<embed src="${url}" type="application/pdf" width="100%" height="100%" />`);
                 }
                 else if (isDocx) {
-                    // Robust DOCX Handling
                     if (typeof JSZip === 'undefined') {
                         throw new Error("Critical: JSZip library missing. Please checking HTML script order.");
                     }
@@ -2145,7 +2028,6 @@
                     const resp = await fetch(url);
                     const blob = await resp.blob();
                     const container = contentDiv.find('.docx-wrapper')[0];
-
                     if (window.docx) {
                         contentDiv.find('.docx-wrapper').html('');
                         await window.docx.renderAsync(blob, container, null, {
@@ -2157,48 +2039,14 @@
                     } else throw new Error("docx-preview library not loaded");
                 }
                 else if (isXlsx) {
-                    // Robust Excel Handling
                     contentDiv.html('<div class="xlsx-wrapper bg-white w-full h-full overflow-auto p-0 text-black text-sm relative">Loading Spreadsheet...</div>');
                     const resp = await fetch(url);
                     const ab = await resp.arrayBuffer();
-
                     if (window.XLSX) {
                         const wb = XLSX.read(ab);
                         const ws = wb.Sheets[wb.SheetNames[0]];
                         const html = XLSX.utils.sheet_to_html(ws, { id: "excel-table", editable: false });
-
-                        // Professional Excel Styling
-                        const style = `<style>
-                            .xlsx-wrapper { background: #f0f0f0; }
-                            #excel-table { 
-                                border-collapse: separate; 
-                                border-spacing: 0;
-                                background: white; 
-                                font-family: 'Segoe UI', sans-serif; 
-                                font-size: 13px;
-                                border-right: 1px solid #d4d4d4;
-                                border-bottom: 1px solid #d4d4d4;
-                            }
-                            #excel-table td, #excel-table th { 
-                                border-left: 1px solid #d4d4d4;
-                                border-top: 1px solid #d4d4d4;
-                                padding: 4px 12px; 
-                                white-space: nowrap; 
-                                height: 24px;
-                                color: #333;
-                            }
-                            #excel-table th { 
-                                background: #f8f9fa; 
-                                font-weight: 600; 
-                                color: #444;
-                                text-align: center;
-                                border-bottom: 2px solid #d4d4d4;
-                                position: sticky;
-                                top: 0;
-                                z-index: 10;
-                            }
-                            #excel-table tr:hover td { background-color: #f0f7ff; }
-                        </style>`;
+                        const style = `<style>.xlsx-wrapper { background: #f0f0f0; } #excel-table { border-collapse: separate; border-spacing: 0; background: white; font-family: 'Segoe UI', sans-serif; font-size: 13px; border-right: 1px solid #d4d4d4; border-bottom: 1px solid #d4d4d4; } #excel-table td, #excel-table th { border-left: 1px solid #d4d4d4; border-top: 1px solid #d4d4d4; padding: 4px 12px; white-space: nowrap; height: 24px; color: #333; } #excel-table th { background: #f8f9fa; font-weight: 600; color: #444; text-align: center; border-bottom: 2px solid #d4d4d4; position: sticky; top: 0; z-index: 10; } #excel-table tr:hover td { background-color: #f0f7ff; }</style>`;
                         contentDiv.find('.xlsx-wrapper').html(style + html);
                     } else throw new Error("SheetJS library not loaded");
                 }
@@ -2212,145 +2060,153 @@
                 winContext.find('.viewer-content').html(`<div class="flex flex-col items-center justify-center h-full text-red-400"><i class="fas fa-exclamation-triangle text-4xl mb-4"></i><p>Error loading preview</p><p class="text-xs text-gray-500 mt-2">${msg}</p></div>`);
             }
         }
-
-        // --- Data Fetching & Stats ---
-        let fetchController = null; // Controller to abort pending fetches
-
-        async function listObjects(fragment, options = { render: true }) {
+        let fetchController = null;
+        async function listObjects(fragment, options = { render: true, includeDeleted: false }) {
             if (!fragment) return;
             if (options.render) $('#browserSpinner').removeClass('hidden').addClass('flex');
-
-            // --- RACE CONDITION FIX ---
-            // If a previous fetch is running, cancel it.
             if (fetchController) fetchController.abort();
             fetchController = new AbortController();
             const signal = fetchController.signal;
-
-            // Clear list only for fresh loads, but ensure UI reflects it immediately
+            
+            // Clear list at start of fetch
             currentObjectList = [];
             
-            // Reset view initially (clear old items)
-            if (options.render) {
+            // Initialize running stats for O(Batch) performance instead of O(Total)
+            let runningStats = { 
+                images: { count: 0, size: 0 }, 
+                videos: { count: 0, size: 0 }, 
+                audio: { count: 0, size: 0 }, 
+                docs: { count: 0, size: 0 }, 
+                archives: { count: 0, size: 0 }, 
+                others: { count: 0, size: 0 } 
+            };
+
+            if (options.render && !options.includeDeleted) {
                 if ($('#nav-my-files').hasClass('active')) renderObjects(getActiveObjectList(), false);
             }
 
             try {
                 let marker = null;
-                let isFirstPage = true;
-
-                while (true) {
+                let pages = 0;
+                let lastUiUpdate = 0; 
+                
+                // Reduced batch limit to prevent "stop-the-world" JSON processing on slower devices
+                const BATCH_LIMIT = 500;
+                
+                while (pages < 4000) { // Limit increased to account for smaller batch size
                     if (signal.aborted) throw new Error("Aborted");
-
-                    let url = `${serverLink}/v4/fragment/object/metadata/${fragment}?show_all=true&limit=100`;
+                    pages++;
+                    
+                    let url = `${serverLink}/v4/fragment/object/metadata/${fragment}?show_all=true&limit=${BATCH_LIMIT}&include_deleted=true`;
                     if (marker) url += `&marker=${encodeURIComponent(marker)}`;
-
+                    
                     const res = await fetch(url, { 
                         headers: { authorization: `Bearer ${token}` },
                         signal: signal
                     });
                     if (!res.ok) break;
-
+                    
                     const page = await res.json();
+                    if (!page || page.length === 0) break;
+                    
+                    const mappedPage = [];
+                    
+                    // Process batch
+                    for (const item of page) {
+                        const size = item.total_size_bytes;
+                        const mappedItem = {
+                            ...item,
+                            key: item.object_key, 
+                            size_bytes: size, 
+                            last_modified: { $date: { $numberLong: item.created_at * 1000 } } 
+                        };
+                        mappedPage.push(mappedItem);
 
-                    const mappedPage = page.map(item => ({
-                        ...item,
-                        key: item.object_key, 
-                        size_bytes: item.total_size_bytes, 
-                        last_modified: { $date: { $numberLong: item.created_at * 1000 } } 
-                    }));
+                        // Incremental Stat Update
+                        if (!item.is_delete_marker) {
+                            const ext = item.object_key.split('.').pop().toLowerCase();
+                            if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'tiff'].includes(ext)) { runningStats.images.count++; runningStats.images.size += size; } 
+                            else if (['mp4', 'mkv', 'avi', 'mov', 'webm', 'm3u8'].includes(ext)) { runningStats.videos.count++; runningStats.videos.size += size; } 
+                            else if (['mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac'].includes(ext)) { runningStats.audio.count++; runningStats.audio.size += size; } 
+                            else if (['pdf', 'doc', 'docx', 'txt', 'md', 'rtf', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) { runningStats.docs.count++; runningStats.docs.size += size; } 
+                            else if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) { runningStats.archives.count++; runningStats.archives.size += size; } 
+                            else { runningStats.others.count++; runningStats.others.size += size; }
+                        }
+                    }
 
-                    if (mappedPage.length > 0) {
-                        currentObjectList.push(...mappedPage);
-                        marker = mappedPage[mappedPage.length - 1].key; 
+                    currentObjectList.push(...mappedPage);
+                    marker = mappedPage[mappedPage.length - 1].key; 
+                    
+                    // CRITICAL FIX: Yield to main thread.
+                    // This allows the browser to handle events (scrolling, clicking) and render frames
+                    // preventing the "hang" sensation even while processing data in background.
+                    await new Promise(resolve => setTimeout(resolve, 5));
 
-                        if (options.render) {
-                            updateStorageStats();
+                    // Throttle UI updates
+                    const now = Date.now();
+                    const shouldUpdateUi = pages === 1 || (now - lastUiUpdate > 2000);
+
+                    if (options.render && !options.includeDeleted && shouldUpdateUi) {
+                        lastUiUpdate = now;
+                        
+                        $('#stat-images').text(`${formatBytes(runningStats.images.size)}`);
+                        $('#stat-videos').text(`${formatBytes(runningStats.videos.size)}`);
+                        $('#stat-audio').text(`${formatBytes(runningStats.audio.size)}`);
+                        $('#stat-docs').text(`${formatBytes(runningStats.docs.size)}`);
+                        ResMonitor.updatePieChart(runningStats);
+                        
+                        if (pages === 1) {
                             if ($('#nav-my-files').hasClass('active')) {
-                                renderObjects(getActiveObjectList(), !isFirstPage);
+                                renderObjects(getActiveObjectList(), false);
                             }
                             else if ($('#nav-recent').hasClass('active')) showRecentFiles();
                             else if ($('#nav-starred').hasClass('active')) showStarredFiles();
                         }
-                        isFirstPage = false;
                     }
-
-                    if (page.length < 100) break;
+                    
+                    if (page.length === 0) break;
                 }
                 
-                // After full load, ensure capacity sync
-                updateCapacityDisplay();
+                trashedItems = currentObjectList.filter(o => o.is_delete_marker);
 
+                if (options.includeDeleted) {
+                    showTrash();
+                } else {
+                    updateStorageStats(); 
+                    updateCapacityDisplay();
+                    
+                    if (options.render && !options.includeDeleted) {
+                        if ($('#nav-my-files').hasClass('active')) renderObjects(getActiveObjectList(), true);
+                        else if ($('#nav-recent').hasClass('active')) showRecentFiles();
+                        else if ($('#nav-starred').hasClass('active')) showStarredFiles();
+                    }
+                }
             } catch (e) {
                 if (e.message !== "Aborted") console.error(e);
             } finally {
-                // Only hide spinner if this is the active request
                 if (options.render && !signal.aborted) $('#browserSpinner').addClass('hidden');
             }
         }
-
-        // --- UPDATED STATS LOGIC ---
         function updateStorageStats() {
+            // Only update stats from active non-deleted items
+            const activeList = getActiveObjectList();
             let totalBytes = 0;
-            const stats = {
-                images: {
-                    count: 0,
-                    size: 0
-                },
-                videos: {
-                    count: 0,
-                    size: 0
-                },
-                audio: {
-                    count: 0,
-                    size: 0
-                },
-                docs: {
-                    count: 0,
-                    size: 0
-                },
-                archives: {
-                    count: 0,
-                    size: 0
-                },
-                others: {
-                    count: 0,
-                    size: 0
-                }
-            };
-
-            currentObjectList.forEach(obj => {
+            const stats = { images: { count: 0, size: 0 }, videos: { count: 0, size: 0 }, audio: { count: 0, size: 0 }, docs: { count: 0, size: 0 }, archives: { count: 0, size: 0 }, others: { count: 0, size: 0 } };
+            activeList.forEach(obj => {
                 const size = Number(obj.size_bytes);
                 totalBytes += size;
                 const ext = obj.key.split('.').pop().toLowerCase();
-                if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'tiff'].includes(ext)) {
-                    stats.images.count++;
-                    stats.images.size += size;
-                } else if (['mp4', 'mkv', 'avi', 'mov', 'webm', 'm3u8'].includes(ext)) {
-                    stats.videos.count++;
-                    stats.videos.size += size;
-                } else if (['mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac'].includes(ext)) {
-                    stats.audio.count++;
-                    stats.audio.size += size;
-                } else if (['pdf', 'doc', 'docx', 'txt', 'md', 'rtf', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) {
-                    stats.docs.count++;
-                    stats.docs.size += size;
-                } else if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) {
-                    stats.archives.count++;
-                    stats.archives.size += size;
-                } else {
-                    stats.others.count++;
-                    stats.others.size += size;
-                }
+                if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'tiff'].includes(ext)) { stats.images.count++; stats.images.size += size; } 
+                else if (['mp4', 'mkv', 'avi', 'mov', 'webm', 'm3u8'].includes(ext)) { stats.videos.count++; stats.videos.size += size; } 
+                else if (['mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac'].includes(ext)) { stats.audio.count++; stats.audio.size += size; } 
+                else if (['pdf', 'doc', 'docx', 'txt', 'md', 'rtf', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) { stats.docs.count++; stats.docs.size += size; } 
+                else if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) { stats.archives.count++; stats.archives.size += size; } 
+                else { stats.others.count++; stats.others.size += size; }
             });
-
-            // Note: Sidebar and Top stats now rely on updateCapacityDisplay() for TOTAL usage.
-            // This function focuses on the BREAKDOWN (Pie Chart & Stats List).
-            
             $('#stat-images').text(`${formatBytes(stats.images.size)}`);
             $('#stat-videos').text(`${formatBytes(stats.videos.size)}`);
             $('#stat-audio').text(`${formatBytes(stats.audio.size)}`);
             $('#stat-docs').text(`${formatBytes(stats.docs.size)}`);
-
             ResMonitor.updatePieChart(stats);
         }
 
@@ -2364,20 +2220,12 @@
                 if (res.ok) {
                     const data = await res.json();
                     const used = data.capacity_used;
-                    
-                    // Update UI elements with AUTHORITATIVE server data
                     const pct = Math.min(100, (used / totalCapacity) * 100);
-                    
-                    // Sidebar
                     $('#sidebar-gb-used').text(`${formatBytes(used)} of ${formatBytes(totalCapacity)}`);
                     $('#sidebar-storage-percent').text(`${Math.round(pct)}%`);
                     $('#sidebar-storage-bar').css('width', `${pct}%`);
-                    
-                    // Dashboard Top Stats
                     $('#gb-used').text(formatBytes(used));
                     $('#storage-percentage').text(Math.round(pct) + '%');
-                    
-                    // Dashboard Pie Chart Center
                     $('#storage-total-label').text(`${formatBytes(used)} / ${formatBytes(totalCapacity)}`);
                 }
             } catch (e) {
@@ -2390,17 +2238,14 @@
             const img = document.getElementById(imgId);
             const container = document.getElementById(`container-${imgId}`);
             let scale = 1, panning = false, pointX = 0, pointY = 0, startX = 0, startY = 0;
-
             const setTransform = () => {
                 img.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
                 winContext.find('.zoom-reset-btn').text(`${Math.round(scale * 100)}%`);
                 container.style.cursor = scale > 1 ? (panning ? 'grabbing' : 'grab') : 'default';
             };
-
             winContext.find('.zoom-in-btn').click(() => { scale = Math.min(scale + 0.25, 5); setTransform(); });
             winContext.find('.zoom-out-btn').click(() => { scale = Math.max(scale - 0.25, 0.25); setTransform(); });
             winContext.find('.zoom-reset-btn').click(() => { scale = 1; pointX = 0; pointY = 0; setTransform(); });
-
             container.addEventListener('wheel', (e) => {
                 e.preventDefault();
                 const delta = -Math.sign(e.deltaY) * 0.1;
@@ -2488,7 +2333,6 @@
                         disposition
                     })
                 });
-                
                 if (!res.ok) throw new Error("Failed to generate link");
                 return (await res.json()).url;
             } catch (e) {
@@ -2509,6 +2353,85 @@
             }
         }
 
+        async function downloadFolderAsZip(folderPath) {
+            const prefix = currentPath + folderPath + '/';
+            const filesToZip = currentObjectList.filter(o => o.key.startsWith(prefix));
+
+            if (filesToZip.length === 0) {
+                showToast('Folder is empty', 'error');
+                return;
+            }
+
+            const zip = new JSZip();
+            const folderName = folderPath; 
+
+            $('#contextMenu').addClass('hidden');
+            showProgressModal(`Zipping ${folderName}`, filesToZip.length);
+
+            let processed = 0;
+            let failed = 0;
+            const MAX_CONCURRENT_DOWNLOADS = 5;
+            const queue = [...filesToZip];
+            
+            async function processItem(item) {
+                try {
+                    updateProgress(processed, filesToZip.length, `Downloading ${item.key.split('/').pop()}...`);
+                    
+                    const response = await fetch(`${serverLink}/v4/fragment/object/download/${item.fragment}?object_key=${encodeURIComponent(item.key)}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (!response.ok) throw new Error('Download failed');
+                    
+                    const blob = await response.blob();
+                    const relativePath = item.key.substring(currentPath.length); 
+                    
+                    zip.file(relativePath, blob);
+                    
+                } catch (e) {
+                    console.error(e);
+                    failed++;
+                } finally {
+                    processed++;
+                }
+            }
+
+            const workers = [];
+            for (let i = 0; i < MAX_CONCURRENT_DOWNLOADS; i++) {
+                workers.push(async () => {
+                    while (queue.length > 0) {
+                        const item = queue.shift();
+                        if (item) await processItem(item);
+                    }
+                });
+            }
+            
+            await Promise.all(workers.map(w => w()));
+
+            if (processed === 0) {
+                hideProgressModal();
+                showToast('Download failed', 'error');
+                return;
+            }
+
+            updateProgress(filesToZip.length, filesToZip.length, 'Compressing...');
+            
+            try {
+                const content = await zip.generateAsync({ type: "blob" });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(content);
+                a.download = `${folderName}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                showToast('Download started', 'success');
+            } catch (e) {
+                showToast('Compression failed', 'error');
+            } finally {
+                hideProgressModal();
+            }
+        }
+
         // --- Context & Modals ---
         function showCtx(e, data) {
             e.preventDefault();
@@ -2524,7 +2447,10 @@
 
             if (data.isTrash) {
                 const object = data.data;
-                html = `<div class="ctx-item text-green-400" onclick="restoreFromTrash('${object.key}')"><i class="fas fa-undo w-4"></i> Restore</div><div class="ctx-div"></div><div class="ctx-item text-red-400" onclick="deletePermanently('${object.fragment}', '${object.key}', 'file')"><i class="fas fa-trash-alt w-4"></i> Delete Forever</div>`;
+                // Using new version logic: restore deletes the delete marker version
+                html = `<div class="ctx-item text-green-400" onclick="restoreFromTrash('${object.fragment}','${object.key}','${object.version_id}')"><i class="fas fa-undo w-4"></i> Restore</div><div class="ctx-div"></div><div class="ctx-item text-red-400" onclick="deletePermanently('${object.fragment}', '${object.key}', 'file')"><i class="fas fa-trash-alt w-4"></i> Delete Forever</div>`;
+            } else if (data.isFragment) {
+                html = `<div class="ctx-item text-red-400" onclick="deleteFragment('${data.data}')"><i class="fas fa-trash w-4"></i> Delete Mount</div>`;
             } else if (selectedCount > 1 && SelectionManager.selectedItems.has(data.id)) {
                 html = `
                     <div class="ctx-item bg-[#333] cursor-default font-bold text-gray-400 border-b border-[#444] mb-1">${selectedCount} Items Selected</div>
@@ -2533,16 +2459,100 @@
                     `;
             } else if (data.type === 'file') {
                 const isStarred = starredItems.includes(data.data.key);
-                html = `<div class="ctx-item" onclick="openFileViewer('${data.data.fragment}','${data.data.key}')"><i class="fas fa-eye w-4"></i> Open</div><div class="ctx-div"></div><div class="ctx-item" onclick="showShareModal('${data.data.fragment}','${data.data.key}')"><i class="fas fa-share-alt w-4"></i> Share</div><div class="ctx-item" onclick="showRenameModal('${data.data.fragment}','${data.data.key}')"><i class="fas fa-pen w-4"></i> Rename</div><div class="ctx-item" onclick="performDirectDownload('${data.data.fragment}','${data.data.key}')"><i class="fas fa-download w-4"></i> Download</div><div class="ctx-item" onclick="toggleStar('${data.data.key}')"><i class="${isStarred ? 'fas' : 'far'} fa-star w-4 text-yellow-500"></i> ${isStarred ? 'Unfavorite' : 'Favorite'}</div><div class="ctx-div"></div><div class="ctx-item text-red-400" onclick="moveToTrash('${data.data.key}','file')"><i class="fas fa-trash w-4"></i> Delete</div>`;
+                html = `<div class="ctx-item" onclick="openFileViewer('${data.data.fragment}','${data.data.key}')"><i class="fas fa-eye w-4"></i> Open</div><div class="ctx-div"></div><div class="ctx-item" onclick="showVersionsModal('${data.data.fragment}','${data.data.key}')"><i class="fas fa-history w-4 text-blue-400"></i> Version History</div><div class="ctx-item" onclick="showShareModal('${data.data.fragment}','${data.data.key}')"><i class="fas fa-share-alt w-4"></i> Share</div><div class="ctx-item" onclick="showRenameModal('${data.data.fragment}','${data.data.key}')"><i class="fas fa-pen w-4"></i> Rename</div><div class="ctx-item" onclick="performDirectDownload('${data.data.fragment}','${data.data.key}')"><i class="fas fa-download w-4"></i> Download</div><div class="ctx-item" onclick="toggleStar('${data.data.key}')"><i class="${isStarred ? 'fas' : 'far'} fa-star w-4 text-yellow-500"></i> ${isStarred ? 'Unfavorite' : 'Favorite'}</div><div class="ctx-div"></div><div class="ctx-item text-red-400" onclick="moveToTrash('${data.data.key}','file')"><i class="fas fa-trash w-4"></i> Delete</div>`;
             } else {
-                // BUG FIX: data.data is the string name for folders, not an object with a .name property
                 const folderName = data.data;
-                html = `<div class="ctx-item" onclick="navigateTo('${currentPath + folderName}/')"><i class="fas fa-folder-open w-4"></i> Open</div><div class="ctx-div"></div><div class="ctx-item text-red-400" onclick="moveToTrash('${currentPath + folderName}/','folder')"><i class="fas fa-trash w-4"></i> Delete Folder</div>`;
+                html = `<div class="ctx-item" onclick="navigateTo('${currentPath + folderName}/')"><i class="fas fa-folder-open w-4"></i> Open</div><div class="ctx-div"></div><div class="ctx-item" onclick="downloadFolderAsZip('${folderName}')"><i class="fas fa-file-zipper w-4 text-yellow-500"></i> Download as Zip</div><div class="ctx-div"></div><div class="ctx-item text-red-400" onclick="moveToTrash('${currentPath + folderName}/','folder')"><i class="fas fa-trash w-4"></i> Delete Folder</div>`;
             }
             menu.html(html).css({
                 top: y,
                 left: x
             }).removeClass('hidden');
+        }
+
+        // --- New Features Impl ---
+        async function deleteFragment(name) {
+            $('#contextMenu').addClass('hidden');
+            if(!confirm(`Are you sure you want to delete mount '${name}'? This will delete ALL files inside it permanently!`)) return;
+            try {
+                const res = await fetch(`${serverLink}/v4/fragment/delete/${name}`, {
+                    method: 'DELETE',
+                    headers: { authorization: `Bearer ${token}` }
+                });
+                if(res.ok) {
+                    showToast('Mount deleted', 'success');
+                    if(activeFragment === name) activeFragment = 'My Files';
+                    loadFragments();
+                } else throw new Error();
+            } catch(e) {
+                showToast('Failed to delete mount', 'error');
+            }
+        }
+
+        async function showVersionsModal(fragment, key) {
+            $('#contextMenu').addClass('hidden');
+            $('#versionsModal').removeClass('hidden').addClass('flex');
+            const list = $('#versionsList');
+            list.html('<div class="text-center text-gray-500 py-10"><i class="fas fa-circle-notch fa-spin text-2xl"></i></div>');
+            
+            try {
+                const res = await fetch(`${serverLink}/v4/fragment/object/versions/${fragment}/${key}`, {
+                    headers: { authorization: `Bearer ${token}` }
+                });
+                if(!res.ok) throw new Error();
+                const versions = await res.json();
+                list.empty();
+                
+                if(versions.length === 0) {
+                    list.html('<div class="text-center text-gray-500 py-4">No versions found.</div>');
+                    return;
+                }
+
+                versions.forEach((v, idx) => {
+                    const date = new Date(v.created_at * 1000).toLocaleString();
+                    const size = formatBytes(v.total_size_bytes);
+                    const isLatest = idx === 0;
+                    const isDeleted = v.is_delete_marker;
+                    
+                    const el = $(`
+                        <div class="bg-[#252525] p-3 rounded border ${isLatest ? 'border-blue-500/50' : 'border-white/5'} flex justify-between items-center">
+                            <div>
+                                <div class="text-sm font-semibold ${isDeleted ? 'text-red-400' : 'text-gray-200'}">
+                                    ${isDeleted ? 'Deleted Marker' : `Version ${versions.length - idx}`} 
+                                    ${isLatest ? '<span class="ml-2 text-[10px] bg-blue-600 px-1.5 rounded text-white">LATEST</span>' : ''}
+                                </div>
+                                <div class="text-xs text-gray-500">${date} • ${size}</div>
+                                <div class="text-[10px] font-mono text-gray-600 truncate w-48">${v.version_id}</div>
+                            </div>
+                            <div class="flex gap-2">
+                                ${!isDeleted ? `<button onclick="performDirectDownload('${fragment}', '${key}')" class="p-2 hover:bg-white/10 rounded text-gray-400 hover:text-white" title="Download"><i class="fas fa-download"></i></button>` : ''}
+                                <button onclick="deleteVersion('${fragment}', '${key}', '${v.version_id}')" class="p-2 hover:bg-red-900/30 rounded text-red-400 hover:text-red-300" title="${isLatest ? 'Rollback (Delete)' : 'Delete'}"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `);
+                    list.append(el);
+                });
+            } catch(e) {
+                list.html('<div class="text-center text-red-400 py-4">Failed to load versions.</div>');
+            }
+        }
+
+        async function deleteVersion(fragment, key, versionId) {
+            if(!confirm("Delete this version? If it's the latest version, this will roll back to the previous one.")) return;
+            try {
+                // Correct path based on routes: /version/{fragment}/{version_id}/{*object_key}
+                const res = await fetch(`${serverLink}/v4/fragment/object/delete/version/${fragment}/${versionId}/${key}`, {
+                    method: 'DELETE',
+                    headers: { authorization: `Bearer ${token}` }
+                });
+                if(res.ok) {
+                    showToast('Version deleted (Rollback successful)', 'success');
+                    showVersionsModal(fragment, key); // Refresh list
+                    listObjects(fragment); // Refresh file list background
+                } else throw new Error();
+            } catch(e) {
+                showToast('Failed to delete version', 'error');
+            }
         }
 
         // --- Batch Actions ---
@@ -2566,9 +2576,7 @@
             let delay = 0;
             items.forEach(item => {
                 if (item.type === 'file') {
-                    // Stagger downloads to prevent browser blocking
                     setTimeout(() => {
-                        // Find fragment from current list (Selection doesn't store fragment, need lookup)
                         const obj = currentObjectList.find(o => o.key === item.key);
                         if (obj) performDirectDownload(obj.fragment, item.key);
                     }, delay);
@@ -2653,93 +2661,168 @@
         // --- Trash & Actions ---
         function moveToTrash(key, type) {
             $('#contextMenu').addClass('hidden');
-            let items = type === 'folder' ? currentObjectList.filter(o => o.key.startsWith(key)) : [currentObjectList.find(o => o.key === key)].filter(Boolean);
-            if (type === 'folder') clientSideFolders = clientSideFolders.filter(f => (f.path || '') + f.name + '/' !== key);
-            items.forEach(i => {
-                if (!trashedItems.some(t => t.key === i.key)) trashedItems.push({
-                    ...i,
-                    trashedDate: new Date().toISOString()
-                });
-            });
-            localStorage.setItem('trashedItems', JSON.stringify(trashedItems));
-            renderObjects(getActiveObjectList());
-            if ($('#win-recycle-bin').is(':visible')) showTrash();
-        }
-        async function emptyTrash() {
-            if (trashedItems.length === 0) return;
-
-            showGenericModal('Empty Recycle Bin', `Permanently delete ${trashedItems.length} items? This cannot be undone.`, async () => {
-                const total = trashedItems.length;
-                showProgressModal('Emptying Recycle Bin', total);
-
-                let count = 0;
-                // Create a copy to iterate safely
-                const itemsToDelete = [...trashedItems];
-
-                for (const item of itemsToDelete) {
-                    count++;
-                    updateProgress(count, total, `Deleting ${item.key.split('/').pop()}...`);
-
-                    try {
-                        await fetch(`${serverLink}/v4/fragment/object/delete/${item.fragment}/${item.key}`, {
-                            method: 'DELETE',
-                            headers: {
-                                authorization: `Bearer ${token}`
-                            }
-                        });
-                    } catch (e) {
-                        console.error("Failed to delete", item.key);
-                    }
+            
+            const fragment = activeFragment; 
+            
+            // Handle folder deletion recursively client-side
+            if (type === 'folder') {
+                const prefix = key; // key for folder already ends in / from context menu
+                const filesToDelete = currentObjectList.filter(o => o.key.startsWith(prefix));
+                
+                if (filesToDelete.length === 0) {
+                    // Try to delete just the folder logic in clientSideFolders
+                    clientSideFolders = clientSideFolders.filter(f => !(f.path + f.name + '/' === prefix));
+                    showToast('Empty folder removed', 'success');
+                    renderObjects(getActiveObjectList(), true);
+                    return;
                 }
 
-                trashedItems = [];
-                localStorage.setItem('trashedItems', '[]');
-                showTrash();
-                hideProgressModal();
-                showToast('Recycle Bin emptied.', 'success');
-                // Ensure capacity is updated after bulk delete
-                updateCapacityDisplay();
+                showToast(`Deleting ${filesToDelete.length} items...`, 'info');
+                
+                // Optimistically update UI immediately
+                filesToDelete.forEach(item => {
+                    const idx = currentObjectList.findIndex(o => o.key === item.key);
+                    if (idx > -1) currentObjectList.splice(idx, 1);
+                });
+                clientSideFolders = clientSideFolders.filter(f => !(f.path + f.name + '/' === prefix));
+                
+                // Render immediately without waiting for server or refetching
+                renderObjects(getActiveObjectList(), true); 
+
+                // Process deletions in background
+                let processed = 0;
+                filesToDelete.forEach(item => {
+                    fetch(`${serverLink}/v4/fragment/object/delete/${fragment}/${item.key}`, {
+                        method: 'DELETE',
+                        headers: { authorization: `Bearer ${token}` }
+                    }).then(res => {
+                        processed++;
+                        if (processed === filesToDelete.length) {
+                             showToast('Folder moved to Recycle Bin', 'success');
+                             updateStorageStats();
+                        }
+                    });
+                });
+                return;
+            }
+
+            // Single File Deletion
+            
+            // 1. Optimistic UI Update: Remove from local list instantly
+            const idx = currentObjectList.findIndex(o => o.key === key);
+            if (idx > -1) {
+                currentObjectList.splice(idx, 1);
+            }
+            
+            // 2. Re-render instantly (Keep scroll position)
+            renderObjects(getActiveObjectList(), true);
+
+            // 3. Send request in background
+            fetch(`${serverLink}/v4/fragment/object/delete/${fragment}/${key}`, {
+                method: 'DELETE',
+                headers: { authorization: `Bearer ${token}` }
+            }).then(res => {
+                if(res.ok) {
+                    showToast('Moved to Recycle Bin', 'success');
+                    // No need to call listObjects() here, we already updated UI
+                    updateStorageStats();
+                } else {
+                     showToast('Failed to move to trash', 'error');
+                     // Revert optimistic update if failed (optional, but good practice)
+                     listObjects(fragment);
+                }
+            });
+        }
+        
+        async function emptyTrash() {
+            // Fetch trash items first
+            // Note: This is potentially expensive if trash is huge.
+            // Ideally server has "Empty Trash" endpoint.
+            // We will iterate known trash items.
+            
+            showGenericModal('Empty Recycle Bin', `Permanently delete all items in Recycle Bin?`, async () => {
+               // We need to fetch the deleted items to know what to delete permanently
+               try {
+                   const res = await fetch(`${serverLink}/v4/fragment/object/metadata/${activeFragment}?show_all=true&include_deleted=true`, {
+                        headers: { authorization: `Bearer ${token}` }
+                   });
+                   if(res.ok) {
+                       const all = await res.json();
+                       const trash = all.filter(i => i.is_delete_marker);
+                       
+                       const total = trash.length;
+                       if(total === 0) {
+                           showToast('Recycle Bin is already empty', 'info');
+                           return;
+                       }
+                       
+                       showProgressModal('Emptying Recycle Bin', total);
+                       
+                       let count = 0;
+                       for (const item of trash) {
+                           count++;
+                           updateProgress(count, total, `Deleting ${item.object_key}...`);
+                           await fetch(`${serverLink}/v4/fragment/object/delete/permanent/${item.fragment}/${item.object_key}`, {
+                               method: 'DELETE',
+                               headers: { authorization: `Bearer ${token}` }
+                           });
+                       }
+                       hideProgressModal();
+                       showToast('Recycle Bin emptied', 'success');
+                       showTrash();
+                       updateCapacityDisplay();
+                   }
+               } catch(e) {
+                   console.error(e);
+               }
             });
         }
 
         function restoreAll() {
-            if (trashedItems.length === 0) return;
-
-            showGenericModal('Restore All', `Restore all ${trashedItems.length} items to their original locations?`, () => {
-                const total = trashedItems.length;
-                showProgressModal('Restoring Files', total);
-
-                // Simulate a small delay for UI feel since local operations are instant
-                setTimeout(() => {
-                    trashedItems = [];
-                    localStorage.setItem('trashedItems', '[]');
-
-                    updateProgress(total, total, 'Finalizing...');
-
-                    setTimeout(() => {
-                        hideProgressModal();
-                        showTrash();
-                        // Refresh the file view if we are looking at files
-                        if ($('#nav-my-files').hasClass('active')) renderObjects(getActiveObjectList());
-                        showToast('All items restored.', 'success');
-                    }, 500);
-                }, 500);
+             showGenericModal('Restore All', `Restore all items?`, async () => {
+               try {
+                   const res = await fetch(`${serverLink}/v4/fragment/object/metadata/${activeFragment}?show_all=true&include_deleted=true`, {
+                        headers: { authorization: `Bearer ${token}` }
+                   });
+                   if(res.ok) {
+                       const all = await res.json();
+                       const trash = all.filter(i => i.is_delete_marker);
+                       const total = trash.length;
+                       
+                       showProgressModal('Restoring', total);
+                       
+                       let count = 0;
+                       for (const item of trash) {
+                           count++;
+                           updateProgress(count, total, `Restoring ${item.object_key}...`);
+                           // Delete the DELETE MARKER (which is a version)
+                           await fetch(`${serverLink}/v4/fragment/object/delete/version/${item.fragment}/${item.version_id}/${item.object_key}`, {
+                               method: 'DELETE',
+                               headers: { authorization: `Bearer ${token}` }
+                           });
+                       }
+                       hideProgressModal();
+                       showToast('All items restored', 'success');
+                       showTrash();
+                       // Refresh main view if visible
+                       if($('#nav-my-files').hasClass('active')) listObjects(activeFragment);
+                   }
+               } catch(e) { console.error(e); }
             });
         }
+        
         async function deletePermanently(fragment, key, type) {
             $('#contextMenu').addClass('hidden');
             showGenericModal('Delete Permanently', 'Cannot be undone. Sure?', async () => {
                 try {
-                    await fetch(`${serverLink}/v4/fragment/object/delete/${fragment}/${key}`, {
+                    await fetch(`${serverLink}/v4/fragment/object/delete/permanent/${fragment}/${key}`, {
                         method: 'DELETE',
                         headers: {
                             authorization: `Bearer ${token}`
                         }
                     });
-                    trashedItems = trashedItems.filter(t => t.key !== key);
-                    localStorage.setItem('trashedItems', JSON.stringify(trashedItems));
-                    showTrash();
-                    showToast('File deleted.', 'success');
+                    showTrash(); // Refresh trash view
+                    showToast('File deleted forever.', 'success');
                     updateCapacityDisplay();
                 } catch (e) {
                     showToast('Failed.', 'error');
@@ -2747,13 +2830,22 @@
             });
         }
 
-        function restoreFromTrash(key) {
+        // Updated Restore: Deletes the marker version
+        async function restoreFromTrash(fragment, key, versionId) {
             $('#contextMenu').addClass('hidden');
-            trashedItems = trashedItems.filter(t => t.key !== key);
-            localStorage.setItem('trashedItems', JSON.stringify(trashedItems));
-            showTrash();
-            showToast('File restored.', 'success');
-            if ($('#nav-my-files').hasClass('active')) renderObjects(getActiveObjectList());
+            try {
+                const res = await fetch(`${serverLink}/v4/fragment/object/delete/version/${fragment}/${versionId}/${key}`, {
+                    method: 'DELETE',
+                    headers: { authorization: `Bearer ${token}` }
+                });
+                if(res.ok) {
+                    showToast('File restored.', 'success');
+                    showTrash(); // Refresh trash list
+                    if ($('#nav-my-files').hasClass('active')) listObjects(fragment);
+                } else throw new Error();
+            } catch(e) {
+                showToast('Failed to restore', 'error');
+            }
         }
 
         function showProgressModal(title, total) {
@@ -2773,66 +2865,110 @@
             $('#progressModal').addClass('hidden').removeClass('flex');
         }
 
-        function showTrash() {
+        async function showTrash() {
+            if(!activeFragment) return;
             const container = document.getElementById('recycle-bin-content');
-            const header = document.getElementById('trash-list-header');
+            container.innerHTML = '<div class="text-center text-gray-500 py-20"><i class="fas fa-circle-notch fa-spin text-3xl"></i></div>';
+            
+            try {
+                // Fetch ALL objects including deleted
+                const res = await fetch(`${serverLink}/v4/fragment/object/metadata/${activeFragment}?show_all=true&include_deleted=true`, {
+                    headers: { authorization: `Bearer ${token}` }
+                });
+                
+                if(res.ok) {
+                    const rawData = await res.json();
+                    
+                    // FIX: Map backend fields to frontend expected fields
+                    const all = rawData.map(item => ({
+                        ...item,
+                        key: item.object_key, // Critical fix: renderTrashItems expects .key
+                        size_bytes: item.total_size_bytes
+                    }));
+
+                    // Filter for items where latest version is a delete marker
+                    const trash = all.filter(i => i.is_delete_marker);
+                    trashedItems = trash; 
+                    
+                    renderTrashItems(trash, container);
+                }
+            } catch(e) {
+                console.error(e);
+                container.innerHTML = '<div class="text-center text-red-400 py-20">Failed to load recycle bin</div>';
+            }
+        }
+        
+        function renderTrashItems(items, container) {
             container.innerHTML = '';
+            
             if (currentTrashView === 'tiles') {
                 container.className = 'grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4 custom-scrollbar flex-1 overflow-y-auto content-start';
-                if (header) header.classList.add('hidden');
             } else {
                 container.className = 'flex flex-col gap-0 custom-scrollbar flex-1 overflow-y-auto';
-                if (header) header.classList.remove('hidden');
             }
-            if (trashedItems.length === 0) {
-                container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-500 flex flex-col items-center justify-center h-full"><i class="fas fa-trash-can text-5xl mb-4 opacity-30"></i><p>Recycle Bin is empty</p></div>`;
+            
+            if (items.length === 0) {
+                container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-500 flex flex-col items-center justify-center h-full"><i class="fas fa-trash-can text-5xl mb-4 opacity-50"></i><p>Recycle Bin is empty</p></div>`;
                 return;
             }
-            trashedItems.forEach(item => {
+            
+            items.forEach(item => {
                 const name = item.key.split('/').pop();
-                const date = new Date(item.trashedDate).toLocaleDateString();
+                const date = new Date(item.created_at * 1000).toLocaleDateString(); 
+                
                 if (currentTrashView === 'tiles') {
                     const div = document.createElement('div');
                     div.className = 'file-item p-3 flex flex-col items-center group relative border border-transparent rounded hover:bg-[#2a2a2a] transition-all h-max';
-                    div.innerHTML = `${getFileIconHTML(name)}<span class="text-xs text-center truncate w-full text-gray-300 group-hover:text-white mt-1">${name}</span><div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 rounded"><button class="w-8 h-8 flex items-center justify-center rounded-full bg-green-600 text-white hover:bg-green-500 shadow-lg transform hover:scale-110 transition-transform" onclick="event.stopPropagation(); restoreFromTrash('${item.key}')"><i class="fas fa-undo text-xs"></i></button><button class="w-8 h-8 flex items-center justify-center rounded-full bg-red-600 text-white hover:bg-red-500 shadow-lg transform hover:scale-110 transition-transform" onclick="event.stopPropagation(); deletePermanently('${item.fragment}', '${item.key}', 'file')"><i class="fas fa-times text-xs"></i></button></div>`;
-                    div.oncontextmenu = (e) => showCtx(e, {
-                        isTrash: true,
-                        data: item
-                    });
+                    div.innerHTML = `${getFileIconHTML(name)}<span class="text-xs text-center truncate w-full text-gray-300 group-hover:text-white mt-1">${name}</span><div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 rounded"><button class="w-8 h-8 flex items-center justify-center rounded-full bg-green-600 text-white hover:bg-green-500 shadow-lg transform hover:scale-110 transition-transform" onclick="event.stopPropagation(); restoreFromTrash('${item.fragment}','${item.key}','${item.version_id}')"><i class="fas fa-undo text-xs"></i></button><button class="w-8 h-8 flex items-center justify-center rounded-full bg-red-600 text-white hover:bg-red-500 shadow-lg transform hover:scale-110 transition-transform" onclick="event.stopPropagation(); deletePermanently('${item.fragment}', '${item.key}', 'file')"><i class="fas fa-times text-xs"></i></button></div>`;
+                    div.oncontextmenu = (e) => showCtx(e, { isTrash: true, data: item });
                     container.appendChild(div);
                 } else {
                     const div = document.createElement('div');
                     div.className = 'grid grid-cols-[1fr_150px_100px] gap-2 px-4 py-2 hover:bg-[#2a2a2a] border-b border-[#333] group items-center text-xs text-gray-300 transition-colors';
-                    div.innerHTML = `<div class="flex items-center gap-3 truncate">${getFileIconHTML(name, true)}<span class="truncate">${name}</span></div><div class="text-gray-500">${date}</div><div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><button class="text-green-500 hover:text-white" onclick="event.stopPropagation(); restoreFromTrash('${item.key}')"><i class="fas fa-undo"></i></button><button class="text-red-500 hover:text-white" onclick="event.stopPropagation(); deletePermanently('${item.fragment}', '${item.key}', 'file')"><i class="fas fa-times"></i></button></div>`;
-                    div.oncontextmenu = (e) => showCtx(e, {
-                        isTrash: true,
-                        data: item
-                    });
+                    div.innerHTML = `<div class="flex items-center gap-3 truncate">${getFileIconHTML(name, true)}<span class="truncate">${name}</span></div><div class="text-gray-500">${date}</div><div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><button class="text-green-500 hover:text-white" onclick="event.stopPropagation(); restoreFromTrash('${item.fragment}','${item.key}','${item.version_id}')"><i class="fas fa-undo"></i></button><button class="text-red-500 hover:text-white" onclick="event.stopPropagation(); deletePermanently('${item.fragment}', '${item.key}', 'file')"><i class="fas fa-times"></i></button></div>`;
+                    div.oncontextmenu = (e) => showCtx(e, { isTrash: true, data: item });
                     container.appendChild(div);
                 }
             });
         }
 
-        function toggleStar(key) {
-            if (starredItems.includes(key)) starredItems = starredItems.filter(k => k !== key);
-            else starredItems.push(key);
-            localStorage.setItem('starredItems', JSON.stringify(starredItems));
-            showToast(starredItems.includes(key) ? 'Added to Favorites' : 'Removed from Favorites', 'success');
-            if ($('#nav-starred').hasClass('active')) showStarredFiles();
-            else if ($('#nav-my-files').hasClass('active')) renderObjects(getActiveObjectList());
+        // --- Upload Logic (Restored) ---
+        async function scanFiles(item, path = '') {
+            if (item.isFile) {
+                return new Promise(resolve => {
+                    item.file(file => {
+                        // Attach the full path for the zipper to use
+                        file.entryPath = path + file.name;
+                        resolve([file]);
+                    });
+                });
+            } else if (item.isDirectory) {
+                const dirReader = item.createReader();
+                let entries = [];
+                // readEntries must be called repeatedly until empty
+                const readEntries = async () => {
+                    const result = await new Promise(resolve => dirReader.readEntries(resolve));
+                    if (result.length === 0) return entries;
+                    entries = entries.concat(result);
+                    return readEntries();
+                };
+                const allEntries = await readEntries();
+                const files = [];
+                for (const entry of allEntries) {
+                    files.push(...await scanFiles(entry, path + item.name + '/'));
+                }
+                return files;
+            }
+            return [];
         }
 
-        // --- Uploads ---
         async function processZipUpload(files) {
             if (!files || files.length === 0) return;
-
             if (typeof JSZip === 'undefined') {
                 showToast('JSZip library missing', 'error');
                 return;
             }
-
             const zip = new JSZip();
-
             const pathInfo = files[0].entryPath || files[0].webkitRelativePath || '';
             const rootFolderName = pathInfo.split('/')[0] || 'folder_archive';
 
@@ -2840,13 +2976,11 @@
             showProgressModal('Compressing Folder', files.length);
 
             let processed = 0;
-
             try {
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
                     processed++;
                     updateProgress(processed, files.length, `Zipping ${file.name}...`);
-
                     const filePath = file.entryPath || file.webkitRelativePath || file.name;
                     zip.file(filePath, file);
                 }
@@ -2860,50 +2994,15 @@
                         $('#progressStatus').text(`Compressing: ${metadata.percent.toFixed(0)}%`);
                     }
                 });
-
                 const zipFile = new File([content], `${rootFolderName}.zip`, { type: "application/zip" });
-
                 hideProgressModal();
                 showToast('Folder compressed! Added to queue.', 'success');
-
                 handleUploads([zipFile]);
-
             } catch (e) {
                 console.error(e);
                 hideProgressModal();
                 showToast('Failed to zip folder', 'error');
             }
-        }
-
-        async function scanFiles(item, path = '') {
-            if (item.isFile) {
-                return new Promise(resolve => {
-                    item.file(file => {
-                        // Attach the full path for the zipper to use
-                        file.entryPath = path + file.name;
-                        resolve([file]);
-                    });
-                });
-            } else if (item.isDirectory) {
-                const dirReader = item.createReader();
-                let entries = [];
-
-                // readEntries must be called repeatedly until empty
-                const readEntries = async () => {
-                    const result = await new Promise(resolve => dirReader.readEntries(resolve));
-                    if (result.length === 0) return entries;
-                    entries = entries.concat(result);
-                    return readEntries();
-                };
-
-                const allEntries = await readEntries();
-                const files = [];
-                for (const entry of allEntries) {
-                    files.push(...await scanFiles(entry, path + item.name + '/'));
-                }
-                return files;
-            }
-            return [];
         }
 
         async function handleUploads(files) {
@@ -2927,7 +3026,7 @@
             const container = document.getElementById('upload-items-container');
             const el = document.createElement('div');
             el.id = item.id || `upload-${crypto.randomUUID()}`;
-            el.className = 'bg-[#191919] p-2 rounded border border-[#333] mb-1';
+            el.className = 'bg-[#1f1f1f] p-2 rounded border border-[#333] mb-1';
             let progressBar = `<div class="w-full bg-[#333] h-1 rounded-full overflow-hidden mb-1"><div class="progress-bar bg-blue-600 h-full w-0 transition-all"></div></div>`;
             let actions = item.isRecovery ? `<div class="flex gap-2 mt-1"><button class="text-[10px] bg-green-600 hover:bg-green-500 text-white px-2 py-0.5 rounded resume-btn">Resume</button><button class="text-[10px] bg-red-600 hover:bg-red-500 text-white px-2 py-0.5 rounded cancel-btn">Cancel</button></div>` : '';
             el.innerHTML = `<div class="flex justify-between mb-1 text-[10px]"><span class="font-medium text-gray-300 truncate w-24">${item.file.name}</span><span class="${item.isRecovery ? 'text-yellow-500' : 'text-gray-400'} status-text"><i class="far fa-clock mr-1"></i>${item.isRecovery ? 'Interrupted' : 'Pending'}</span></div>${item.isRecovery ? '' : progressBar}<div class="flex justify-end text-[9px] text-gray-500 details-text">${item.isRecovery ? '<span>Waiting...</span>' : '<span>-- MB/s</span><span>--</span>'}</div>${actions}`;
@@ -2956,28 +3055,26 @@
                     if (!next) break;
                     activeUploads++;
                     next.started = true;
-
-                    // UPDATED: Start upload
                     startUpload(next).finally(() => {
                         activeUploads--;
-                        // We do not reset global speed here anymore.
                         processUploadQueue();
                     });
-
-                    // Reduced throttling: 500ms -> 100ms
                     await new Promise(r => setTimeout(r, 100));
                 }
             } finally {
                 isProcessingQueue = false;
             }
         }
+
         async function startUpload(item) {
             let ui = document.getElementById(item.id);
             if (!ui) return;
             const statusText = ui.querySelector('.status-text');
             const progBar = ui.querySelector('.progress-bar');
             const detailsText = ui.querySelector('.details-text');
-
+            
+            // Check capacity client side first as rough guard
+            // (Note: This is an estimation, server also enforces it)
             const currentUsage = currentObjectList.reduce((acc, obj) => acc + Number(obj.size_bytes), 0);
             if (currentUsage + item.file.size > totalCapacity) {
                 statusText.textContent = "Storage Full";
@@ -2989,44 +3086,38 @@
             }
 
             const sessionKey = `upload-session-${item.file.name}-${item.file.size}-${item.file.lastModified}`;
-            item.sessionKey = sessionKey; // Explicitly attach for tracking
+            item.sessionKey = sessionKey;
 
-            let uploadedBytes = 0,
-                lastUploadedBytes = 0,
-                lastUpdate = Date.now();
-
-            // Initialize speed tracking for this item
+            let uploadedBytes = 0, lastUploadedBytes = 0, lastUpdate = Date.now();
             item.currentSpeed = 0;
 
             try {
                 const fileSize = item.file.size;
                 const chunkSize = fileSize < 100 * MB ? 2 * MB : fileSize < 500 * MB ? 5 * MB : fileSize < 1024 * MB ? 8 * MB : 16 * MB;
                 const totalChunks = Math.ceil(fileSize / chunkSize);
-                let version_id, session_id, chunkQueue = Array.from({
-                    length: totalChunks
-                }, (_, i) => i);
+                let version_id, session_id, chunkQueue = Array.from({ length: totalChunks }, (_, i) => i);
 
                 const existing = localStorage.getItem(sessionKey);
                 if (existing) {
-                    const sess = JSON.parse(existing);
-                    statusText.textContent = "Resuming...";
-                    const statusRes = await fetch(`${serverLink}/v4/fragment/object/upload/status/${sess.fragment}/${sess.version_id}?object_key=${encodeURIComponent(sess.objectKey)}`, {
-                        headers: {
-                            authorization: `Bearer ${token}`
+                    try {
+                        const sess = JSON.parse(existing);
+                        statusText.textContent = "Resuming...";
+                        const statusRes = await fetch(`${serverLink}/v4/fragment/object/upload/status/${sess.fragment}/${sess.version_id}?object_key=${encodeURIComponent(sess.objectKey)}`, {
+                            headers: { authorization: `Bearer ${token}` }
+                        });
+                        if (statusRes.ok) {
+                            const s = await statusRes.json();
+                            version_id = sess.version_id;
+                            session_id = sess.session_id;
+                            const done = new Set(s.uploaded_parts);
+                            chunkQueue = chunkQueue.filter(i => !done.has(i));
+                            uploadedBytes = done.size * chunkSize;
+                            if (uploadedBytes > fileSize) uploadedBytes = fileSize;
+                            lastUploadedBytes = uploadedBytes;
+                        } else {
+                            localStorage.removeItem(sessionKey);
                         }
-                    });
-                    if (statusRes.ok) {
-                        const s = await statusRes.json();
-                        version_id = sess.version_id;
-                        session_id = sess.session_id;
-                        const done = new Set(s.uploaded_parts); // Corrected property name from backend 'uploaded_parts'
-                        chunkQueue = chunkQueue.filter(i => !done.has(i));
-                        uploadedBytes = done.size * chunkSize;
-                        if (uploadedBytes > fileSize) uploadedBytes = fileSize;
-                        lastUploadedBytes = uploadedBytes;
-                    } else {
-                        localStorage.removeItem(sessionKey);
-                    }
+                    } catch(e) { localStorage.removeItem(sessionKey); }
                 }
 
                 if (!version_id) {
@@ -3042,48 +3133,34 @@
                             total_size_bytes: fileSize
                         })
                     });
-                    if (!init.ok) throw new Error();
+                    if (!init.ok) throw new Error("Init failed");
                     const res = await init.json();
                     version_id = res.version_id;
                     session_id = res.session_id;
                     
                     localStorage.setItem(sessionKey, JSON.stringify({
-                        version_id,
-                        session_id,
-                        name: item.file.name,
-                        size: fileSize,
-                        lastModified: item.file.lastModified,
-                        objectKey: item.objectKey,
-                        fragment: item.fragment
+                        version_id, session_id, name: item.file.name, size: fileSize,
+                        lastModified: item.file.lastModified, objectKey: item.objectKey, fragment: item.fragment
                     }));
                 }
 
                 statusText.textContent = "Uploading...";
-                const buffer = [],
-                    // Optimization: Increased buffer size to prevent starvation
-                    maxBuffer = 10,
-                    // Optimization: 32 workers to saturate HTTP/2 multiplexing
-                    maxWorkers = 32;
-
+                const buffer = [], maxBuffer = 6, maxWorkers = 6;
                 let hashingDone = false;
 
                 const producer = async () => {
                     for (const idx of chunkQueue) {
                         while (buffer.length >= maxBuffer) await new Promise(r => setTimeout(r, 50));
+                        if(item.controller.signal.aborted) break;
                         const blob = item.file.slice(idx * chunkSize, Math.min((idx + 1) * chunkSize, fileSize));
-                        // Backend calculates hash, client side hashing is good for verification but not mandatory if using HTTPS and TCP checksums
-                        // But let's keep it if we want to add headers later.
-                        // For now the backend doesn't require Digest header in your provided code
-                        
-                        buffer.push({
-                            index: idx,
-                            blob
-                        });
+                        buffer.push({ index: idx, blob });
                     }
                     hashingDone = true;
                 };
+
                 const worker = async () => {
                     while (true) {
+                        if(item.controller.signal.aborted) break;
                         const chunk = buffer.shift();
                         if (!chunk) {
                             if (hashingDone) break;
@@ -3091,8 +3168,7 @@
                             continue;
                         }
                         try {
-                            // NEW API: PUT /v4/fragment/object/upload/chunk/{fragment}/{version_id}/{part_index}?object_key={key}
-                            const res = await fetch(`${serverLink}/v4/fragment/object/upload/chunk/${item.fragment}/${version_id}/${chunk.index}?object_key=${encodeURIComponent(item.objectKey)}&buffer_size=${chunkSize}`, {
+                            const res = await fetch(`${serverLink}/v4/fragment/object/upload/chunk/${item.fragment}/${version_id}/${chunk.index}?object_key=${encodeURIComponent(item.objectKey)}&buffer_size=524288`, {
                                 method: 'PUT',
                                 headers: {
                                     authorization: `Bearer ${token}`,
@@ -3101,19 +3177,13 @@
                                 body: chunk.blob,
                                 signal: item.controller.signal
                             });
-
-                            if (!res.ok) {
-                                throw new Error(`Server returned status ${res.status}`);
-                            }
-
+                            if (!res.ok) throw new Error(`Status ${res.status}`);
+                            
                             uploadedBytes += chunk.blob.size;
                             const now = Date.now();
                             if (now - lastUpdate > 500) {
                                 const speed = (uploadedBytes - lastUploadedBytes) / ((now - lastUpdate) / 1000);
-
-                                // Store speed on item instead of global
                                 item.currentSpeed = speed;
-
                                 const eta = speed > 0 ? (fileSize - uploadedBytes) / speed : 0;
                                 progBar.style.width = `${Math.min(100, (uploadedBytes / fileSize) * 100)}%`;
                                 statusText.textContent = `${Math.round((uploadedBytes / fileSize) * 100)}%`;
@@ -3122,11 +3192,9 @@
                                 lastUploadedBytes = uploadedBytes;
                             }
                         } catch (e) {
-                            // Rate limit handling (Retry)
+                            if(item.controller.signal.aborted) break;
                             buffer.unshift(chunk);
-                            // Add slight jitter to prevent thundering herd
-                            const jitter = Math.random() * 500;
-                            await new Promise(r => setTimeout(r, 1000 + jitter));
+                            await new Promise(r => setTimeout(r, 1000 + Math.random() * 500));
                         }
                     }
                 };
@@ -3138,9 +3206,9 @@
                     Promise.all(workers).then(resolve).catch(reject);
                 });
 
+                if(item.controller.signal.aborted) return;
+
                 statusText.textContent = "Finalizing...";
-                // NEW API: POST /v4/fragment/object/upload/finalize/{fragment}/{version_id}/{session_id}?object_key={key}
-                // BODY: JSON { content_type, total_size_bytes }
                 await fetch(`${serverLink}/v4/fragment/object/upload/finalize/${item.fragment}/${version_id}/${session_id}?object_key=${encodeURIComponent(item.objectKey)}`, {
                     method: 'POST',
                     headers: {
@@ -3152,44 +3220,56 @@
                         total_size_bytes: fileSize
                     })
                 });
+
                 statusText.textContent = "Complete";
                 statusText.className = "text-green-400 text-[10px]";
                 progBar.classList.replace('bg-blue-600', 'bg-green-500');
                 progBar.style.width = '100%';
                 item.completed = true;
-                item.currentSpeed = 0; // Reset speed on completion
+                item.currentSpeed = 0;
                 localStorage.removeItem(sessionKey);
-                listObjects(activeFragment);
-                updateCapacityDisplay(); // Update capacity after successful upload
+                
+                // Refresh views
+                if ($('#nav-my-files').hasClass('active')) listObjects(activeFragment);
+                updateCapacityDisplay();
 
             } catch (e) {
+                if(item.controller.signal.aborted) {
+                    statusText.textContent = "Cancelled";
+                    return;
+                }
                 console.error(e);
                 statusText.textContent = "Failed";
                 statusText.className = "text-red-400 text-[10px]";
                 item.failed = true;
-                item.currentSpeed = 0; // Reset speed on failure
+                item.currentSpeed = 0;
                 detailsText.innerHTML = `<button class="text-blue-400 mr-2" onclick="retryUpload('${item.id}')">Retry</button><button class="text-red-400" onclick="cancelUpload('${item.id}')">Cancel</button>`;
             }
         }
+
         window.retryUpload = (id) => {
             const item = uploadQueue.find(u => u.id === id);
             if (item) {
                 item.failed = false;
                 item.started = false;
                 const ui = document.getElementById(id);
-                ui.querySelector('.status-text').className = "text-blue-400 status-text";
-                ui.querySelector('.status-text').textContent = "Retrying...";
+                if(ui) {
+                    ui.querySelector('.status-text').className = "text-blue-400 status-text";
+                    ui.querySelector('.status-text').textContent = "Retrying...";
+                    ui.querySelector('.details-text').innerHTML = "<span>Waiting...</span>";
+                }
                 processUploadQueue();
             }
         };
+
         window.cancelUpload = (id) => {
             const item = uploadQueue.find(u => u.id === id);
             if (item) {
                 item.controller.abort();
-                localStorage.removeItem(`upload-session-${item.file.name}-${item.file.size}-${item.file.lastModified}`);
+                if(item.sessionKey) localStorage.removeItem(item.sessionKey);
                 uploadQueue = uploadQueue.filter(u => u.id !== id);
-                document.getElementById(id).remove();
-                activeUploads--;
+                document.getElementById(id)?.remove();
+                if(item.started) activeUploads--;
                 processUploadQueue();
             }
         };
@@ -3198,25 +3278,20 @@
             for (let i = 0; i < localStorage.length; i++) {
                 const k = localStorage.key(i);
                 if (k.startsWith('upload-session-')) {
-                    const d = JSON.parse(localStorage.getItem(k));
-
-                    // Generate ID deterministically
-                    const elId = `recovery-${k.replace(/[^a-zA-Z0-9]/g, '')}`;
-
-                    // CHECK: Ensure item is not already in queue (being uploaded) AND UI element doesn't already exist
-                    if (!uploadQueue.some(u => u.sessionKey === k) && !document.getElementById(elId)) {
-                        createUploadUI({
-                            id: elId,
-                            sessionKey: k,
-                            file: {
-                                name: d.name,
-                                size: d.size
-                            },
-                            isRecovery: true,
-                            status: 'interrupted',
-                            objectKey: d.objectKey
-                        }, true);
-                    }
+                    try {
+                        const d = JSON.parse(localStorage.getItem(k));
+                        const elId = `recovery-${k.replace(/[^a-zA-Z0-9]/g, '')}`;
+                        if (!uploadQueue.some(u => u.sessionKey === k) && !document.getElementById(elId)) {
+                            createUploadUI({
+                                id: elId,
+                                sessionKey: k,
+                                file: { name: d.name, size: d.size },
+                                isRecovery: true,
+                                status: 'interrupted',
+                                objectKey: d.objectKey
+                            }, true);
+                        }
+                    } catch(e) {}
                 }
             }
             if (document.querySelectorAll('#upload-items-container > div').length > 0) WindowManager.addTaskbarItem('uploads');
@@ -3225,26 +3300,40 @@
         // --- Init ---
         $(document).ready(() => {
             VirtualScroller.init('browser', 'objectList');
-            
-            // Start Menu User
             $('#start-menu-username').text(userName);
-
-            // Drag Drop
+            
+            // --- Drag & Drop Logic ---
             const dz = document.getElementById('browser');
             let dc = 0;
+            
+            // Prevent default behavior on window to prevent browser from opening dropped files
+            window.addEventListener('dragover', e => e.preventDefault(), false);
+            window.addEventListener('drop', e => e.preventDefault(), false);
 
-            dz.addEventListener('dragover', (e) => e.preventDefault());
+            dz.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            
             dz.addEventListener('dragenter', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 dc++;
                 dz.classList.add('bg-[#252525]');
             });
+
             dz.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 dc--;
-                if (dc === 0) dz.classList.remove('bg-[#252525]');
+                if (dc === 0) {
+                    dz.classList.remove('bg-[#252525]');
+                }
             });
 
             dz.addEventListener('drop', async (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 dc = 0;
                 dz.classList.remove('bg-[#252525]');
 
@@ -3254,33 +3343,37 @@
 
                 if (items) {
                     for (let i = 0; i < items.length; i++) {
-                        const entry = items[i].webkitGetAsEntry ? items[i].webkitGetAsEntry() : null;
-                        if (entry) {
-                            if (entry.isDirectory) hasFolder = true;
-                            files.push(...await scanFiles(entry));
-                        } else {
-                            // Fallback for items that aren't entries
-                            const f = items[i].getAsFile();
-                            if (f) files.push(f);
+                        const item = items[i];
+                        if (item.kind === 'file') {
+                            const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
+                            if (entry) {
+                                if (entry.isDirectory) {
+                                    hasFolder = true;
+                                    files.push(...await scanFiles(entry));
+                                } else {
+                                    const f = item.getAsFile();
+                                    if (f) files.push(f);
+                                }
+                            } else {
+                                const f = item.getAsFile();
+                                if (f) files.push(f);
+                            }
                         }
                     }
                 } else {
-                    // Fallback for older browsers
                     files.push(...e.dataTransfer.files);
                 }
 
                 if (files.length > 0) {
                     if (hasFolder) {
-                        // If we detected a folder, ZIP IT
                         processZipUpload(files);
                     } else {
-                        // Otherwise, normal upload
                         handleUploads(files);
                     }
                 }
             });
 
-            // --- Paste Handler (Standard) ---
+            // --- Paste Logic ---
             $(document).on('paste', (e) => {
                 const cd = e.originalEvent.clipboardData;
                 if (!cd) return;
@@ -3290,53 +3383,48 @@
                 let potentialFolders = 0;
 
                 const addFile = (f) => {
-                    if (!uniqueFiles.has(f.name + f.size)) {
+                    // Simple de-dupe
+                    const key = f.name + f.size + f.lastModified;
+                    if (!uniqueFiles.has(key)) {
                         files.push(f);
-                        uniqueFiles.add(f.name + f.size);
+                        uniqueFiles.add(key);
                     }
                 };
+
                 if (cd.items) {
                     for (let i = 0; i < cd.items.length; i++) {
                         const item = cd.items[i];
                         if (item.kind !== 'file') continue;
-
+                        
+                        // Chrome specific folder check
                         const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
                         if (entry && entry.isDirectory) {
                             potentialFolders++;
                             continue;
                         }
-
+                        
                         const f = item.getAsFile();
                         if (f) {
-                            if (f.size === 0) {
-                                potentialFolders++;
-                            } else {
-                                addFile(f);
-                            }
+                             // Check for 0 byte files which sometimes indicate folders on some OS clipboard implementations
+                            if (f.size === 0 && !f.type) potentialFolders++;
+                            else addFile(f);
                         }
                     }
-                }
-                // 2. Fallback Method: 'files' list (older browsers)
-                else if (cd.files) {
-                    for (let i = 0; i < cd.files.length; i++) {
+                } else if (cd.files) {
+                     for (let i = 0; i < cd.files.length; i++) {
                         const f = cd.files[i];
-                        if (f.size === 0) potentialFolders++;
-                        else addFile(f);
+                        addFile(f);
                     }
                 }
 
-                if ($('#win-file-explorer').is(':visible')) {
-                    if (files.length > 0) {
-                        e.preventDefault();
-                        handleUploads(files);
-                    }
-
-                    // Show error if we detected folders (and nothing valid was pasted)
-                    if (potentialFolders > 0 && files.length === 0) {
-                        showToast('Cannot paste folders. Please use Drag & Drop to zip/upload folders.', 'error');
-                    }
+                if ($('#win-file-explorer').is(':visible') && files.length > 0) {
+                    e.preventDefault();
+                    handleUploads(files);
+                } else if (potentialFolders > 0 && files.length === 0) {
+                    showToast('Pasting folders is not supported. Please use Drag & Drop.', 'error');
                 }
             });
+            
             $(".window").draggable({
                 handle: ".window-header",
                 containment: "#windows-container",
@@ -3352,8 +3440,6 @@
             });
             $(document).on('click', (e) => {
                 if (!$(e.target).closest('#contextMenu').length) $('#contextMenu').addClass('hidden');
-                
-                // Close start menu if clicked outside
                 if (!$(e.target).closest('#start-menu').length && !$(e.target).closest('#start-btn').length) {
                     StartMenu.close();
                 }
@@ -3363,22 +3449,18 @@
 
             $('#folderInput').change((e) => {
                 processZipUpload(e.target.files);
-                e.target.value = ''; // Reset input
+                e.target.value = '';
             });
 
             $('#browser').on('contextmenu', (e) => {
                 if ($(e.target).closest('.file-item').length) return;
-
                 e.preventDefault();
                 e.stopPropagation();
-
                 const menu = $('#contextMenu');
                 let x = e.clientX,
                     y = e.clientY;
-
                 if (x + 200 > window.innerWidth) x -= 200;
                 if (y + 200 > window.innerHeight) y -= 200;
-
                 const html = `
                     <div class="ctx-item" onclick="document.getElementById('newFolderBtnAction').click()"><i class="fas fa-folder-plus w-4 text-yellow-500"></i> New Folder</div>
                     <div class="ctx-div"></div>
@@ -3387,28 +3469,24 @@
                     <div class="ctx-div"></div>
                     <div class="ctx-item" onclick="listObjects(activeFragment)"><i class="fas fa-sync-alt w-4"></i> Refresh</div>
                 `;
-
                 menu.html(html).css({
                     top: y,
                     left: x
                 }).removeClass('hidden');
             });
 
-            // Clear selection when clicking on empty space
             $('#browser').on('click', (e) => {
                 if (e.target === e.currentTarget || e.target.id === 'objectList') {
                     SelectionManager.clear();
                 }
             });
 
-            // Selection Box (Marquee)
             const marquee = document.getElementById('selection-marquee');
-            let isSelecting = false,
-                startX, startY;
+            let isSelecting = false, startX, startY;
 
             $('#browser').on('mousedown', (e) => {
                 if (e.target !== e.currentTarget && e.target.id !== 'objectList') return;
-                if (e.which !== 1) return; // Only left click
+                if (e.which !== 1) return;
                 isSelecting = true;
                 startX = e.pageX;
                 startY = e.pageY;
@@ -3432,11 +3510,8 @@
                 marquee.style.height = height + 'px';
                 marquee.style.left = left + 'px';
                 marquee.style.top = top + 'px';
-
-                // Hit Test
                 const items = document.querySelectorAll('.file-item');
                 const mRect = marquee.getBoundingClientRect();
-
                 items.forEach(item => {
                     const iRect = item.getBoundingClientRect();
                     if (mRect.left < iRect.right && mRect.right > iRect.left && mRect.top < iRect.bottom && mRect.bottom > iRect.top) {
@@ -3452,12 +3527,13 @@
                 }
             });
 
-
             setTimeout(() => {
                 $('#boot-screen').css('opacity', 0);
                 setTimeout(() => $('#boot-screen').remove(), 600);
             }, 1200);
+
             $('#fileInput').change((e) => handleUploads(e.target.files));
+
             $('#searchInput').on('input', function () {
                 const v = $(this).val().toLowerCase();
                 if (!v) {
@@ -3487,7 +3563,7 @@
                             fragment: d.fragment,
                             objectKey: d.objectKey,
                             controller: new AbortController(),
-                            sessionKey: sKey // Ensure sessionKey is tracked
+                            sessionKey: sKey
                         };
                         uploadQueue.push(item);
                         createUploadUI(item);
@@ -3531,7 +3607,15 @@
 
                 function pushFrag(f) {
                     if (document.getElementById(`frag-${f}`)) return;
-                    const el = $(`<div id="frag-${f}" class="nav-item fragment-item text-[11px]"><i class="fas fa-hard-drive text-gray-400"></i> ${f}</div>`).click(function () {
+                    const el = $(`
+                        <div id="frag-${f}" class="nav-item fragment-item flex justify-between group">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-database w-4 text-center"></i> ${f}
+                            </div>
+                            <!-- Delete button (hidden by default, shown on hover) -->
+                            ${f !== 'My Files' ? `<i class="fas fa-times text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation(); deleteFragment('${f}')" title="Delete Mount"></i>` : ''}
+                        </div>
+                    `).click(function () {
                         $('#fragmentList .fragment-item').removeClass('active');
                         $(this).addClass('active');
                         activeFragment = f;
@@ -3592,5 +3676,4 @@
         });
     </script>
 </body>
-
 </html>
