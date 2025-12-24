@@ -4,36 +4,24 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>Litiaina N1 (Local)</title>
+    <title>Litiaina N1 Local</title>
     <link rel="icon" type="image/png" href="../images/litiaina_icon_48x48.png">
 
-    <!-- Tailwind CSS (Local) -->
+    <!-- Tailwind CSS -->
     <script src="lib/tailwindcss.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Segoe UI', 'Inter', 'system-ui', 'sans-serif'],
-                        mono: ['Consolas', 'Monaco', 'Courier New', 'monospace'],
-                    }
-                }
-            }
-        }
-    </script>
 
-    <!-- Local CSS -->
-    <!-- Ensure you downloaded FontAwesome and placed it in css/font-awesome/ -->
+    <!-- Fonts & Icons -->
+    <link href="css/font-family.css" rel="stylesheet">
     <link rel="stylesheet" href="css/font-awesome/css/all.min.css">
-    <link rel="stylesheet" href="css/jquery-ui.css">
 
-    <!-- Local Libraries -->
+    <!-- Libraries -->
     <script src="lib/jszip.min.js"></script>
     <script src="lib/docx-preview.min.js"></script>
     <script src="lib/xlsx.full.min.js"></script>
     <script src="lib/hls.js"></script>
-    <script src="lib/jquery.min.js"></script>
+    <script src="lib/jquery-3.6.0.min.js"></script>
     <script src="lib/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="css/jquery-ui.css">
 
     <!-- Chart.js for Graphs -->
     <script src="lib/chart.js"></script>
@@ -66,8 +54,7 @@
         }
 
         body {
-            /* Simplified font stack for local offline use without Google Fonts */
-            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Segoe UI', 'Inter', sans-serif;
             background-color: var(--win-bg-desktop);
             overflow: hidden;
             height: 100vh; /* Fallback */
@@ -86,7 +73,6 @@
             position: relative;
             width: 100%;
             height: 100%;
-            /* Ensure this image exists locally */
             background: url("../images/n1-cloud-professional-wallpaper.jpg") no-repeat center center fixed;
             background-size: cover;
         }
@@ -618,7 +604,7 @@
     <!-- Boot Screen -->
     <div id="boot-screen">
         <div class="animate-pulse flex flex-col items-center">
-            <img src="../images/litiaina_icon_48x48.png" alt="logo" class="w-20 h-20 mb-6" onerror="this.style.display='none'" />
+            <img src="../images/litiaina_icon_48x48.png" alt="logo" class="w-20 h-20 mb-6" />
             <div class="h-1 w-32 bg-gray-800 rounded-full overflow-hidden">
                 <div class="h-full bg-blue-500 w-1/2 animate-[slide_1.5s_infinite_linear]"></div>
             </div>
@@ -702,7 +688,7 @@
             <!-- Center Apps -->
             <div id="taskbar-apps">
                 <div class="start-btn" id="start-btn" title="Start" onclick="StartMenu.toggle()">
-                    <img src="../images/litiaina_icon.png" alt="Start" class="w-6 h-6" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0zIDNoMTh2MThIM1YzeiIvPjwvc3ZnPg=='">
+                    <img src="../images/litiaina_icon.png" alt="Start" class="w-6 h-6">
                 </div>
                 <!-- Dynamic Apps go here -->
             </div>
@@ -728,7 +714,7 @@
             <div id="win-file-explorer" class="window" style="width: 900px; height: 600px; top: 10%; left: 10%; display: none;">
                 <div class="window-header">
                     <div class="window-title">
-                        <img src="../images/litiaina_icon_48x48.png" class="w-4 h-4 opacity-70" onerror="this.style.display='none'">
+                        <img src="../images/litiaina_icon_48x48.png" class="w-4 h-4 opacity-70">
                         File Explorer
                     </div>
                     <div class="window-controls">
