@@ -711,7 +711,7 @@
         <div id="windows-container">
 
             <!-- 1. FILE EXPLORER -->
-            <div id="win-file-explorer" class="window" style="width: 80vw; height: 80vh; top: 10%; left: 10%; display: none;">
+            <div id="win-file-explorer" class="window" style="width: 900px; height: 600px; top: 10%; left: 10%; display: none;">
                 <div class="window-header">
                     <div class="window-title">
                         <img src="../images/litiaina_icon_48x48.png" class="w-4 h-4 opacity-70">
@@ -815,7 +815,7 @@
             </div>
 
             <!-- 2. RESOURCE MONITOR (Windows Style) -->
-            <div id="win-dashboard" class="window" style="width: 80vw; height: 80vh; top: 10%; left: 10%; display: none;">
+            <div id="win-dashboard" class="window" style="width: 900px; height: 600px; top: 10%; left: 10%; display: none;">
                 <div class="window-header">
                     <div class="window-title"><i class="fas fa-chart-line text-green-500"></i> Resource Monitor</div>
                     <div class="window-controls">
@@ -903,7 +903,7 @@
             </div>
             
             <!-- 3. NOTEPAD (NEW) -->
-            <div id="win-notepad" class="window" style="width: 50vw; height: 50vh; top: 25%; left: 25%; display: none;">
+            <div id="win-notepad" class="window" style="width: 900px; height: 600px; top: 25%; left: 25%; display: none;">
                 <div class="window-header">
                     <div class="window-title"><i class="fas fa-sticky-note text-white"></i> Notepad</div>
                     <div class="window-controls">
@@ -948,7 +948,7 @@
             </div>
 
             <!-- 5. RECYCLE BIN -->
-            <div id="win-recycle-bin" class="window" style="width: 80vw; height: 80vh; top: 10%; left: 10%; display: none;">
+            <div id="win-recycle-bin" class="window" style="width: 900px; height: 600px; top: 10%; left: 10%; display: none;">
                 <div class="window-header">
                     <div class="window-title"><i class="fas fa-trash-can text-gray-400"></i> Recycle Bin</div>
                     <div class="window-controls">
@@ -1400,7 +1400,9 @@
                 }
                 
                 const isMobile = window.innerWidth < 768;
+                
                 if (isMobile) {
+                    // Mobile: Full screen
                     win.css({
                         top: '0',
                         left: '0',
@@ -1409,12 +1411,35 @@
                         borderRadius: '0'
                     }).addClass('maximized');
                 } else {
-                    const w = Math.min(win.width() || 800, window.innerWidth - 40);
-                    const h = Math.min(win.height() || 600, window.innerHeight - 100);
-                    const t = Math.max(10, Math.min(parseInt(win.css('top')) || 60, window.innerHeight - h - 60));
-                    const l = Math.max(10, Math.min(parseInt(win.css('left')) || 100, window.innerWidth - w - 20));
+                    // Desktop: Define standard sizes here to override the large HTML defaults
+                    const standardSizes = {
+                        'file-explorer': { w: 900, h: 600 },
+                        'dashboard': { w: 900, h: 600 },     // Resource Monitor
+                        'recycle-bin': { w: 800, h: 500 },
+                        'notepad': { w: 600, h: 450 },
+                        'uploads': { w: 400, h: 350 },
+                        'calendar': { w: 320, h: 380 }
+                    };
+
+                    // Get size or default to 800x550
+                    const size = standardSizes[appId] || { w: 800, h: 550 };
                     
-                    win.css({ width: w, height: h, top: t, left: l, borderRadius: '8px' }).removeClass('maximized');
+                    // Ensure it fits on screen
+                    const finalW = Math.min(size.w, window.innerWidth - 40);
+                    const finalH = Math.min(size.h, window.innerHeight - 80);
+
+                    // CALCULATE CENTER (Screen Height - Window Height) / 2
+                    const topPos = (window.innerHeight - finalH) / 2;
+                    const leftPos = (window.innerWidth - finalW) / 2;
+                    
+                    // Apply styles
+                    win.css({ 
+                        width: finalW, 
+                        height: finalH, 
+                        top: topPos, 
+                        left: leftPos, 
+                        borderRadius: '8px' 
+                    }).removeClass('maximized');
                 }
 
                 win.show();
@@ -1422,6 +1447,7 @@
                 this.focus(appId);
                 this.addTaskbarItem(appId, meta);
                 
+                // Initialize specific apps
                 if (appId === 'dashboard') setTimeout(() => ResMonitor.init(), 100);
                 if (appId === 'recycle-bin') showTrash();
                 if (appId === 'notepad') Notepad.init();
@@ -1454,37 +1480,43 @@
             maximize: function (appId) {
                 const win = $(`#win-${appId}`);
                 win.toggleClass('maximized');
-                if (win.hasClass('maximized')) {
+                if (isMobile) {
                     win.css({
                         top: '0',
-                        left: 0,
+                        left: '0',
                         width: '100%',
-                        height: '100%', // Changed from calc(100% - 48px) to 100%
-                        borderRadius: 0
-                    });
+                        height: '100%',
+                        borderRadius: '0'
+                    }).addClass('maximized');
                 } else {
+                    // Define specific sizes for each app so they open correctly
                     const defaults = {
-                        'file-explorer': { w: 1000, h: 650 },
+                        'file-explorer': { w: 900, h: 600 },
                         'dashboard': { w: 900, h: 600 },
-                        'recycle-bin': { w: 800, h: 500 },
-                        'uploads': { w: 400, h: 350 },
+                        'recycle-bin': { w: 900, h: 600 },
                         'notepad': { w: 600, h: 450 },
+                        'uploads': { w: 400, h: 350 },
                         'calendar': { w: 320, h: 380 }
-                    }[appId] || { w: 800, h: 550 };
+                    }[appId] || { w: 800, h: 550 }; // Fallback size
 
-                    const targetW = Math.min(defaults.w, window.innerWidth - 20);
-                    const targetH = Math.min(defaults.h, window.innerHeight - 80);
-                    const targetL = (window.innerWidth - targetW) / 2;
-                    const targetT = Math.max(10, (window.innerHeight - targetH) / 2 - 20);
+                    // Ensure window fits on screen
+                    const targetW = Math.min(defaults.w, window.innerWidth - 40);
+                    const targetH = Math.min(defaults.h, window.innerHeight - 100);
 
-                    win.css({
-                        width: targetW,
-                        height: targetH,
-                        top: targetT,
-                        left: targetL,
-                        borderRadius: '8px'
-                    });
+                    // Calculate true center
+                    const t = (window.innerHeight - targetH) / 2;
+                    const l = (window.innerWidth - targetW) / 2;
+                    
+                    win.css({ 
+                        width: targetW, 
+                        height: targetH, 
+                        top: t, 
+                        left: l, 
+                        borderRadius: '8px' 
+                    }).removeClass('maximized');
                 }
+
+                win.show();
             },
             focus: function (appId) {
                 this.zIndex++;

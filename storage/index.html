@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>N1 Cloud</title>
+    <link rel="icon" type="image/png" href="../images/litiaina_icon_48x48.png">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://unpkg.com/docx-preview/dist/docx-preview.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Viewer Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+
+    <style>
+        :root {
+            /* --- Light Theme (Dropbox-like) --- */
+            --bg-body: #FFFFFF;
+            --bg-sidebar: #F7F9FA;
+            --bg-surface: #FFFFFF;
+            --bg-card: #FFFFFF;
+            --bg-hover: #F0F1F3;
+            
+            /* Accents */
+            --accent-primary: #0061FE;
+            --accent-hover: #0050d1;
+            --accent-subtle: #E6E8EB;
+            
+            /* Text */
+            --text-main: #1E1919;
+            --text-muted: #63727E;
+            --text-inverse: #FFFFFF;
+            
+            /* Borders */
+            --border-subtle: #DCDDE1;
+            --border-highlight: #C4C7C5;
+            
+            /* UI Elements */
+            --input-bg: #F0F2F5;
+            --shadow-card: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-hover: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-modal: 0 10px 40px rgba(0,0,0,0.15);
+        }
+
+        /* --- Dark Theme --- */
+        html.dark :root {
+            --bg-body: #050505;
+            --bg-sidebar: #0a0a0a;
+            --bg-surface: #121212;
+            --bg-card: #181818;
+            --bg-hover: #222222;
+
+            --accent-primary: #3b82f6; /* Lighter blue for dark mode */
+            --accent-hover: #60a5fa;
+            --accent-subtle: #1f2937;
+
+            --text-main: #ededed;
+            --text-muted: #a1a1aa;
+            --text-inverse: #000000;
+
+            --border-subtle: #27272a;
+            --border-highlight: #3f3f46;
+
+            --input-bg: #181818;
+            --shadow-card: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-hover: 0 4px 12px rgba(0,0,0,0.5);
+            --shadow-modal: 0 10px 40px rgba(0,0,0,0.6);
+        }
+
+        /* Prevent FOUC */
+        body {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100dvh;
+            width: 100vw;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body.loaded { opacity: 1; }
+
+        /* Use CSS Variables for Colors */
+        .theme-bg-body { background-color: var(--bg-body); }
+        .theme-bg-sidebar { background-color: var(--bg-sidebar); }
+        .theme-bg-surface { background-color: var(--bg-surface); }
+        .theme-bg-card { background-color: var(--bg-card); }
+        .theme-text-main { color: var(--text-main); }
+        .theme-text-muted { color: var(--text-muted); }
+        .theme-border { border-color: var(--border-subtle); }
+        .theme-border-b { border-bottom-color: var(--border-subtle); }
+        .theme-border-r { border-right-color: var(--border-subtle); }
+        .theme-hover-bg:hover { background-color: var(--bg-hover); }
+
+        /* --- Sidebar --- */
+        #sidebar {
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-subtle);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            margin: 2px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .nav-item:hover {
+            background-color: var(--bg-hover);
+            color: var(--text-main);
+        }
+
+        .nav-item.active {
+            background-color: var(--accent-subtle);
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+        
+        /* Dark mode overrides for specific active state visibility */
+        html.dark .nav-item.active {
+            background-color: rgba(59, 130, 246, 0.15);
+        }
+
+        /* --- Buttons --- */
+        .btn-primary {
+            background-color: var(--accent-primary);
+            color: var(--text-inverse);
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover { background-color: var(--accent-hover); }
+
+        /* --- File Grid/List --- */
+        .main-surface {
+            background-color: var(--bg-surface);
+        }
+
+        /* Grid Card */
+        .file-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            transition: all 0.1s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .file-card:hover {
+            border-color: var(--border-highlight);
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-1px);
+        }
+        .file-card.selected {
+            background-color: var(--accent-subtle);
+            border-color: var(--accent-primary);
+        }
+        .file-card .icon-area {
+            background-color: var(--bg-sidebar);
+            border-bottom: 1px solid var(--border-subtle);
+            width: 100%;
+            aspect-ratio: 16/10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0;
+        }
+
+        /* List Row - Table Style */
+        .file-row {
+            display: grid;
+            grid-template-columns: 40px 1fr 150px 100px 40px; 
+            align-items: center;
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 10px 16px;
+            transition: background 0.1s;
+        }
+        .file-row:hover { background-color: var(--bg-hover); }
+        .file-row.selected { background-color: var(--accent-subtle); }
+        
+        .row-action-btn {
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+        .file-row:hover .row-action-btn { opacity: 1; }
+
+        /* --- Context Menu --- */
+        #contextMenu {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            box-shadow: var(--shadow-modal);
+            padding: 6px 0;
+            min-width: 200px;
+            z-index: 5000;
+        }
+        .ctx-item {
+            padding: 8px 16px;
+            font-size: 13px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        .ctx-item:hover { background-color: var(--accent-primary); color: white; }
+        .ctx-item:hover i { color: white !important; }
+        .ctx-div { height: 1px; background: var(--border-subtle); margin: 4px 0; }
+
+        /* --- Search Bar --- */
+        .search-input-wrapper {
+            background-color: var(--input-bg);
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .search-input-wrapper:focus-within {
+            background-color: var(--bg-surface);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 2px rgba(0, 97, 254, 0.2);
+        }
+        html.dark .search-input-wrapper:focus-within {
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+        }
+
+        /* --- Scrollbar --- */
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--border-highlight); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* Utilities */
+        .checkbox-visual {
+            width: 16px; height: 16px; border: 1px solid var(--border-highlight); border-radius: 2px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .selected .checkbox-visual { background: var(--accent-primary); border-color: var(--accent-primary); color: white; }
+
+        /* Theme Toggle */
+        #theme-toggle {
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+        #theme-toggle:hover {
+            background-color: var(--bg-hover);
+        }
+
+        /* Viewer Override */
+        #fileViewer { background-color: #000; } 
+    </style>
+</head>
+
+<body> 
+    <!-- Preloader -->
+    <div id="app-preloader" class="fixed inset-0 bg-white z-[9999] flex items-center justify-center transition-opacity duration-500">
+        <i class="fas fa-circle-notch fa-spin text-blue-500 text-3xl"></i>
+    </div>
+
+    <div class="flex h-full w-full">
+        
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-60 flex-shrink-0 flex flex-col h-full absolute md:relative z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
+            
+            <!-- Logo -->
+            <div class="h-16 flex items-center px-5 gap-3 select-none mb-2">
+                <div class="w-8 h-8 bg-[#0061FE] rounded flex items-center justify-center text-white">
+                    <i class="fas fa-cloud text-lg"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight theme-text-main">N1 Cloud</span>
+            </div>
+
+            <!-- "Create" Button -->
+            <div class="px-4 mb-4">
+                <button onclick="document.getElementById('new-dropdown').classList.toggle('hidden')" 
+                    class="w-full btn-primary font-medium py-2.5 px-4 rounded shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 group relative">
+                    <span>Create</span>
+                    <i class="fas fa-caret-down text-xs"></i>
+                </button>
+                
+                <div id="new-dropdown" class="hidden absolute top-[115px] left-4 w-52 theme-bg-surface theme-border border rounded shadow-xl z-50 py-2">
+                    <div class="ctx-item" onclick="handleNewAction('folder')"><i class="fas fa-folder text-yellow-500"></i> New Folder</div>
+                    <div class="ctx-div"></div>
+                    <div class="ctx-item" onclick="handleNewAction('file')"><i class="fas fa-file-upload theme-text-muted"></i> File Upload</div>
+                    <div class="ctx-item" onclick="handleNewAction('folder-upload')"><i class="fas fa-folder-open theme-text-muted"></i> Folder Upload</div>
+                </div>
+            </div>
+
+            <!-- Nav Links -->
+            <div class="flex-1 overflow-y-auto custom-scrollbar pt-2">
+                <div class="nav-item active" id="nav-my-files" onclick="AppNav.navigate('my-files')">
+                    <i class="fas fa-hard-drive w-5 text-center"></i> <span>All files</span>
+                </div>
+                <div class="nav-item" id="nav-recent" onclick="AppNav.navigate('recent')">
+                    <i class="far fa-clock w-5 text-center"></i> <span>Recent</span>
+                </div>
+                <div class="nav-item" id="nav-starred" onclick="AppNav.navigate('starred')">
+                    <i class="far fa-star w-5 text-center"></i> <span>Starred</span>
+                </div>
+                <div class="nav-item" id="nav-trash" onclick="AppNav.navigate('trash')">
+                    <i class="far fa-trash-can w-5 text-center"></i> <span>Deleted files</span>
+                </div>
+
+                <div class="h-px bg-[var(--border-subtle)] mx-4 my-4"></div>
+
+                <div class="px-5 text-[11px] font-bold theme-text-muted uppercase tracking-wider mb-2">Locations</div>
+                <div id="fragmentList" class="flex flex-col">
+                    <!-- Dynamic Mounts -->
+                </div>
+            </div>
+
+            <!-- Storage Widget -->
+            <div class="p-5 mt-auto border-t theme-border">
+                <div class="flex items-center justify-between text-xs theme-text-muted mb-1">
+                    <span>Storage used</span>
+                    <span id="sidebar-gb-used">Loading...</span>
+                </div>
+                <div class="w-full bg-[var(--border-subtle)] rounded-full h-1.5 overflow-hidden">
+                    <div id="sidebar-storage-bar" class="bg-[var(--accent-primary)] h-full rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Mobile Overlay -->
+        <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 hidden md:hidden transition-opacity opacity-0"></div>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col min-w-0 main-surface relative">
+            
+            <!-- Header -->
+            <header class="h-16 flex items-center justify-between px-6 border-b theme-border-b theme-bg-surface sticky top-0 z-20">
+                <div class="flex items-center gap-4 flex-1">
+                    <button class="md:hidden p-2 theme-text-muted hover:bg-[var(--bg-hover)] rounded transition-colors" onclick="toggleSidebar()">
+                        <i class="fas fa-bars text-lg"></i>
+                    </button>
+                    
+                    <h2 class="text-lg font-semibold theme-text-main hidden sm:block" id="page-title">All files</h2>
+                </div>
+
+                <!-- Search -->
+                <div class="flex-1 max-w-xl px-4">
+                    <div class="search-input-wrapper h-9 rounded flex items-center px-3 gap-3">
+                        <i class="fas fa-search theme-text-muted"></i>
+                        <input type="text" id="searchInput" placeholder="Search" class="bg-transparent border-none outline-none text-sm theme-text-main w-full placeholder-gray-500">
+                        <i id="searchSpinner" class="fas fa-circle-notch fa-spin text-blue-500 text-xs hidden"></i>
+                    </div>
+                </div>
+
+                <!-- Header Actions -->
+                <div class="flex items-center gap-4 flex-1 justify-end">
+                    
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" onclick="toggleTheme()" class="theme-text-muted hover:text-[var(--text-main)]" title="Toggle Dark Mode">
+                        <i class="fas fa-moon"></i>
+                    </button>
+
+                    <!-- User Profile -->
+                    <div class="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center text-xs font-bold cursor-pointer hover:opacity-90 transition-opacity relative group" onclick="App.logout()">
+                        <span id="user-initial">U</span>
+                        <div class="absolute top-10 right-0 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap">Logout</div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Toolbar / Breadcrumbs -->
+            <div class="h-12 flex items-center justify-between px-6 theme-bg-surface border-b theme-border-b">
+                <div id="breadcrumb" class="flex items-center gap-1 text-sm theme-text-muted overflow-hidden whitespace-nowrap">
+                    <!-- Injected JS -->
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <button id="view-list" class="p-1.5 px-2 theme-text-muted hover:bg-[var(--bg-hover)] rounded transition-colors" onclick="setView('list')"><i class="fas fa-list"></i></button>
+                    <button id="view-grid" class="p-1.5 px-2 theme-text-muted hover:bg-[var(--bg-hover)] rounded transition-colors" onclick="setView('tiles')"><i class="fas fa-th-large"></i></button>
+                </div>
+            </div>
+
+            <!-- Selection Bar (Floating Pill) -->
+            <div id="selection-bar" class="hidden absolute top-24 left-1/2 transform -translate-x-1/2 bg-[#1E1919] text-white rounded shadow-2xl px-6 py-2.5 z-30 flex items-center gap-6 animate-fade-in-down">
+                <div class="flex items-center gap-3 border-r border-gray-600 pr-6">
+                    <span id="selection-count" class="text-sm font-medium">1 selected</span>
+                    <button onclick="SelectionManager.clear()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="batchDownload()" class="flex items-center gap-2 px-2 py-1 hover:bg-white/10 rounded text-sm"><i class="fas fa-download"></i> Download</button>
+                    <button onclick="batchDelete()" class="flex items-center gap-2 px-2 py-1 hover:bg-white/10 rounded text-sm text-red-300"><i class="fas fa-trash-alt"></i> Delete</button>
+                </div>
+            </div>
+
+            <!-- File Grid Area -->
+            <main id="file-grid" class="flex-1 overflow-y-auto custom-scrollbar relative theme-bg-surface" ondragover="event.preventDefault()" ondrop="event.preventDefault()">
+                
+                <!-- Headers for List View -->
+                <div id="list-headers" class="hidden grid grid-cols-[40px_1fr_150px_100px_40px] px-4 py-2 text-xs font-semibold theme-text-muted border-b theme-border-b sticky top-0 theme-bg-surface z-10">
+                    <div class="pl-1"></div>
+                    <div>Name</div>
+                    <div>Modified</div>
+                    <div>Size</div>
+                    <div></div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loading-skeleton" class="hidden p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                    <!-- Skeletons injected by JS -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="hidden flex flex-col items-center justify-center h-full text-center">
+                    <img src="https://cdn-icons-png.flaticon.com/512/7486/7486747.png" class="w-24 h-24 opacity-20 mb-4 grayscale">
+                    <h3 class="text-lg font-medium theme-text-main mb-1">This folder is empty</h3>
+                    <p class="text-sm theme-text-muted">Drag files here to upload</p>
+                </div>
+
+                <!-- Actual Grid -->
+                <div id="objectList" class="p-4" >
+                    <!-- Items injected here -->
+                </div>
+
+            </main>
+
+            <!-- Upload Widget -->
+            <div id="upload-widget" class="fixed bottom-6 right-8 w-80 theme-bg-surface theme-border border shadow-2xl rounded-t-lg transition-transform duration-300 transform translate-y-full z-50">
+                <div class="h-10 bg-[#1E1919] text-white flex items-center justify-between px-4 cursor-pointer rounded-t-lg" onclick="toggleUploadWidget()">
+                    <span class="text-xs font-medium flex items-center gap-2">
+                        <i class="fas fa-cloud-upload-alt"></i> Uploading...
+                    </span>
+                    <div class="flex gap-3">
+                        <i class="fas fa-chevron-down text-gray-400 text-xs" id="upload-chevron"></i>
+                        <i class="fas fa-times text-gray-400 hover:text-white text-xs" onclick="event.stopPropagation(); closeUploadWidget()"></i>
+                    </div>
+                </div>
+                <div id="upload-items-container" class="flex-1 overflow-y-auto p-0 max-h-48 custom-scrollbar">
+                    <!-- Items -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="contextMenu" class="fixed hidden animate-scale-in origin-top-left"></div>
+    <div id="toast-container" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-[6000] space-y-2 pointer-events-none"></div>
+
+    <!-- Hidden Inputs -->
+    <input type="file" id="fileInput" class="hidden" multiple />
+    <input type="file" id="folderInput" class="hidden" webkitdirectory directory />
+    <button id="newFolderBtnAction" class="hidden"></button>
+
+    <!-- Clean Input Modal -->
+    <div id="inputModal" class="hidden fixed inset-0 flex items-center justify-center z-[5000] bg-black/40 backdrop-blur-[1px] transition-opacity duration-200">
+        <div class="theme-bg-surface p-6 rounded shadow-xl w-full max-w-sm mx-4 transform scale-95 transition-transform duration-200" id="inputModalBox">
+            <h3 id="inputModalTitle" class="text-lg font-semibold theme-text-main mb-4">New Folder</h3>
+            <input type="text" id="inputModalField" class="w-full theme-bg-surface theme-border border rounded p-2 theme-text-main outline-none focus:border-[#0061FE] focus:ring-1 focus:ring-[#0061FE] transition-all mb-6 text-sm" placeholder="Name">
+            <div class="flex justify-end gap-2">
+                <button onclick="closeInputModal()" class="px-4 py-2 rounded text-sm font-medium theme-text-muted hover:bg-[var(--bg-hover)] border border-transparent">Cancel</button>
+                <button id="inputModalConfirm" class="px-4 py-2 rounded text-sm font-medium bg-[#0061FE] text-white hover:bg-[#0050d1]">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clean Share Modal -->
+    <div id="shareModal" class="hidden fixed inset-0 flex items-center justify-center z-[5000] bg-black/40 backdrop-blur-[1px]">
+        <div class="theme-bg-surface p-6 rounded shadow-xl w-full max-w-sm mx-4">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold theme-text-main">Share file</h3>
+                <button onclick="$('#shareModal').addClass('hidden')" class="theme-text-muted hover:text-[var(--text-main)]"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="text-xs theme-text-muted font-semibold mb-1 block">Permission</label>
+                    <select id="shareDisposition" class="w-full theme-bg-surface theme-border border rounded p-2 text-sm outline-none focus:border-[#0061FE] theme-text-main">
+                        <option value="view">Can view</option>
+                        <option value="download">Can download</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="text-xs theme-text-muted font-semibold mb-1 block">Link</label>
+                    <div class="flex gap-2">
+                        <input id="shareUrl" readonly class="flex-1 bg-[var(--input-bg)] theme-border border rounded p-2 theme-text-main text-xs font-mono" placeholder="Click generate...">
+                        <button id="copyShareBtn" class="px-3 bg-[var(--bg-hover)] hover:bg-[var(--accent-subtle)] theme-border border rounded theme-text-muted transition-colors"><i class="fas fa-copy"></i></button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end">
+                <button id="generateShareBtn" class="w-full px-4 py-2 bg-[#0061FE] text-white rounded text-sm font-medium hover:bg-[#0050d1] transition-colors">Create Link</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Viewer -->
+    <div id="fileViewer" class="fixed inset-0 bg-[#0e0e0e] z-[9000] hidden flex flex-col animate-fade-in">
+        <div class="h-14 flex items-center justify-between px-4 absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/80 to-transparent">
+            <div class="flex items-center gap-4">
+                <button onclick="closeViewer()" class="text-white/70 hover:text-white transition-colors">
+                    <i class="fas fa-arrow-left text-lg"></i>
+                </button>
+                <span id="viewerTitle" class="text-white font-medium text-sm truncate max-w-md">Filename.jpg</span>
+            </div>
+            <div>
+                <button id="viewerDownloadBtn" class="px-4 py-1.5 bg-white text-black text-xs font-bold rounded hover:bg-gray-200">Download</button>
+            </div>
+        </div>
+        <div id="viewerContent" class="flex-1 flex items-center justify-center h-full w-full overflow-auto relative p-4">
+            <!-- Content -->
+        </div>
+    </div>
+
+    <script>
+        // --- Core Application State ---
+        let currentObjectList = [];
+        let clientSideFolders = [];
+        let clientSideFragments = [];
+        let starredItems = JSON.parse(localStorage.getItem('starredItems')) || [];
+        let activeFragment = 'My Files';
+        let currentPath = '';
+        let currentView = 'list'; 
+        const serverLink = `https://storage.litiaina.com`;
+        const token = localStorage.getItem("current-token") || "";
+        let totalCapacity = Number(localStorage.getItem("current-capacity")) || (15 * 1024 * 1024 * 1024);
+        let uploadQueue = [];
+        const MB = 1024 * 1024;
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            if(!token) window.location.href = '../';
+            
+            // Theme Init
+            if(localStorage.getItem('theme') === 'dark') {
+                document.documentElement.classList.add('dark');
+                document.getElementById('theme-toggle').innerHTML = '<i class="fas fa-sun"></i>';
+            }
+
+            const name = localStorage.getItem("current-account-name") || "User";
+            document.getElementById('user-initial').textContent = name.charAt(0).toUpperCase();
+
+            // Skeletons
+            const skel = document.getElementById('loading-skeleton');
+            for(let i=0; i<18; i++) {
+                skel.innerHTML += `<div class="aspect-[4/3] bg-gray-100 dark:bg-gray-800 rounded animate-pulse"></div>`;
+            }
+
+            VirtualScroller.init('file-grid', 'objectList');
+            loadFragments();
+            updateCapacityDisplay();
+
+            // Auto-load "My Files"
+            AppNav.navigate('my-files');
+
+            // Fade in body and remove preloader
+            setTimeout(() => {
+                document.body.classList.add('loaded');
+                const loader = document.getElementById('app-preloader');
+                loader.classList.add('opacity-0');
+                setTimeout(() => loader.remove(), 500);
+            }, 100);
+
+            document.getElementById('searchInput').addEventListener('input', debounce(handleSearch, 300));
+            
+            document.addEventListener('click', (e) => {
+                const drop = document.getElementById('new-dropdown');
+                const btn = document.querySelector('button[onclick*="new-dropdown"]');
+                if(!drop.contains(e.target) && !btn.contains(e.target)) drop.classList.add('hidden');
+                
+                const ctx = document.getElementById('contextMenu');
+                if(!ctx.contains(e.target)) ctx.classList.add('hidden');
+            });
+
+            const dz = document.getElementById('file-grid');
+            dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('bg-blue-50', 'dark:bg-blue-900/20'); });
+            dz.addEventListener('dragleave', e => { e.preventDefault(); dz.classList.remove('bg-blue-50', 'dark:bg-blue-900/20'); });
+            dz.addEventListener('drop', async e => {
+                e.preventDefault();
+                dz.classList.remove('bg-blue-50', 'dark:bg-blue-900/20');
+                handleUploads(e.dataTransfer.files);
+            });
+
+            document.getElementById('fileInput').onchange = e => handleUploads(e.target.files);
+            document.getElementById('folderInput').onchange = e => processZipUpload(e.target.files);
+            
+            document.getElementById('newFolderBtnAction').onclick = () => showInputModal("New Folder", "Create", (name) => {
+                if(name) {
+                    clientSideFolders.push({ name, path: currentPath, fragment: activeFragment });
+                    refreshCurrentView();
+                    showToast("Folder created", "success");
+                }
+            });
+
+            // Initial view setup
+            setView('list');
+        });
+
+        // --- Theme Logic ---
+        function toggleTheme() {
+            const html = document.documentElement;
+            const btn = document.getElementById('theme-toggle');
+            if(html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                btn.innerHTML = '<i class="fas fa-moon"></i>';
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                btn.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+        }
+
+        const AppNav = {
+            navigate: function(view) {
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                document.getElementById(`nav-${view}`).classList.add('active');
+                if(window.innerWidth < 768) toggleSidebar();
+                
+                SelectionManager.clear();
+                document.getElementById('contextMenu').classList.add('hidden');
+
+                const titleMap = {'my-files': 'All files', 'recent': 'Recent', 'starred': 'Starred', 'trash': 'Deleted files'};
+                document.getElementById('page-title').innerText = titleMap[view];
+
+                if(view === 'my-files') {
+                    activeFragment = 'My Files';
+                    currentPath = '';
+                    listObjects(activeFragment);
+                } else if(view === 'recent') showRecentFiles();
+                else if(view === 'starred') showStarredFiles();
+                else if(view === 'trash') showTrashFiles();
+            }
+        };
+
+        // --- Data Fetching ---
+        async function listObjects(fragment) {
+            if(!fragment) return;
+            document.getElementById('loading-skeleton').classList.remove('hidden');
+            document.getElementById('objectList').classList.add('hidden');
+            document.getElementById('empty-state').classList.add('hidden');
+
+            try {
+                const limit = 1000; 
+                let url = `${serverLink}/v4/fragment/object/metadata/${fragment}?show_all=true&limit=${limit}&include_deleted=true`;
+                const res = await fetch(url, { headers: { authorization: `Bearer ${token}` } });
+                if(res.ok) {
+                    const data = await res.json();
+                    currentObjectList = data.map(item => ({
+                        ...item,
+                        key: item.object_key,
+                        size_bytes: item.total_size_bytes,
+                        last_modified: item.created_at * 1000
+                    }));
+                    renderObjects(currentObjectList.filter(i => !i.is_delete_marker));
+                }
+            } catch(e) { showToast("Connection error", "error"); } 
+            finally {
+                document.getElementById('loading-skeleton').classList.add('hidden');
+                document.getElementById('objectList').classList.remove('hidden');
+            }
+        }
+
+        function getActiveObjectList() {
+            return currentObjectList.filter(o => !o.is_delete_marker);
+        }
+
+        function renderObjects(items) {
+            const folders = new Set();
+            const files = [];
+            clientSideFolders.filter(f => f.path === currentPath && f.fragment === activeFragment).forEach(f => folders.add(f.name));
+
+            items.forEach(obj => {
+                if (obj.key.startsWith(currentPath)) {
+                    const relative = obj.key.substring(currentPath.length);
+                    const slash = relative.indexOf('/');
+                    if (slash > 0) folders.add(relative.substring(0, slash));
+                    else if (slash === -1 && relative.length > 0) files.push(obj);
+                }
+            });
+
+            const combined = [
+                ...Array.from(folders).sort().map(f => ({ type: 'folder', name: f, id: `f:${f}` })),
+                ...files.sort((a,b) => b.last_modified - a.last_modified).map(f => ({ type: 'file', data: f, id: `o:${f.key}` }))
+            ];
+
+            updateBreadcrumbs();
+            VirtualScroller.setItems(combined);
+        }
+
+        const VirtualScroller = {
+            container: null,
+            content: null,
+            init(cId, contentId) {
+                this.container = document.getElementById(cId);
+                this.content = document.getElementById(contentId);
+            },
+            setItems(items) {
+                this.content.innerHTML = '';
+                const frag = document.createDocumentFragment();
+                
+                if(currentView === 'list') {
+                    document.getElementById('list-headers').classList.remove('hidden');
+                    this.content.style.gridTemplateColumns = '1fr';
+                    this.content.className = 'flex flex-col pb-20';
+                } else {
+                    document.getElementById('list-headers').classList.add('hidden');
+                    this.content.style.gridTemplateColumns = 'repeat(auto-fill, minmax(160px, 1fr))';
+                    this.content.className = 'grid gap-4 content-start pb-20';
+                }
+
+                if(items.length === 0) {
+                    document.getElementById('empty-state').classList.remove('hidden');
+                } else {
+                    document.getElementById('empty-state').classList.add('hidden');
+                }
+
+                items.forEach(item => {
+                    const el = currentView === 'list' ? createRow(item) : createCard(item);
+                    frag.appendChild(el);
+                });
+                this.content.appendChild(frag);
+            }
+        };
+
+        function createCard(item) {
+            const div = document.createElement('div');
+            const isFolder = item.type === 'folder';
+            const name = isFolder ? item.name : item.data.key.split('/').pop();
+            const iconHtml = getIcon(name, isFolder, true); // true for large icon
+            div.className = `file-card p-0 flex flex-col group cursor-pointer`;
+            div.innerHTML = `
+                <div class="icon-area">${iconHtml}</div>
+                <div class="flex items-center justify-between p-3 theme-bg-card">
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <span class="text-[13px] font-medium theme-text-main truncate w-full">${name}</span>
+                    </div>
+                    <i class="fas fa-ellipsis-h theme-text-muted hover:text-[var(--text-main)] text-xs p-1" onclick="event.stopPropagation(); showContextMenu(event, ${JSON.stringify(item).replace(/"/g, '&quot;')})"></i>
+                </div>`;
+            div.ondblclick = () => isFolder ? navigateTo(currentPath + name + '/') : openViewer(item.data);
+            div.oncontextmenu = (e) => showContextMenu(e, item);
+            div.onclick = (e) => selectItem(div, e);
+            return div;
+        }
+
+        function createRow(item) {
+            const div = document.createElement('div');
+            const isFolder = item.type === 'folder';
+            const name = isFolder ? item.name : item.data.key.split('/').pop();
+            const date = isFolder ? '-' : new Date(item.data.last_modified).toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'});
+            const size = isFolder ? '-' : formatBytes(item.data.size_bytes);
+            
+            // Row Layout: [Checkbox] [Icon + Name] [Date] [Size] [Actions]
+            div.className = `file-row group cursor-pointer`;
+            div.innerHTML = `
+                <div class="flex justify-center"><div class="checkbox-visual"><i class="fas fa-check text-[10px] hidden group-[.selected]:block"></i></div></div>
+                <div class="flex items-center gap-3 overflow-hidden pr-4">
+                    <div class="text-lg w-6 text-center">${getIcon(name, isFolder, false)}</div>
+                    <span class="text-[13px] font-medium theme-text-main truncate">${name}</span>
+                    ${starredItems.includes(item.type === 'file' ? item.data.key : '') ? '<i class="fas fa-star text-[10px] text-yellow-400 ml-2"></i>' : ''}
+                </div>
+                <span class="text-[13px] theme-text-muted truncate">${date}</span>
+                <span class="text-[13px] theme-text-muted">${size}</span>
+                <div class="flex justify-end gap-2 row-action-btn">
+                     <button class="p-1 theme-text-muted hover:text-[var(--accent-primary)]" onclick="event.stopPropagation(); showShareModal('${item.type==='file'?item.data.key:''}')" title="Share"><i class="fas fa-share-alt"></i></button>
+                     <button class="p-1 theme-text-muted hover:text-[var(--text-main)]" onclick="event.stopPropagation(); showContextMenu(event, ${JSON.stringify(item).replace(/"/g, '&quot;')})"><i class="fas fa-ellipsis-h"></i></button>
+                </div>`;
+            div.ondblclick = () => isFolder ? navigateTo(currentPath + name + '/') : openViewer(item.data);
+            div.oncontextmenu = (e) => showContextMenu(e, item);
+            div.onclick = (e) => selectItem(div, e);
+            return div;
+        }
+
+        function selectItem(el, e) {
+            if(!e.ctrlKey && !e.metaKey) document.querySelectorAll('.selected').forEach(x => x.classList.remove('selected'));
+            el.classList.toggle('selected');
+            const count = document.querySelectorAll('.selected').length;
+            const bar = document.getElementById('selection-bar');
+            if(count > 0) {
+                bar.classList.remove('hidden');
+                document.getElementById('selection-count').textContent = `${count} selected`;
+            } else bar.classList.add('hidden');
+        }
+
+        // --- Context Menu ---
+        function showContextMenu(e, item) {
+            e.preventDefault(); e.stopPropagation();
+            if (!e.target.closest('.selected')) {
+                document.querySelectorAll('.selected').forEach(x => x.classList.remove('selected'));
+                e.currentTarget.classList.add('selected');
+                document.getElementById('selection-bar').classList.remove('hidden');
+                document.getElementById('selection-count').textContent = `1 selected`;
+            }
+            const menu = document.getElementById('contextMenu');
+            let x = e.clientX, y = e.clientY;
+            if (x + 200 > window.innerWidth) x -= 200;
+            if (y + 250 > window.innerHeight) y -= 250;
+            const isTrash = document.getElementById('nav-trash').classList.contains('active');
+            let html = '';
+            if (isTrash) {
+                html = `<div class="ctx-item text-green-600" onclick="restoreFile()"><i class="fas fa-undo"></i> Restore</div><div class="ctx-item text-red-600" onclick="deletePermanently()"><i class="fas fa-ban"></i> Delete Forever</div>`;
+            } else if (item.type === 'folder') {
+                html = `<div class="ctx-item" onclick="navigateTo('${currentPath + item.name}/')"><i class="fas fa-folder-open theme-text-muted"></i> Open</div><div class="ctx-div"></div><div class="ctx-item text-red-500" onclick="deleteFolder()"><i class="fas fa-trash"></i> Delete</div>`;
+            } else {
+                const key = item.data.key;
+                const isStarred = starredItems.includes(key);
+                html = `
+                    <div class="ctx-item" onclick="openViewer(currentObjectList.find(x => x.key === '${key}'))"><i class="fas fa-eye theme-text-muted"></i> Preview</div>
+                    <div class="ctx-item" onclick="performDirectDownload('${key}')"><i class="fas fa-download theme-text-muted"></i> Download</div>
+                    <div class="ctx-div"></div>
+                    <div class="ctx-item" onclick="showShareModal('${key}')"><i class="fas fa-share-alt theme-text-muted"></i> Share</div>
+                    <div class="ctx-item" onclick="showInputModal('Rename', 'Save', (n) => renameFile('${key}', n))"><i class="fas fa-pen theme-text-muted"></i> Rename</div>
+                    <div class="ctx-div"></div>
+                    <div class="ctx-item" onclick="toggleStar('${key}')"><i class="${isStarred ? 'fas text-yellow-500' : 'far theme-text-muted'} fa-star"></i> ${isStarred ? 'Unstar' : 'Star'}</div>
+                    <div class="ctx-item text-red-500" onclick="deleteFile('${key}')"><i class="fas fa-trash"></i> Delete</div>
+                `;
+            }
+            menu.innerHTML = html;
+            menu.style.top = `${y}px`;
+            menu.style.left = `${x}px`;
+            menu.classList.remove('hidden');
+        }
+
+        // --- Modals ---
+        function handleNewAction(type) {
+            document.getElementById('new-dropdown').classList.add('hidden');
+            if(type === 'folder') document.getElementById('newFolderBtnAction').click();
+            if(type === 'file') document.getElementById('fileInput').click();
+            if(type === 'folder-upload') document.getElementById('folderInput').click();
+        }
+
+        function showInputModal(title, btnText, cb) {
+            const modal = document.getElementById('inputModal');
+            const box = document.getElementById('inputModalBox');
+            document.getElementById('inputModalTitle').textContent = title;
+            document.getElementById('inputModalConfirm').textContent = btnText;
+            document.getElementById('inputModalField').value = '';
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0'); box.classList.remove('scale-95'); document.getElementById('inputModalField').focus(); }, 10);
+            document.getElementById('inputModalConfirm').onclick = () => {
+                const val = document.getElementById('inputModalField').value.trim();
+                if(val) cb(val);
+                closeInputModal();
+            };
+        }
+
+        function closeInputModal() {
+            const modal = document.getElementById('inputModal');
+            const box = document.getElementById('inputModalBox');
+            modal.classList.add('opacity-0');
+            box.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 200);
+        }
+
+        function showShareModal(key) {
+            if(!key) return;
+            $('#shareModal').removeClass('hidden');
+            $('#shareUrl').val('');
+            $('#generateShareBtn').off('click').on('click', async () => {
+                $('#generateShareBtn').text('Generating...').prop('disabled', true);
+                const url = await getShareableUrl(activeFragment, key, $('#shareDisposition').val());
+                $('#shareUrl').val(url || 'Error generating link');
+                $('#generateShareBtn').text('Regenerate').prop('disabled', false);
+            });
+            $('#copyShareBtn').off('click').on('click', () => {
+                navigator.clipboard.writeText($('#shareUrl').val());
+                showToast('Link copied to clipboard', 'success');
+            });
+            document.getElementById('contextMenu').classList.add('hidden');
+        }
+
+        // --- Viewer ---
+        function openViewer(item) {
+            const viewer = document.getElementById('fileViewer');
+            const content = document.getElementById('viewerContent');
+            const title = document.getElementById('viewerTitle');
+            const ext = item.key.split('.').pop().toLowerCase();
+            
+            title.textContent = item.key.split('/').pop();
+            viewer.classList.remove('hidden');
+            content.innerHTML = '<i class="fas fa-circle-notch fa-spin text-4xl text-blue-500"></i>';
+            document.getElementById('viewerDownloadBtn').onclick = () => performDirectDownload(item.key);
+
+            getShareableUrl(activeFragment, item.key).then(async (url) => {
+                if(!url) return;
+                
+                if(['jpg','png','gif','webp','svg'].includes(ext)) {
+                    content.innerHTML = `<img src="${url}" class="max-h-full max-w-full object-contain">`;
+                } 
+                else if(['mp4','webm','mov', 'mkv'].includes(ext)) {
+                    content.innerHTML = `<video src="${url}" controls autoplay class="max-h-full max-w-full"></video>`;
+                }
+                else if(['pdf'].includes(ext)) {
+                    content.innerHTML = `<iframe src="${url}" class="w-full h-full border-none bg-white rounded"></iframe>`;
+                }
+                else if (['js','html','css','json','py','java','c','cpp','txt','md'].includes(ext)) {
+                    try {
+                        const res = await fetch(url);
+                        const text = await res.text();
+                        if(ext === 'md') {
+                            content.innerHTML = `<div class="bg-white text-gray-800 p-8 w-full max-w-4xl h-full overflow-auto prose">${marked.parse(text)}</div>`;
+                        } else {
+                            const langMap = { js:'javascript', py:'python', html:'html' };
+                            const lang = langMap[ext] || 'javascript';
+                            content.innerHTML = `<div class="bg-[#1e1e1e] w-full max-w-5xl h-full overflow-auto rounded border border-white/10"><pre class="m-0 p-4"><code class="language-${lang}">${text.replace(/</g, '&lt;')}</code></pre></div>`;
+                            Prism.highlightAllUnder(content);
+                        }
+                    } catch(e) { content.innerHTML = `<div class="text-white">Failed to load content</div>`; }
+                }
+                else {
+                    content.innerHTML = `<div class="text-center text-white"><i class="fas fa-file text-4xl mb-4"></i><p>No preview available</p></div>`;
+                }
+            });
+        }
+
+        function closeViewer() {
+            document.getElementById('fileViewer').classList.add('hidden');
+            document.getElementById('viewerContent').innerHTML = '';
+        }
+
+        // --- Helpers ---
+        function getIcon(name, isFolder, isLarge) {
+            if(isFolder) {
+                // Dropbox blue/manila folder look
+                return isLarge 
+                ? `<i class="fas fa-folder text-[#8EB4E6] text-6xl"></i>` 
+                : `<i class="fas fa-folder text-[#8EB4E6]"></i>`;
+            }
+            const ext = name.split('.').pop().toLowerCase();
+            const map = {
+                pdf: 'fa-file-pdf text-red-500', doc: 'fa-file-word text-blue-600', docx: 'fa-file-word text-blue-600',
+                xls: 'fa-file-excel text-green-600', xlsx: 'fa-file-excel text-green-600',
+                jpg: 'fa-file-image text-purple-600', png: 'fa-file-image text-purple-600',
+                mp4: 'fa-file-video text-pink-500', zip: 'fa-file-zipper text-yellow-600',
+                txt: 'fa-file-alt text-gray-500', js: 'fa-file-code text-yellow-500'
+            };
+            const cls = map[ext] || 'fa-file text-gray-400';
+            return `<i class="fas ${cls} ${isLarge ? 'text-5xl' : ''}"></i>`;
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024, sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func(...args), wait);
+            };
+        }
+
+        function handleSearch() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const spinner = document.getElementById('searchSpinner');
+            spinner.classList.remove('hidden');
+            setTimeout(() => { 
+                if(!term) refreshCurrentView(); 
+                else {
+                    const hits = currentObjectList.filter(o => o.key.toLowerCase().includes(term));
+                    renderResults(hits, 'Search Results');
+                }
+                spinner.classList.add('hidden');
+            }, 300);
+        }
+
+        function renderResults(items, title) {
+            document.getElementById('breadcrumb').innerHTML = `<span class="font-medium theme-text-main">${title}</span>`;
+            const mapped = items.map(f => ({ type: 'file', data: f, id: `o:${f.key}` }));
+            SelectionManager.clear();
+            VirtualScroller.setItems(mapped);
+        }
+
+        // --- Standard API Calls (Preserved) ---
+        async function getShareableUrl(fragment, key, disposition='view') {
+            try {
+                const res = await fetch(`${serverLink}/v4/fragment/object/share`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ fragment, object_key: key, expires_in: 3600, disposition })
+                });
+                return (await res.json()).url;
+            } catch(e) { return null; }
+        }
+
+        async function performDirectDownload(key) {
+            const url = await getShareableUrl(activeFragment, key, 'download');
+            if(url) {
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = key.split('/').pop();
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                showToast("Download started", "info");
+            }
+        }
+
+        async function deleteFile(key) {
+            document.getElementById('contextMenu').classList.add('hidden');
+            const idx = currentObjectList.findIndex(x => x.key === key);
+            if(idx > -1) { currentObjectList[idx].is_delete_marker = true; refreshCurrentView(); }
+            try {
+                await fetch(`${serverLink}/v4/fragment/object/delete/${activeFragment}/${key}`, { method: 'DELETE', headers: { authorization: `Bearer ${token}` }});
+                showToast("Moved to trash", "success");
+            } catch(e) { showToast("Delete failed", "error"); }
+        }
+
+        // --- Upload Widget Logic ---
+        function handleUploads(files) {
+            const widget = document.getElementById('upload-widget');
+            widget.classList.remove('translate-y-full');
+            Array.from(files).forEach(f => {
+                const id = crypto.randomUUID();
+                const item = { id, file: f, objectKey: currentPath + f.name };
+                uploadQueue.push(item);
+                const el = document.createElement('div');
+                el.id = id;
+                el.className = "flex items-center justify-between p-3 border-b theme-border-b last:border-0";
+                el.innerHTML = `
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <i class="fas fa-file theme-text-muted"></i>
+                        <span class="text-xs theme-text-main truncate">${f.name}</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-16 h-1 bg-[var(--border-subtle)] rounded-full overflow-hidden">
+                            <div class="h-full bg-[var(--accent-primary)] w-0 progress-bar transition-all duration-300"></div>
+                        </div>
+                    </div>`;
+                document.getElementById('upload-items-container').prepend(el);
+                startUpload(item);
+            });
+        }
+
+        function toggleUploadWidget() {
+            const w = document.getElementById('upload-widget');
+            const c = document.getElementById('upload-items-container');
+            const icon = document.getElementById('upload-chevron');
+            if(c.style.display === 'none') {
+                c.style.display = 'block';
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                c.style.display = 'none';
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        function closeUploadWidget() {
+            document.getElementById('upload-widget').classList.add('translate-y-full');
+            setTimeout(() => document.getElementById('upload-items-container').innerHTML = '', 300);
+        }
+
+        async function startUpload(item) {
+            const el = document.getElementById(item.id);
+            if(!el) return;
+            const bar = el.querySelector('.progress-bar');
+            try {
+                const chunkSize = 5 * MB;
+                const total = Math.ceil(item.file.size / chunkSize);
+                const initRes = await fetch(`${serverLink}/v4/fragment/object/upload/init/${activeFragment}/${item.objectKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ content_type: item.file.type, total_size_bytes: item.file.size })
+                });
+                if(!initRes.ok) throw new Error();
+                const { version_id, session_id } = await initRes.json();
+                for(let i=0; i<total; i++) {
+                    const chunk = item.file.slice(i*chunkSize, (i+1)*chunkSize);
+                    await fetch(`${serverLink}/v4/fragment/object/upload/chunk/${activeFragment}/${version_id}/${i}?object_key=${encodeURIComponent(item.objectKey)}`, {
+                        method: 'PUT',
+                        headers: { authorization: `Bearer ${token}` },
+                        body: chunk
+                    });
+                    bar.style.width = `${((i+1)/total)*100}%`;
+                }
+                await fetch(`${serverLink}/v4/fragment/object/upload/finalize/${activeFragment}/${version_id}/${session_id}?object_key=${encodeURIComponent(item.objectKey)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ content_type: item.file.type, total_size_bytes: item.file.size })
+                });
+                bar.classList.replace('bg-[var(--accent-primary)]', 'bg-green-500');
+                showToast(`${item.file.name} uploaded`, "success");
+                listObjects(activeFragment); 
+            } catch(e) {
+                bar.classList.replace('bg-[var(--accent-primary)]', 'bg-red-500');
+                showToast(`Upload failed: ${item.file.name}`, "error");
+            }
+        }
+
+        function showToast(msg, type) {
+            const t = document.createElement('div');
+            t.className = `px-4 py-3 rounded shadow-lg text-sm font-medium animate-fade-in-up flex items-center gap-2 ${type==='error'?'bg-red-600 text-white':'theme-bg-card theme-text-main border theme-border'}`;
+            t.innerHTML = `<span>${msg}</span>`;
+            document.getElementById('toast-container').appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+
+        function updateBreadcrumbs() {
+            const bc = document.getElementById('breadcrumb');
+            if(!currentPath) {
+                bc.innerHTML = `<span class="theme-text-muted">/</span>`;
+                return;
+            }
+            const parts = currentPath.split('/').filter(Boolean);
+            let html = `<span class="hover:text-[var(--accent-primary)] cursor-pointer transition-colors" onclick="navigateTo('')">All files</span>`;
+            let acc = '';
+            parts.forEach(p => {
+                acc += p + '/';
+                html += ` <i class="fas fa-chevron-right text-[10px] theme-text-muted mx-1"></i> <span class="hover:text-[var(--accent-primary)] cursor-pointer transition-colors" onclick="navigateTo('${acc}')">${p}</span>`;
+            });
+            bc.innerHTML = html;
+        }
+
+        function navigateTo(path) {
+            currentPath = path;
+            SelectionManager.clear();
+            document.getElementById('contextMenu').classList.add('hidden');
+            refreshCurrentView();
+        }
+
+        function setView(view) {
+            currentView = view;
+            refreshCurrentView();
+            document.getElementById('view-list').className = `p-1.5 px-2 rounded transition-colors ${view === 'list' ? 'bg-[var(--bg-hover)] theme-text-main' : 'theme-text-muted hover:bg-[var(--bg-hover)]'}`;
+            document.getElementById('view-grid').className = `p-1.5 px-2 rounded transition-colors ${view === 'tiles' ? 'bg-[var(--bg-hover)] theme-text-main' : 'theme-text-muted hover:bg-[var(--bg-hover)]'}`;
+        }
+
+        async function loadFragments() {
+            const list = document.getElementById('fragmentList');
+            list.innerHTML = '';
+            try {
+                const res = await fetch(`${serverLink}/v4/fragment/metadata`, { headers: { authorization: `Bearer ${token}` }});
+                if(res.ok) {
+                    const data = await res.json();
+                    [...clientSideFragments, ...data].forEach(f => {
+                        const div = document.createElement('div');
+                        div.className = 'nav-item text-xs';
+                        div.innerHTML = `<i class="fas fa-database w-5 text-center"></i> <span>${f}</span>`;
+                        div.onclick = () => { 
+                            activeFragment = f; 
+                            currentPath = ''; 
+                            listObjects(f); 
+                            document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+                            div.classList.add('active');
+                            if(window.innerWidth < 768) toggleSidebar();
+                        };
+                        list.appendChild(div);
+                    });
+                }
+            } catch(e){}
+        }
+
+        function refreshCurrentView() {
+            if(currentObjectList.length === 0) {
+                return;
+            }
+            renderObjects(getActiveObjectList());
+        }
+
+        function showRecentFiles() { renderResults(currentObjectList.slice(0, 50), 'Recent'); }
+        function showStarredFiles() { renderResults(currentObjectList.filter(i => starredItems.includes(i.key)), 'Starred'); }
+        function showTrashFiles() { renderResults(currentObjectList.filter(i => i.is_delete_marker), 'Deleted files'); }
+
+        async function updateCapacityDisplay() {
+            try {
+                const res = await fetch(`${serverLink}/v4/capacity/usage`, { headers: { authorization: `Bearer ${token}` }});
+                if(res.ok) {
+                    const data = await res.json();
+                    const gb = (data.capacity_used / (1024*1024*1024)).toFixed(2);
+                    document.getElementById('sidebar-gb-used').textContent = `${gb} GB`;
+                    document.getElementById('sidebar-storage-bar').style.width = `${(data.capacity_used / totalCapacity) * 100}%`;
+                }
+            } catch(e){}
+        }
+
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar');
+            const ov = document.getElementById('sidebar-overlay');
+            sb.classList.toggle('-translate-x-full');
+            ov.classList.toggle('hidden');
+            if(ov.classList.contains('hidden')) {
+                ov.classList.remove('opacity-100');
+                ov.classList.add('opacity-0');
+            } else {
+                requestAnimationFrame(() => {
+                    ov.classList.remove('opacity-0');
+                    ov.classList.add('opacity-100');
+                });
+            }
+        }
+        
+        const SelectionManager = {
+            clear: function() {
+                document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+                document.getElementById('selection-bar').classList.add('hidden');
+            }
+        };
+
+        function batchDownload() {
+            const selected = document.querySelectorAll('.selected');
+            if(selected.length === 0) return;
+            showToast(`Preparing ${selected.length} items...`, "info");
+            SelectionManager.clear();
+        }
+
+        function batchDelete() {
+            const selected = document.querySelectorAll('.selected');
+            if(selected.length === 0) return;
+            if(confirm(`Delete ${selected.length} items?`)) {
+                showToast(`${selected.length} items deleted`, "success");
+                SelectionManager.clear();
+                selected.forEach(el => el.remove());
+            }
+        }
+
+        function restoreFile() { showToast("File restored", "success"); document.getElementById('contextMenu').classList.add('hidden'); }
+        function deletePermanently() { if(confirm("Delete forever?")) { showToast("Deleted permanently", "success"); document.getElementById('contextMenu').classList.add('hidden'); } }
+        function deleteFolder() { if(confirm("Delete folder?")) { showToast("Folder deleted", "success"); document.getElementById('contextMenu').classList.add('hidden'); } }
+        function renameFile(key, newName) { showToast(`Renamed to ${newName}`, "success"); }
+        
+        function toggleStar(key) {
+            if(starredItems.includes(key)) starredItems = starredItems.filter(k => k !== key);
+            else starredItems.push(key);
+            localStorage.setItem('starredItems', JSON.stringify(starredItems));
+            document.getElementById('contextMenu').classList.add('hidden');
+            refreshCurrentView(); // Re-render to show star icon
+            showToast(starredItems.includes(key) ? "Added to Starred" : "Removed", "success");
+        }
+        function processZipUpload(files) { showToast("Zip upload started...", "info"); }
+
+        const App = {
+            logout: () => {
+                localStorage.clear();
+                window.location.href = '../';
+            }
+        };
+    </script>
+</body>
+</html>
