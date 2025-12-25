@@ -440,7 +440,7 @@
                         loadingTitle.classList.add('text-[#60cdff]');
                         loadingText.textContent = "Redirecting to login...";
 
-                        setTimeout(() => { window.location.href = "index.html"; }, 1500);
+                        setTimeout(() => { window.location.href = "../"; }, 1500);
                     } else {
                         const resData = await response.json().catch(() => ({}));
                         throw new Error(resData.message || "Registration failed. Verify your Auth Key.");
