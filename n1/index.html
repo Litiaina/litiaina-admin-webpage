@@ -688,7 +688,7 @@
             <!-- Center Apps -->
             <div id="taskbar-apps">
                 <div class="start-btn" id="start-btn" title="Start" onclick="StartMenu.toggle()">
-                    <img src="../images/litiaina_icon_48x48.png" alt="Start" class="w-6 h-6">
+                    <img src="../images/litiaina_icon.png" alt="Start" class="w-6 h-6">
                 </div>
                 <!-- Dynamic Apps go here -->
             </div>
@@ -1113,7 +1113,7 @@
         let currentPath = '';
         let currentView = 'tiles';
         let currentTrashView = 'list';
-        const serverLink = `https://drive.mch.local:50001`;
+        const serverLink = `https://storage.litiaina.com`;
         const token = localStorage.getItem("current-token")?.trim() || "";
         let totalCapacity = Number(localStorage.getItem("current-capacity")?.trim()) || (15 * 1024 * 1024 * 1024);
         let uploadQueue = [];
@@ -1123,188 +1123,6 @@
 
         const userEmail = localStorage.getItem("current-account-email") || "user@n1cloud.com";
         const userName = localStorage.getItem("current-account-name") || "N1 User";
-
-        // --- WebSocket Manager (NEW) ---
-        const WebSocketManager = {
-            socket: null,
-            reconnectAttempts: 0,
-            maxReconnectAttempts: 5,
-            
-            init: function() {
-                if (!token) return;
-                this.connect();
-            },
-
-            connect: function() {
-                // FIX: Derive URL from serverLink to ensure domain consistency
-                const wsBase = serverLink.replace('http', 'ws'); // handles https->wss and http->ws
-                const wsUrl = `${wsBase}/ws?token=${token}`;
-                
-                // Safety check: close existing if open
-                if (this.socket && (this.socket.readyState === WebSocket.OPEN || this.socket.readyState === WebSocket.CONNECTING)) {
-                    this.socket.close();
-                }
-
-                // console.log("Connecting to WS:", wsUrl);
-                this.socket = new WebSocket(wsUrl);
-
-                this.socket.onopen = () => {
-                    // console.log("WebSocket Connected");
-                    this.reconnectAttempts = 0;
-                    document.getElementById('network-activity-status').innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500"></span> Online (Real-time)';
-                };
-
-                this.socket.onmessage = (event) => {
-                    try {
-                        const message = JSON.parse(event.data);
-                        this.handleEvent(message);
-                    } catch (e) {
-                        console.error("WS Parse Error", e);
-                    }
-                };
-
-                this.socket.onclose = () => {
-                    // console.log("WebSocket Disconnected");
-                    document.getElementById('network-activity-status').innerHTML = '<span class="w-2 h-2 rounded-full bg-yellow-500"></span> Offline';
-                    this.attemptReconnect();
-                };
-
-                this.socket.onerror = (error) => {
-                    // console.error("WebSocket Error", error);
-                };
-            },
-
-            attemptReconnect: function() {
-                if (this.reconnectAttempts < this.maxReconnectAttempts) {
-                    const timeout = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
-                    this.reconnectAttempts++;
-                    setTimeout(() => this.connect(), timeout);
-                }
-            },
-
-            handleEvent: function(event) {
-                const { type, data } = event;
-
-                if (type === 'FILE_UPLOADED') {
-                    if (data.fragment === activeFragment) {
-                        // Update Main List
-                        const existingIdx = currentObjectList.findIndex(o => o.key === data.object_key);
-                        const mappedItem = {
-                            ...data,
-                            key: data.object_key,
-                            size_bytes: data.total_size_bytes,
-                            last_modified: { $date: { $numberLong: data.created_at * 1000 } }
-                        };
-
-                        if (existingIdx > -1) currentObjectList[existingIdx] = mappedItem;
-                        else currentObjectList.push(mappedItem);
-                        
-                        // If user is in the folder, render update
-                        if (data.object_key.startsWith(currentPath)) this.triggerRender();
-                        
-                        updateStorageStats();
-                        updateCapacityDisplay();
-
-                        // Update Trash if visible
-                        this.triggerTrashRefresh();
-                    }
-                } 
-                else if (type === 'FILE_DELETED') {
-                    // data: { fragment, object_key, version_id }
-                    if (data.fragment === activeFragment) {
-                        if (!data.version_id) {
-                            // Standard Delete (or Delete Marker Creation) -> Remove from Main View
-                            const idx = currentObjectList.findIndex(o => o.key === data.object_key);
-                            if (idx > -1) {
-                                currentObjectList.splice(idx, 1);
-                                this.triggerRender();
-                                updateStorageStats();
-                                updateCapacityDisplay();
-                            }
-                        } else {
-                            // Specific Version Delete (Likely a Restore action deleting the delete-marker)
-                            // We need to check if the file has reappeared (Undelete)
-                            const parent = data.object_key.substring(0, data.object_key.lastIndexOf('/') + 1);
-                            if(currentPath === parent) {
-                                this.checkRestore(data.fragment, data.object_key);
-                            }
-                        }
-
-                        // Refresh trash to show the new delete marker or remove restored item
-                        this.triggerTrashRefresh();
-                    }
-                }
-                else if (type === 'FILE_RENAMED') {
-                    if (data.source_fragment === activeFragment) {
-                        const idx = currentObjectList.findIndex(o => o.key === data.source_key);
-                        if (idx > -1) {
-                            currentObjectList[idx].key = data.destination_key;
-                            currentObjectList[idx].object_key = data.destination_key;
-                            this.triggerRender();
-                        }
-                    }
-                }
-                else if (type === 'FRAGMENT_DELETED') {
-                    // Remove from sidebar list if present
-                    const el = document.getElementById(`frag-${data.fragment}`);
-                    if (el) el.remove();
-                    
-                    // If we are currently viewing this fragment, switch to home
-                    if (activeFragment === data.fragment) {
-                        activeFragment = 'My Files';
-                        AppNav.navigate('my-files');
-                        showToast(`Mount '${data.fragment}' was deleted`, 'info');
-                    }
-                }
-            },
-
-            checkRestore: async function(fragment, key) {
-                // When a version is deleted, it might be a restore. Check if object exists now.
-                try {
-                    const res = await fetch(`${serverLink}/v4/fragment/object/get/metadata/${fragment}/${key}?t=${Date.now()}`, {
-                        headers: { authorization: `Bearer ${token}` }
-                    });
-                    if(res.ok) {
-                        const item = await res.json();
-                        if(!item.is_delete_marker) {
-                            const mappedItem = {
-                                ...item,
-                                key: item.object_key,
-                                size_bytes: item.total_size_bytes,
-                                last_modified: { $date: { $numberLong: item.created_at * 1000 } }
-                            };
-                            const idx = currentObjectList.findIndex(o => o.key === key);
-                            if (idx > -1) currentObjectList[idx] = mappedItem;
-                            else currentObjectList.push(mappedItem);
-                            this.triggerRender();
-                            updateStorageStats();
-                            updateCapacityDisplay();
-                        }
-                    }
-                } catch(e) {}
-            },
-            
-            renderTimeout: null,
-            triggerRender: function() {
-                if (this.renderTimeout) clearTimeout(this.renderTimeout);
-                this.renderTimeout = setTimeout(() => {
-                    if ($('#nav-my-files').hasClass('active')) {
-                        renderObjects(getActiveObjectList(), true);
-                    }
-                }, 100);
-            },
-
-            trashTimeout: null,
-            triggerTrashRefresh: function() {
-                if (this.trashTimeout) clearTimeout(this.trashTimeout);
-                this.trashTimeout = setTimeout(() => {
-                     // Check if visible using standard jQuery check
-                     if ($('#win-recycle-bin').is(':visible') && typeof showTrash === 'function') {
-                         showTrash();
-                     }
-                }, 200); // Debounce to prevent API spam and ensure consistency
-            }
-        };
 
         function toggleSidebar() {
             const sb = $('#fe-sidebar');
@@ -3569,13 +3387,8 @@
                 item.currentSpeed = 0;
                 localStorage.removeItem(sessionKey);
                 
-                // --- FIX: Race Condition Prevention ---
-                // Removed the redundant listObjects() call here.
-                // The WebSocket 'FILE_UPLOADED' event will automatically update the UI.
-                // If we call listObjects() here AND receive the WS event simultaneously, 
-                // the file gets added twice.
-                // if ($('#nav-my-files').hasClass('active')) listObjects(activeFragment);
-                
+                // Refresh views
+                if ($('#nav-my-files').hasClass('active')) listObjects(activeFragment);
                 updateCapacityDisplay();
 
             } catch (e) {
@@ -3647,9 +3460,6 @@
 
         // --- Init ---
         $(document).ready(() => {
-            // Init WebSocket connection
-            WebSocketManager.init();
-
             VirtualScroller.init('browser', 'objectList');
             $('#start-menu-username').text(userName);
             
