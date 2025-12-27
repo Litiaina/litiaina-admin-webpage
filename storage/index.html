@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Litiaina N1</title>
     <link rel="icon" type="image/png" href="../images/litiaina_icon_48x48.png">
 
@@ -45,7 +46,7 @@
             --item-active: rgba(255, 255, 255, 0.08);
             --selection-bg: rgba(96, 205, 255, 0.15);
             --selection-border: rgba(96, 205, 255, 0.4);
-            
+
             /* Safe area variables */
             --sat: env(safe-area-inset-top);
             --sar: env(safe-area-inset-right);
@@ -57,14 +58,18 @@
             font-family: 'Segoe UI', 'Inter', sans-serif;
             background-color: var(--win-bg-desktop);
             overflow: hidden;
-            height: 100vh; /* Fallback */
-            height: 100dvh; /* Dynamic Viewport Height for Mobile */
+            height: 100vh;
+            /* Fallback */
+            height: 100dvh;
+            /* Dynamic Viewport Height for Mobile */
             width: 100vw;
             user-select: none;
             color: var(--text-primary);
             cursor: default;
-            overscroll-behavior: none; /* Prevents bounce effect on mobile */
-            position: fixed; /* Lock body on mobile */
+            overscroll-behavior: none;
+            /* Prevents bounce effect on mobile */
+            position: fixed;
+            /* Lock body on mobile */
             inset: 0;
         }
 
@@ -79,19 +84,23 @@
 
         /* --- Taskbar (Windows 11 Style) --- */
         #taskbar {
-            position: fixed; /* Changed to fixed for better mobile support */
+            position: fixed;
+            /* Changed to fixed for better mobile support */
             bottom: 0;
             left: 0;
             right: 0;
-            height: calc(48px + var(--sab)); /* Adjust height for safe area */
+            height: calc(48px + var(--sab));
+            /* Adjust height for safe area */
             padding-bottom: var(--sab);
             background: rgba(32, 32, 32, 0.85);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-top: 1px solid var(--win-glass-border);
             display: grid;
-            grid-template-columns: 1fr auto 1fr; /* Center align hack */
-            align-items: center; /* This centers vertical content within the 48px area (excluding padding) */
+            grid-template-columns: 1fr auto 1fr;
+            /* Center align hack */
+            align-items: center;
+            /* This centers vertical content within the 48px area (excluding padding) */
             padding-left: 12px;
             padding-right: 12px;
             z-index: 9000;
@@ -107,7 +116,8 @@
         #taskbar-apps {
             display: flex;
             gap: 6px;
-            height: 48px; /* Force content height */
+            height: 48px;
+            /* Force content height */
             align-items: center;
             justify-content: center;
         }
@@ -133,7 +143,7 @@
             color: var(--text-secondary);
             cursor: pointer;
         }
-        
+
         .task-item:hover {
             background-color: rgba(255, 255, 255, 0.1);
         }
@@ -154,7 +164,7 @@
 
         /* Hide text in taskbar for Windows 11 look, show only icon */
         .task-item-text {
-            display: none; 
+            display: none;
         }
 
         .task-item i {
@@ -178,7 +188,7 @@
         }
 
         .start-btn.active {
-             background-color: rgba(255, 255, 255, 0.15);
+            background-color: rgba(255, 255, 255, 0.15);
         }
 
         /* --- Desktop Icons --- */
@@ -216,7 +226,7 @@
         .desktop-icon-img {
             font-size: 36px;
             margin-bottom: 6px;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
         }
 
         .desktop-icon-label {
@@ -229,11 +239,13 @@
 
         /* --- Windows Structure --- */
         #windows-container {
-            position: fixed; /* Fixed to prevent scrolling with body */
+            position: fixed;
+            /* Fixed to prevent scrolling with body */
             top: 0;
             left: 0;
             right: 0;
-            bottom: calc(48px + var(--sab)); /* Stop exactly at taskbar */
+            bottom: calc(48px + var(--sab));
+            /* Stop exactly at taskbar */
             z-index: 50;
             pointer-events: none;
         }
@@ -242,11 +254,12 @@
             position: absolute;
             background-color: var(--win-content);
             border-radius: 8px;
-            box-shadow: 0 0 0 1px rgba(0,0,0,0.2), 0 14px 28px rgba(0,0,0,0.4), 0 10px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2), 0 14px 28px rgba(0, 0, 0, 0.4), 0 10px 10px rgba(0, 0, 0, 0.3);
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            min-width: 300px; /* Lowered min-width for small phones */
+            min-width: 300px;
+            /* Lowered min-width for small phones */
             min-height: 200px;
             opacity: 0;
             transform: scale(0.95);
@@ -277,19 +290,21 @@
             align-items: center;
             justify-content: space-between;
             padding-left: 12px;
-            cursor: default; /* Windows doesn't show drag pointer usually */
+            cursor: default;
+            /* Windows doesn't show drag pointer usually */
             user-select: none;
             flex-shrink: 0;
-            padding-top: var(--sat); /* Add padding for notch if window is at top */
+            padding-top: var(--sat);
+            /* Add padding for notch if window is at top */
             height: calc(38px + var(--sat));
         }
-        
+
         /* Adjust for maximized vs non-maximized headers */
         .window:not(.maximized) .window-header {
             padding-top: 0;
             height: 38px;
         }
-        
+
         .window-title {
             font-size: 12px;
             color: var(--text-primary);
@@ -363,7 +378,7 @@
             background-color: var(--item-active);
             color: var(--accent-color);
         }
-        
+
         .nav-item.active::before {
             content: '';
             position: absolute;
@@ -395,9 +410,10 @@
             /* Add scrolling for mobile toolbars */
             overflow-x: auto;
             white-space: nowrap;
-            scrollbar-width: none; /* Hide scrollbar for cleaner look */
+            scrollbar-width: none;
+            /* Hide scrollbar for cleaner look */
         }
-        
+
         .explorer-toolbar::-webkit-scrollbar {
             display: none;
         }
@@ -414,14 +430,15 @@
             align-items: center;
             gap: 8px;
             transition: background 0.1s;
-            flex-shrink: 0; /* Prevent buttons from squishing */
+            flex-shrink: 0;
+            /* Prevent buttons from squishing */
         }
 
         .tool-btn:hover {
-            background: rgba(255,255,255,0.06);
-            border-color: rgba(255,255,255,0.08);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.08);
         }
-        
+
         .tool-btn.primary {
             background-color: rgba(96, 205, 255, 0.1);
             color: var(--accent-color);
@@ -430,7 +447,7 @@
         .address-bar {
             flex: 1;
             background: #252525;
-            border: 1px solid rgba(255,255,255,0.08);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 4px;
             height: 32px;
             display: flex;
@@ -445,15 +462,15 @@
             align-items: center;
             gap: 6px;
         }
-        
+
         .breadcrumb-segment {
             cursor: pointer;
             padding: 2px 4px;
             border-radius: 2px;
         }
-        
+
         .breadcrumb-segment:hover {
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.05);
         }
 
         /* Main View */
@@ -478,9 +495,10 @@
 
         .file-item.selected {
             background-color: var(--selection-bg) !important;
-            border-color: transparent !important; /* Windows uses simpler selection */
+            border-color: transparent !important;
+            /* Windows uses simpler selection */
         }
-        
+
         .file-item.selected:hover {
             background-color: rgba(96, 205, 255, 0.2) !important;
         }
@@ -504,15 +522,18 @@
             width: 10px;
             height: 10px;
         }
+
         .custom-scrollbar::-webkit-scrollbar-thumb {
             background: #444;
             border-radius: 5px;
             border: 2px solid transparent;
             background-clip: content-box;
         }
+
         .custom-scrollbar::-webkit-scrollbar-track {
             background: transparent;
         }
+
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background-color: #666;
         }
@@ -521,9 +542,9 @@
         #contextMenu {
             background: rgba(40, 40, 40, 0.95);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.08);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 8px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
             padding: 4px;
             z-index: 6000;
         }
@@ -540,12 +561,12 @@
         }
 
         .ctx-item:hover {
-            background: rgba(255,255,255,0.08);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .ctx-div {
             height: 1px;
-            background: rgba(255,255,255,0.08);
+            background: rgba(255, 255, 255, 0.08);
             margin: 4px 6px;
         }
 
@@ -567,11 +588,11 @@
             background-color: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(4px);
         }
-        
+
         .win-modal {
             background: #2b2b2b;
-            border: 1px solid rgba(255,255,255,0.08);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
         }
 
         /* Resource Monitor Specifics */
@@ -586,11 +607,13 @@
             transition: all 0.2s cubic-bezier(0.1, 0.9, 0.2, 1);
             transform-origin: bottom center;
         }
+
         #start-menu.hidden {
             display: none !important;
             opacity: 0;
             transform: translateY(10px) scale(0.95);
         }
+
         #start-menu:not(.hidden) {
             display: flex !important;
             opacity: 1;
@@ -640,41 +663,61 @@
         </div>
 
         <!-- Start Menu -->
-        <div id="start-menu" class="hidden absolute bottom-14 left-0 right-0 mx-auto w-[90vw] max-w-[600px] h-[400px] bg-[#202020]/95 backdrop-blur-xl border border-[#333] rounded-lg shadow-2xl z-[4999] flex flex-col overflow-hidden">
+        <div id="start-menu"
+            class="hidden absolute bottom-14 left-0 right-0 mx-auto w-[90vw] max-w-[600px] h-[400px] bg-[#202020]/95 backdrop-blur-xl border border-[#333] rounded-lg shadow-2xl z-[4999] flex flex-col overflow-hidden">
             <div class="p-6 bg-gradient-to-b from-[#333] to-[#202020] border-b border-white/5">
-                <input type="text" placeholder="Type here to search" class="w-full bg-[#1e1e1e] text-sm text-white px-4 py-2 rounded border border-[#444] focus:border-blue-500 outline-none">
+                <input type="text" placeholder="Type here to search"
+                    class="w-full bg-[#1e1e1e] text-sm text-white px-4 py-2 rounded border border-[#444] focus:border-blue-500 outline-none">
             </div>
             <div class="flex-1 p-6 grid grid-cols-2 gap-4 overflow-y-auto custom-scrollbar">
-                 <div>
+                <div>
                     <div class="text-xs font-semibold text-gray-500 mb-2 uppercase">Pinned</div>
                     <div class="grid grid-cols-4 gap-2">
-                         <div class="flex flex-col items-center p-2 hover:bg-white/5 rounded cursor-pointer" onclick="WindowManager.open('file-explorer'); StartMenu.toggle();">
-                             <div class="w-8 h-8 bg-yellow-400/20 rounded flex items-center justify-center text-yellow-400 mb-1"><i class="fas fa-folder"></i></div>
-                             <span class="text-[10px]">Explorer</span>
-                         </div>
-                         <div class="flex flex-col items-center p-2 hover:bg-white/5 rounded cursor-pointer" onclick="WindowManager.open('notepad'); StartMenu.toggle();">
-                             <div class="w-8 h-8 bg-white/10 rounded flex items-center justify-center text-white mb-1"><i class="fas fa-sticky-note"></i></div>
-                             <span class="text-[10px]">Notepad</span>
-                         </div>
-                         <div class="flex flex-col items-center p-2 hover:bg-white/5 rounded cursor-pointer" onclick="WindowManager.open('calendar'); StartMenu.toggle();">
-                             <div class="w-8 h-8 bg-blue-500/20 rounded flex items-center justify-center text-blue-400 mb-1"><i class="fas fa-calendar-alt"></i></div>
-                             <span class="text-[10px]">Calendar</span>
-                         </div>
-                         <div class="flex flex-col items-center p-2 hover:bg-white/5 rounded cursor-pointer" onclick="WindowManager.open('dashboard'); StartMenu.toggle();">
-                             <div class="w-8 h-8 bg-green-500/20 rounded flex items-center justify-center text-green-500 mb-1"><i class="fas fa-chart-line"></i></div>
-                             <span class="text-[10px]">Monitor</span>
-                         </div>
+                        <div class="flex flex-col items-center p-2 hover:bg-white/5 rounded cursor-pointer"
+                            onclick="WindowManager.open('file-explorer'); StartMenu.toggle();">
+                            <div
+                                class="w-8 h-8 bg-yellow-400/20 rounded flex items-center justify-center text-yellow-400 mb-1">
+                                <i class="fas fa-folder"></i>
+                            </div>
+                            <span class="text-[10px]">Explorer</span>
+                        </div>
+                        <div class="flex flex-col items-center p-2 hover:bg-white/5 rounded cursor-pointer"
+                            onclick="WindowManager.open('notepad'); StartMenu.toggle();">
+                            <div class="w-8 h-8 bg-white/10 rounded flex items-center justify-center text-white mb-1"><i
+                                    class="fas fa-sticky-note"></i></div>
+                            <span class="text-[10px]">Notepad</span>
+                        </div>
+                        <div class="flex flex-col items-center p-2 hover:bg-white/5 rounded cursor-pointer"
+                            onclick="WindowManager.open('calendar'); StartMenu.toggle();">
+                            <div
+                                class="w-8 h-8 bg-blue-500/20 rounded flex items-center justify-center text-blue-400 mb-1">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <span class="text-[10px]">Calendar</span>
+                        </div>
+                        <div class="flex flex-col items-center p-2 hover:bg-white/5 rounded cursor-pointer"
+                            onclick="WindowManager.open('dashboard'); StartMenu.toggle();">
+                            <div
+                                class="w-8 h-8 bg-green-500/20 rounded flex items-center justify-center text-green-500 mb-1">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <span class="text-[10px]">Monitor</span>
+                        </div>
                     </div>
-                 </div>
+                </div>
             </div>
             <div class="h-14 bg-[#181818] border-t border-[#333] flex items-center justify-between px-6">
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-xs font-bold">U</div>
+                    <div
+                        class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-xs font-bold">
+                        U</div>
                     <div class="text-xs">
                         <div class="font-semibold text-white" id="start-menu-username">User</div>
                     </div>
                 </div>
-                <button onclick="App.logout()" class="p-2 hover:bg-[#333] rounded text-red-400 hover:text-red-300 transition-colors" title="Sign out">
+                <button onclick="App.logout()"
+                    class="p-2 hover:bg-[#333] rounded text-red-400 hover:text-red-300 transition-colors"
+                    title="Sign out">
                     <i class="fas fa-power-off"></i>
                 </button>
             </div>
@@ -683,7 +726,7 @@
         <!-- Taskbar -->
         <div id="taskbar">
             <!-- Left Spacer -->
-             <div></div>
+            <div></div>
 
             <!-- Center Apps -->
             <div id="taskbar-apps">
@@ -695,7 +738,8 @@
 
             <!-- Right Tray -->
             <div class="taskbar-tray">
-                <div class="cursor-pointer hover:bg-white/10 p-2 rounded" title="Upload Status" onclick="WindowManager.open('uploads')">
+                <div class="cursor-pointer hover:bg-white/10 p-2 rounded" title="Upload Status"
+                    onclick="WindowManager.open('uploads')">
                     <i class="fas fa-cloud-arrow-up text-xs"></i>
                 </div>
                 <!-- Hide clock on mobile to save space -->
@@ -711,39 +755,49 @@
         <div id="windows-container">
 
             <!-- 1. FILE EXPLORER -->
-            <div id="win-file-explorer" class="window" style="width: 900px; height: 600px; top: 10%; left: 10%; display: none;">
+            <div id="win-file-explorer" class="window"
+                style="width: 900px; height: 600px; top: 10%; left: 10%; display: none;">
                 <div class="window-header">
                     <div class="window-title">
                         <img src="../images/litiaina_icon_48x48.png" class="w-4 h-4 opacity-70">
                         File Explorer
                     </div>
                     <div class="window-controls">
-                        <div class="win-control-btn" onclick="WindowManager.minimize('file-explorer')"><i class="fas fa-minus"></i></div>
-                        <div class="win-control-btn" onclick="WindowManager.maximize('file-explorer')"><i class="far fa-square"></i></div>
-                        <div class="win-control-btn close-btn" onclick="WindowManager.close('file-explorer')"><i class="fas fa-times"></i></div>
+                        <div class="win-control-btn" onclick="WindowManager.minimize('file-explorer')"><i
+                                class="fas fa-minus"></i></div>
+                        <div class="win-control-btn" onclick="WindowManager.maximize('file-explorer')"><i
+                                class="far fa-square"></i></div>
+                        <div class="win-control-btn close-btn" onclick="WindowManager.close('file-explorer')"><i
+                                class="fas fa-times"></i></div>
                     </div>
                 </div>
-                
+
                 <!-- New Ribbon/Toolbar for File Explorer -->
                 <div class="explorer-toolbar">
-                     <div class="flex items-center gap-2 text-gray-400 flex-shrink-0">
+                    <div class="flex items-center gap-2 text-gray-400 flex-shrink-0">
                         <!-- Mobile Sidebar Toggle -->
-                        <button class="sm:hidden p-1 hover:bg-white/10 rounded text-gray-300" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-                        
-                        <button class="p-1 hover:bg-white/10 rounded disabled:opacity-30" onclick="navigateBack()" id="back-btn"><i class="fas fa-arrow-left"></i></button>
-                        <button class="p-1 hover:bg-white/10 rounded" onclick="listObjects(activeFragment)"><i class="fas fa-rotate-right"></i></button>
-                     </div>
-                     <div class="address-bar flex-shrink-0 sm:flex-shrink">
-                         <i class="fas fa-hard-drive text-gray-400 mr-2 hidden sm:block"></i>
-                         <div id="breadcrumb" class="breadcrumb w-full overflow-hidden text-ellipsis whitespace-nowrap">Local Files</div>
-                     </div>
-                     <div class="relative w-48 hidden sm:block">
-                        <input type="text" id="searchInput" placeholder="Search" class="w-full bg-[#252525] border border-white/10 rounded h-8 px-3 text-xs text-white focus:border-blue-500 outline-none">
-                     </div>
+                        <button class="sm:hidden p-1 hover:bg-white/10 rounded text-gray-300"
+                            onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+
+                        <button class="p-1 hover:bg-white/10 rounded disabled:opacity-30" onclick="navigateBack()"
+                            id="back-btn"><i class="fas fa-arrow-left"></i></button>
+                        <button class="p-1 hover:bg-white/10 rounded" onclick="listObjects(activeFragment)"><i
+                                class="fas fa-rotate-right"></i></button>
+                    </div>
+                    <div class="address-bar flex-shrink-0 sm:flex-shrink">
+                        <i class="fas fa-hard-drive text-gray-400 mr-2 hidden sm:block"></i>
+                        <div id="breadcrumb" class="breadcrumb w-full overflow-hidden text-ellipsis whitespace-nowrap">
+                            Local Files</div>
+                    </div>
+                    <div class="relative w-48 hidden sm:block">
+                        <input type="text" id="searchInput" placeholder="Search"
+                            class="w-full bg-[#252525] border border-white/10 rounded h-8 px-3 text-xs text-white focus:border-blue-500 outline-none">
+                    </div>
                 </div>
 
                 <!-- Sub-toolbar for actions -->
-                <div class="flex items-center gap-1 px-2 py-1 bg-[#1e1e1e] border-b border-white/5 text-xs overflow-x-auto whitespace-nowrap">
+                <div
+                    class="flex items-center gap-1 px-2 py-1 bg-[#1e1e1e] border-b border-white/5 text-xs overflow-x-auto whitespace-nowrap">
                     <button class="tool-btn" onclick="document.getElementById('newFolderBtnAction').click()">
                         <i class="fas fa-plus text-blue-400"></i> New
                     </button>
@@ -758,24 +812,30 @@
 
                 <div class="window-body relative">
                     <!-- Mobile Sidebar Overlay -->
-                    <div id="sidebar-overlay" onclick="toggleSidebar()" class="absolute inset-0 bg-black/50 z-10 hidden sm:hidden transition-opacity"></div>
-                    
+                    <div id="sidebar-overlay" onclick="toggleSidebar()"
+                        class="absolute inset-0 bg-black/50 z-10 hidden sm:hidden transition-opacity"></div>
+
                     <!-- Sidebar (Drawer on mobile) -->
-                    <div id="fe-sidebar" class="window-sidebar custom-scrollbar overflow-y-auto absolute sm:static inset-y-0 left-0 z-20 w-64 border-r border-white/5 shadow-2xl sm:shadow-none bg-[#191919] sm:bg-transparent transform -translate-x-full sm:translate-x-0 transition-transform duration-200">
+                    <div id="fe-sidebar"
+                        class="window-sidebar custom-scrollbar overflow-y-auto absolute sm:static inset-y-0 left-0 z-20 w-64 border-r border-white/5 shadow-2xl sm:shadow-none bg-[#191919] sm:bg-transparent transform -translate-x-full sm:translate-x-0 transition-transform duration-200">
                         <div class="text-[11px] font-semibold text-gray-500 uppercase px-3 py-2 mt-1">Quick Access</div>
-                        <div class="nav-item active" id="nav-my-files" onclick="AppNav.navigate('my-files'); if(window.innerWidth < 640) toggleSidebar();">
+                        <div class="nav-item active" id="nav-my-files"
+                            onclick="AppNav.navigate('my-files'); if(window.innerWidth < 640) toggleSidebar();">
                             <i class="fas fa-home text-blue-400"></i> Home
                         </div>
-                        <div class="nav-item" id="nav-recent" onclick="AppNav.navigate('recent'); if(window.innerWidth < 640) toggleSidebar();">
+                        <div class="nav-item" id="nav-recent"
+                            onclick="AppNav.navigate('recent'); if(window.innerWidth < 640) toggleSidebar();">
                             <i class="far fa-clock"></i> Recent
                         </div>
-                        <div class="nav-item" id="nav-starred" onclick="AppNav.navigate('starred'); if(window.innerWidth < 640) toggleSidebar();">
+                        <div class="nav-item" id="nav-starred"
+                            onclick="AppNav.navigate('starred'); if(window.innerWidth < 640) toggleSidebar();">
                             <i class="fas fa-star text-yellow-500"></i> Favorites
                         </div>
 
                         <div class="flex justify-between items-center px-3 mt-6 mb-1">
                             <div class="text-[11px] font-semibold text-gray-500 uppercase">Drives</div>
-                            <button id="addFragmentBtn" class="text-xs text-gray-400 hover:text-white px-1"><i class="fas fa-plus"></i></button>
+                            <button id="addFragmentBtn" class="text-xs text-gray-400 hover:text-white px-1"><i
+                                    class="fas fa-plus"></i></button>
                         </div>
                         <div id="fragmentList" class="flex flex-col gap-0.5"></div>
 
@@ -786,7 +846,9 @@
                                 <span id="sidebar-storage-percent">0%</span>
                             </div>
                             <div class="w-full bg-[#333] rounded-full h-1 mb-1">
-                                <div id="sidebar-storage-bar" class="bg-blue-500 h-1 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                <div id="sidebar-storage-bar"
+                                    class="bg-blue-500 h-1 rounded-full transition-all duration-500" style="width: 0%">
+                                </div>
                             </div>
                             <div id="sidebar-gb-used" class="text-[10px] text-gray-500">0 GB used</div>
                         </div>
@@ -794,15 +856,18 @@
 
                     <div class="window-content">
                         <div id="browser" class="custom-scrollbar">
-                            <div id="objectList" class="grid gap-1" style="grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));"></div>
-                            <div id="browserSpinner" class="absolute inset-0 flex items-center justify-center bg-[#191919]/80 hidden z-10">
+                            <div id="objectList" class="grid gap-1"
+                                style="grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));"></div>
+                            <div id="browserSpinner"
+                                class="absolute inset-0 flex items-center justify-center bg-[#191919]/80 hidden z-10">
                                 <div class="flex flex-col items-center">
                                     <i class="fas fa-circle-notch fa-spin text-2xl text-blue-500 mb-2"></i>
                                     <span class="text-xs text-gray-400">Working on it...</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="h-6 bg-[#1e1e1e] border-t border-white/5 flex items-center px-3 text-[11px] text-gray-500 justify-between select-none">
+                        <div
+                            class="h-6 bg-[#1e1e1e] border-t border-white/5 flex items-center px-3 text-[11px] text-gray-500 justify-between select-none">
                             <span id="selection-status">0 items selected</span>
                             <div class="flex gap-4">
                                 <span id="network-activity-status" class="flex items-center gap-2">
@@ -815,12 +880,15 @@
             </div>
 
             <!-- 2. RESOURCE MONITOR (Windows Style) -->
-            <div id="win-dashboard" class="window" style="width: 900px; height: 600px; top: 10%; left: 10%; display: none;">
+            <div id="win-dashboard" class="window"
+                style="width: 900px; height: 600px; top: 10%; left: 10%; display: none;">
                 <div class="window-header">
                     <div class="window-title"><i class="fas fa-chart-line text-green-500"></i> Resource Monitor</div>
                     <div class="window-controls">
-                        <div class="win-control-btn" onclick="WindowManager.minimize('dashboard')"><i class="fas fa-minus"></i></div>
-                        <div class="win-control-btn close-btn" onclick="WindowManager.close('dashboard')"><i class="fas fa-times"></i></div>
+                        <div class="win-control-btn" onclick="WindowManager.minimize('dashboard')"><i
+                                class="fas fa-minus"></i></div>
+                        <div class="win-control-btn close-btn" onclick="WindowManager.close('dashboard')"><i
+                                class="fas fa-times"></i></div>
                     </div>
                 </div>
                 <div class="window-body">
@@ -836,30 +904,38 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <!-- Account Info -->
                                 <div class="res-card col-span-1 md:col-span-2 flex gap-4 items-center p-4 bg-[#252525]">
-                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white text-xl shadow-lg">
+                                    <div
+                                        class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white text-xl shadow-lg">
                                         <i class="fas fa-user"></i>
                                     </div>
                                     <div>
-                                        <div class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold">User Profile</div>
-                                        <div class="text-lg font-medium text-white" id="account-name-display">Loading...</div>
-                                        <div class="text-xs text-gray-500 font-mono" id="account-email-display">Loading...</div>
+                                        <div class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold">
+                                            User Profile</div>
+                                        <div class="text-lg font-medium text-white" id="account-name-display">Loading...
+                                        </div>
+                                        <div class="text-xs text-gray-500 font-mono" id="account-email-display">
+                                            Loading...</div>
                                     </div>
                                 </div>
 
                                 <!-- Network Activity Charts -->
                                 <div class="res-card p-4">
-                                    <div class="text-xs text-gray-400 font-semibold mb-2 uppercase">Throughput (In)</div>
+                                    <div class="text-xs text-gray-400 font-semibold mb-2 uppercase">Throughput (In)
+                                    </div>
                                     <div class="h-32 w-full relative">
                                         <canvas id="net-in-chart"></canvas>
                                     </div>
-                                    <div class="text-right mt-2 font-mono text-lg text-white" id="net-in-val">0 KB/s</div>
+                                    <div class="text-right mt-2 font-mono text-lg text-white" id="net-in-val">0 KB/s
+                                    </div>
                                 </div>
                                 <div class="res-card p-4">
-                                    <div class="text-xs text-gray-400 font-semibold mb-2 uppercase">Throughput (Out)</div>
+                                    <div class="text-xs text-gray-400 font-semibold mb-2 uppercase">Throughput (Out)
+                                    </div>
                                     <div class="h-32 w-full relative">
                                         <canvas id="net-out-chart"></canvas>
                                     </div>
-                                    <div class="text-right mt-2 font-mono text-lg text-white" id="net-out-val">0 KB/s</div>
+                                    <div class="text-right mt-2 font-mono text-lg text-white" id="net-out-val">0 KB/s
+                                    </div>
                                 </div>
 
                                 <!-- Storage Analysis -->
@@ -870,26 +946,39 @@
                                             <div class="relative w-32 h-32">
                                                 <canvas id="storage-pie-chart"></canvas>
                                             </div>
-                                            <div class="text-xs text-gray-300 mt-2 font-mono" id="storage-total-label">Calculating...</div>
+                                            <div class="text-xs text-gray-300 mt-2 font-mono" id="storage-total-label">
+                                                Calculating...</div>
                                         </div>
 
                                         <div class="flex-1">
-                                            <div class="text-xs text-gray-400 mb-3 font-semibold uppercase border-b border-gray-700 pb-2">Breakdown</div>
+                                            <div
+                                                class="text-xs text-gray-400 mb-3 font-semibold uppercase border-b border-gray-700 pb-2">
+                                                Breakdown</div>
                                             <div class="space-y-2 text-xs" id="storage-stats-container">
-                                                <div class="flex justify-between items-center py-1 border-b border-[#333]">
-                                                    <span class="text-gray-400"><i class="fas fa-image w-5 text-purple-400"></i> Pictures</span>
+                                                <div
+                                                    class="flex justify-between items-center py-1 border-b border-[#333]">
+                                                    <span class="text-gray-400"><i
+                                                            class="fas fa-image w-5 text-purple-400"></i>
+                                                        Pictures</span>
                                                     <span class="text-white font-mono" id="stat-images">0 B</span>
                                                 </div>
-                                                <div class="flex justify-between items-center py-1 border-b border-[#333]">
-                                                    <span class="text-gray-400"><i class="fas fa-video w-5 text-pink-500"></i> Video</span>
+                                                <div
+                                                    class="flex justify-between items-center py-1 border-b border-[#333]">
+                                                    <span class="text-gray-400"><i
+                                                            class="fas fa-video w-5 text-pink-500"></i> Video</span>
                                                     <span class="text-white font-mono" id="stat-videos">0 B</span>
                                                 </div>
-                                                <div class="flex justify-between items-center py-1 border-b border-[#333]">
-                                                    <span class="text-gray-400"><i class="fas fa-music w-5 text-yellow-500"></i> Music</span>
+                                                <div
+                                                    class="flex justify-between items-center py-1 border-b border-[#333]">
+                                                    <span class="text-gray-400"><i
+                                                            class="fas fa-music w-5 text-yellow-500"></i> Music</span>
                                                     <span class="text-white font-mono" id="stat-audio">0 B</span>
                                                 </div>
-                                                <div class="flex justify-between items-center py-1 border-b border-[#333]">
-                                                    <span class="text-gray-400"><i class="fas fa-file-word w-5 text-blue-500"></i> Documents</span>
+                                                <div
+                                                    class="flex justify-between items-center py-1 border-b border-[#333]">
+                                                    <span class="text-gray-400"><i
+                                                            class="fas fa-file-word w-5 text-blue-500"></i>
+                                                        Documents</span>
                                                     <span class="text-white font-mono" id="stat-docs">0 B</span>
                                                 </div>
                                             </div>
@@ -901,96 +990,134 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- 3. NOTEPAD (NEW) -->
-            <div id="win-notepad" class="window" style="width: 900px; height: 600px; top: 25%; left: 25%; display: none;">
+            <div id="win-notepad" class="window"
+                style="width: 900px; height: 600px; top: 25%; left: 25%; display: none;">
                 <div class="window-header">
                     <div class="window-title"><i class="fas fa-sticky-note text-white"></i> Notepad</div>
                     <div class="window-controls">
-                        <div class="win-control-btn" onclick="WindowManager.minimize('notepad')"><i class="fas fa-minus"></i></div>
-                        <div class="win-control-btn" onclick="WindowManager.maximize('notepad')"><i class="far fa-square"></i></div>
-                        <div class="win-control-btn close-btn" onclick="WindowManager.close('notepad')"><i class="fas fa-times"></i></div>
+                        <div class="win-control-btn" onclick="WindowManager.minimize('notepad')"><i
+                                class="fas fa-minus"></i></div>
+                        <div class="win-control-btn" onclick="WindowManager.maximize('notepad')"><i
+                                class="far fa-square"></i></div>
+                        <div class="win-control-btn close-btn" onclick="WindowManager.close('notepad')"><i
+                                class="fas fa-times"></i></div>
                     </div>
                 </div>
-                <div class="explorer-toolbar h-8 bg-[#252525] flex items-center px-2 text-xs gap-1 overflow-x-auto whitespace-nowrap">
-                    <button class="tool-btn" onclick="Notepad.save()"><i class="fas fa-save text-blue-400"></i> Save</button>
-                    <button class="tool-btn" onclick="Notepad.download()"><i class="fas fa-download"></i> Download</button>
+                <div
+                    class="explorer-toolbar h-8 bg-[#252525] flex items-center px-2 text-xs gap-1 overflow-x-auto whitespace-nowrap">
+                    <button class="tool-btn" onclick="Notepad.save()"><i class="fas fa-save text-blue-400"></i>
+                        Save</button>
+                    <button class="tool-btn" onclick="Notepad.download()"><i class="fas fa-download"></i>
+                        Download</button>
                     <div class="w-px h-4 bg-white/10 mx-1 flex-shrink-0"></div>
-                    <button class="tool-btn hover:text-red-400" onclick="Notepad.clear()"><i class="fas fa-trash"></i> Clear</button>
+                    <button class="tool-btn hover:text-red-400" onclick="Notepad.clear()"><i class="fas fa-trash"></i>
+                        Clear</button>
                     <span id="notepad-status" class="ml-auto text-gray-500 text-[10px] italic pr-2"></span>
                 </div>
-                <textarea id="notepad-area" class="flex-1 bg-[#1e1e1e] text-white p-4 outline-none resize-none font-mono text-sm border-none" placeholder="Type your notes here..."></textarea>
+                <textarea id="notepad-area"
+                    class="flex-1 bg-[#1e1e1e] text-white p-4 outline-none resize-none font-mono text-sm border-none"
+                    placeholder="Type your notes here..."></textarea>
             </div>
 
             <!-- 4. CALENDAR (NEW) -->
-            <div id="win-calendar" class="window" style="width: 320px; height: 380px; top: 100px; left: 300px; display: none;">
+            <div id="win-calendar" class="window"
+                style="width: 320px; height: 380px; top: 100px; left: 300px; display: none;">
                 <div class="window-header">
                     <div class="window-title"><i class="fas fa-calendar-alt text-blue-400"></i> Calendar</div>
                     <div class="window-controls">
-                        <div class="win-control-btn" onclick="WindowManager.minimize('calendar')"><i class="fas fa-minus"></i></div>
-                        <div class="win-control-btn close-btn" onclick="WindowManager.close('calendar')"><i class="fas fa-times"></i></div>
+                        <div class="win-control-btn" onclick="WindowManager.minimize('calendar')"><i
+                                class="fas fa-minus"></i></div>
+                        <div class="win-control-btn close-btn" onclick="WindowManager.close('calendar')"><i
+                                class="fas fa-times"></i></div>
                     </div>
                 </div>
                 <div class="window-body flex-col bg-[#191919] p-4 select-none">
-                     <div class="flex justify-between items-center mb-4">
-                         <button onclick="CalendarApp.changeMonth(-1)" class="hover:bg-white/10 p-2 rounded text-gray-400 w-8 h-8 flex items-center justify-center"><i class="fas fa-chevron-left"></i></button>
-                         <span id="cal-title" class="font-semibold text-lg">Month Year</span>
-                         <button onclick="CalendarApp.changeMonth(1)" class="hover:bg-white/10 p-2 rounded text-gray-400 w-8 h-8 flex items-center justify-center"><i class="fas fa-chevron-right"></i></button>
-                     </div>
-                     <div class="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mb-2 font-semibold">
-                         <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
-                     </div>
-                     <div id="cal-grid" class="grid grid-cols-7 gap-1 text-center text-sm"></div>
-                     <div class="mt-auto pt-4 border-t border-white/5 text-center">
-                        <button onclick="CalendarApp.resetToToday()" class="text-xs text-blue-400 hover:text-blue-300">Go to Today</button>
-                     </div>
+                    <div class="flex justify-between items-center mb-4">
+                        <button onclick="CalendarApp.changeMonth(-1)"
+                            class="hover:bg-white/10 p-2 rounded text-gray-400 w-8 h-8 flex items-center justify-center"><i
+                                class="fas fa-chevron-left"></i></button>
+                        <span id="cal-title" class="font-semibold text-lg">Month Year</span>
+                        <button onclick="CalendarApp.changeMonth(1)"
+                            class="hover:bg-white/10 p-2 rounded text-gray-400 w-8 h-8 flex items-center justify-center"><i
+                                class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mb-2 font-semibold">
+                        <div>Su</div>
+                        <div>Mo</div>
+                        <div>Tu</div>
+                        <div>We</div>
+                        <div>Th</div>
+                        <div>Fr</div>
+                        <div>Sa</div>
+                    </div>
+                    <div id="cal-grid" class="grid grid-cols-7 gap-1 text-center text-sm"></div>
+                    <div class="mt-auto pt-4 border-t border-white/5 text-center">
+                        <button onclick="CalendarApp.resetToToday()"
+                            class="text-xs text-blue-400 hover:text-blue-300">Go to Today</button>
+                    </div>
                 </div>
             </div>
 
             <!-- 5. RECYCLE BIN -->
-            <div id="win-recycle-bin" class="window" style="width: 900px; height: 600px; top: 10%; left: 10%; display: none;">
+            <div id="win-recycle-bin" class="window"
+                style="width: 900px; height: 600px; top: 10%; left: 10%; display: none;">
                 <div class="window-header">
                     <div class="window-title"><i class="fas fa-trash-can text-gray-400"></i> Recycle Bin</div>
                     <div class="window-controls">
-                        <div class="win-control-btn" onclick="WindowManager.minimize('recycle-bin')"><i class="fas fa-minus"></i></div>
-                        <div class="win-control-btn close-btn" onclick="WindowManager.close('recycle-bin')"><i class="fas fa-times"></i></div>
+                        <div class="win-control-btn" onclick="WindowManager.minimize('recycle-bin')"><i
+                                class="fas fa-minus"></i></div>
+                        <div class="win-control-btn close-btn" onclick="WindowManager.close('recycle-bin')"><i
+                                class="fas fa-times"></i></div>
                     </div>
                 </div>
-                
+
                 <div class="explorer-toolbar bg-[#1e1e1e] overflow-x-auto whitespace-nowrap">
                     <div class="flex gap-2">
-                        <button id="empty-trash-btn" class="tool-btn hover:text-red-400"><i class="fas fa-trash-arrow-up"></i> Empty Recycle Bin</button>
-                        <button id="restore-all-btn" class="tool-btn hover:text-green-400"><i class="fas fa-rotate-left"></i> Restore all items</button>
+                        <button id="empty-trash-btn" class="tool-btn hover:text-red-400"><i
+                                class="fas fa-trash-arrow-up"></i> Empty Recycle Bin</button>
+                        <button id="restore-all-btn" class="tool-btn hover:text-green-400"><i
+                                class="fas fa-rotate-left"></i> Restore all items</button>
                     </div>
-                     <div class="flex-1 min-w-[20px]"></div>
-                     <div class="flex bg-[#252525] rounded border border-white/5 p-0.5 flex-shrink-0">
-                        <button id="trash-tiles-btn" class="p-1 px-2 rounded hover:bg-[#333] text-gray-400 text-xs"><i class="fas fa-th-large"></i></button>
-                        <button id="trash-list-btn" class="p-1 px-2 rounded bg-white/10 text-white text-xs"><i class="fas fa-list"></i></button>
+                    <div class="flex-1 min-w-[20px]"></div>
+                    <div class="flex bg-[#252525] rounded border border-white/5 p-0.5 flex-shrink-0">
+                        <button id="trash-tiles-btn" class="p-1 px-2 rounded hover:bg-[#333] text-gray-400 text-xs"><i
+                                class="fas fa-th-large"></i></button>
+                        <button id="trash-list-btn" class="p-1 px-2 rounded bg-white/10 text-white text-xs"><i
+                                class="fas fa-list"></i></button>
                     </div>
                 </div>
 
                 <div class="window-body">
                     <div class="window-content bg-[#191919]">
-                        <div id="recycle-bin-content" class="custom-scrollbar flex-1 overflow-y-auto content-start p-4"></div>
+                        <div id="recycle-bin-content" class="custom-scrollbar flex-1 overflow-y-auto content-start p-4">
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- 6. UPLOAD MANAGER -->
-            <div id="win-uploads" class="window" style="width: 400px; height: 350px; top: 100px; right: 120px; display: none; z-index: 2000;">
+            <div id="win-uploads" class="window"
+                style="width: 400px; height: 350px; top: 100px; right: 120px; display: none; z-index: 2000;">
                 <div class="window-header">
                     <div class="window-title">Uploads</div>
                     <div class="window-controls">
-                        <div class="win-control-btn" onclick="WindowManager.minimize('uploads')"><i class="fas fa-minus"></i></div>
-                        <div class="win-control-btn close-btn" onclick="WindowManager.close('uploads')"><i class="fas fa-times"></i></div>
+                        <div class="win-control-btn" onclick="WindowManager.minimize('uploads')"><i
+                                class="fas fa-minus"></i></div>
+                        <div class="win-control-btn close-btn" onclick="WindowManager.close('uploads')"><i
+                                class="fas fa-times"></i></div>
                     </div>
                 </div>
                 <div class="window-body flex-col bg-[#202020]">
-                    <div class="p-2 border-b border-white/5 flex justify-between items-center text-[11px] text-gray-400 bg-[#252525]">
+                    <div
+                        class="p-2 border-b border-white/5 flex justify-between items-center text-[11px] text-gray-400 bg-[#252525]">
                         <span id="upload-status-header">Ready</span>
-                        <button onclick="document.getElementById('upload-items-container').innerHTML=''" class="hover:text-white transition-colors">Clear list</button>
+                        <button onclick="document.getElementById('upload-items-container').innerHTML=''"
+                            class="hover:text-white transition-colors">Clear list</button>
                     </div>
-                    <div id="upload-items-container" class="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar"></div>
+                    <div id="upload-items-container" class="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
+                    </div>
                 </div>
             </div>
 
@@ -1005,10 +1132,13 @@
     <div id="newFolderModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
         <div class="win-modal p-6 rounded-lg w-full max-w-sm mx-4 text-white">
             <h3 class="font-semibold mb-4 text-sm">Create New Folder</h3>
-            <input type="text" id="newFolderNameInput" placeholder="Name" class="bg-[#191919] border border-[#444] w-full p-2 rounded mb-6 text-sm focus:border-blue-500 outline-none text-white">
+            <input type="text" id="newFolderNameInput" placeholder="Name"
+                class="bg-[#191919] border border-[#444] w-full p-2 rounded mb-6 text-sm focus:border-blue-500 outline-none text-white">
             <div class="flex justify-end gap-2">
-                <button id="cancelNewFolderBtn" class="text-xs bg-[#333] hover:bg-[#444] text-white px-4 py-2 rounded">Cancel</button>
-                <button id="confirmNewFolderBtn" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">Create</button>
+                <button id="cancelNewFolderBtn"
+                    class="text-xs bg-[#333] hover:bg-[#444] text-white px-4 py-2 rounded">Cancel</button>
+                <button id="confirmNewFolderBtn"
+                    class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">Create</button>
             </div>
         </div>
     </div>
@@ -1016,10 +1146,13 @@
     <div id="newFragmentModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
         <div class="win-modal p-6 rounded-lg w-full max-w-sm mx-4 text-white">
             <h3 class="font-semibold mb-4 text-sm">Map Network Drive (Mount)</h3>
-            <input type="text" id="newFragmentNameInput" placeholder="Mount Name" class="bg-[#191919] border border-[#444] w-full p-2 rounded mb-6 text-sm focus:border-blue-500 outline-none text-white">
+            <input type="text" id="newFragmentNameInput" placeholder="Mount Name"
+                class="bg-[#191919] border border-[#444] w-full p-2 rounded mb-6 text-sm focus:border-blue-500 outline-none text-white">
             <div class="flex justify-end gap-2">
-                <button id="cancelNewFragmentBtn" class="text-xs bg-[#333] hover:bg-[#444] text-white px-4 py-2 rounded">Cancel</button>
-                <button id="confirmNewFragmentBtn" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">Mount</button>
+                <button id="cancelNewFragmentBtn"
+                    class="text-xs bg-[#333] hover:bg-[#444] text-white px-4 py-2 rounded">Cancel</button>
+                <button id="confirmNewFragmentBtn"
+                    class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">Mount</button>
             </div>
         </div>
     </div>
@@ -1027,66 +1160,110 @@
     <div id="renameModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
         <div class="win-modal p-6 rounded-lg w-full max-w-sm mx-4 text-white">
             <h3 class="font-semibold mb-4 text-sm">Rename</h3>
-            <input id="newObjectKeyInput" class="bg-[#191919] border border-[#444] w-full p-2 rounded mb-6 text-sm focus:border-blue-500 outline-none text-white">
+            <input id="newObjectKeyInput"
+                class="bg-[#191919] border border-[#444] w-full p-2 rounded mb-6 text-sm focus:border-blue-500 outline-none text-white">
             <div class="flex justify-end gap-2">
-                <button id="cancelRenameBtn" class="text-xs bg-[#333] hover:bg-[#444] text-white px-4 py-2 rounded">Cancel</button>
-                <button id="confirmRenameBtn" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">Save</button>
+                <button id="cancelRenameBtn"
+                    class="text-xs bg-[#333] hover:bg-[#444] text-white px-4 py-2 rounded">Cancel</button>
+                <button id="confirmRenameBtn"
+                    class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">Save</button>
             </div>
         </div>
     </div>
 
     <div id="shareModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
-        <div class="win-modal p-6 rounded-lg w-full max-w-sm mx-4 text-white">
-            <h3 class="font-semibold mb-4 text-sm">Share File</h3>
-            <div class="space-y-4">
-                <select id="shareDisposition" class="w-full bg-[#191919] border border-[#444] p-2 rounded text-sm outline-none text-white">
-                    <option value="view">View Only</option>
-                    <option value="stream">Stream (Video)</option>
-                    <option value="download">Download</option>
-                </select>
-                <input id="shareExpiry" type="number" value="3600" placeholder="Expires in (seconds)" class="w-full bg-[#191919] border border-[#444] p-2 rounded text-sm outline-none text-white">
-                <div class="flex gap-2">
-                    <input id="shareUrl" class="flex-1 bg-[#191919] border border-[#444] p-2 rounded text-xs text-gray-300 font-mono" readonly placeholder="Link will appear here...">
-                    <button id="copyShareUrlBtn" class="bg-[#333] hover:bg-[#444] px-3 rounded text-white border border-[#444]"><i class="fas fa-copy"></i></button>
+        <div class="win-modal p-6 rounded-lg w-full max-w-sm mx-4 text-white shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-semibold text-lg flex items-center gap-2"><i class="fas fa-share-nodes text-blue-400"></i> Share File</h3>
+                <button id="closeShareBtn" class="text-gray-400 hover:text-white transition-colors"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="space-y-5">
+                <!-- Access Type -->
+                <div>
+                    <label class="block text-xs text-gray-400 uppercase font-semibold mb-1.5">Access Type</label>
+                    <div class="relative">
+                        <select id="shareDisposition" class="w-full bg-[#1e1e1e] border border-[#444] p-2.5 rounded text-sm outline-none text-white appearance-none focus:border-blue-500 transition-colors">
+                            <option value="view">👀 View / Stream</option>
+                            <option value="download">⬇️ Force Download</option>
+                        </select>
+                        <div class="absolute right-3 top-3 text-gray-400 pointer-events-none"><i class="fas fa-chevron-down text-xs"></i></div>
+                    </div>
+                </div>
+
+                <!-- Expiration -->
+                <div>
+                    <label class="block text-xs text-gray-400 uppercase font-semibold mb-1.5">Link Expiration</label>
+                    <div class="relative">
+                        <select id="shareExpirySelect" class="w-full bg-[#1e1e1e] border border-[#444] p-2.5 rounded text-sm outline-none text-white appearance-none focus:border-blue-500 transition-colors">
+                            <option value="3600">1 Hour</option>
+                            <option value="86400">24 Hours</option>
+                            <option value="604800" selected>7 Days</option>
+                            <option value="custom">Custom (Seconds)</option>
+                        </select>
+                        <div class="absolute right-3 top-3 text-gray-400 pointer-events-none"><i class="fas fa-chevron-down text-xs"></i></div>
+                    </div>
+                    <!-- Hidden Custom Input -->
+                    <input id="shareExpiry" type="number" value="3600" placeholder="Seconds" class="w-full bg-[#1e1e1e] border border-[#444] p-2.5 rounded text-sm outline-none text-white mt-2 hidden">
+                </div>
+
+                <!-- Generated Link -->
+                <div class="pt-2">
+                     <label class="block text-xs text-gray-400 uppercase font-semibold mb-1.5">Shareable Link</label>
+                    <div class="flex gap-0">
+                        <input id="shareUrl" class="flex-1 bg-[#151515] border border-[#444] border-r-0 p-2.5 rounded-l text-xs text-blue-400 font-mono focus:outline-none" readonly placeholder="Click generate to create link...">
+                        <button id="copyShareUrlBtn" class="bg-[#333] hover:bg-[#444] px-4 rounded-r border border-[#444] border-l-0 text-white transition-colors flex items-center justify-center min-w-[40px]" title="Copy to Clipboard">
+                            <i class="far fa-copy"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
-            <div class="flex justify-end gap-2 mt-6">
-                <button id="closeShareBtn" class="text-xs bg-[#333] hover:bg-[#444] text-white px-4 py-2 rounded">Close</button>
-                <button id="generateShareBtn" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded">Generate Link</button>
+
+            <div class="mt-8">
+                <button id="generateShareBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 rounded transition-all shadow-lg shadow-blue-900/20 active:scale-[0.98] flex justify-center items-center gap-2">
+                    <i class="fas fa-link"></i> Generate Link
+                </button>
             </div>
         </div>
     </div>
 
     <div id="versionsModal" class="hidden modal-backdrop fixed inset-0 flex items-center justify-center z-[2000]">
         <div class="win-modal p-6 rounded-lg w-full max-w-md mx-4 text-white flex flex-col h-[600px]">
-            <h3 class="font-semibold mb-4 text-sm flex items-center gap-2"><i class="fas fa-history text-blue-400"></i> Version History</h3>
+            <h3 class="font-semibold mb-4 text-sm flex items-center gap-2"><i class="fas fa-history text-blue-400"></i>
+                Version History</h3>
             <div class="flex-1 overflow-y-auto custom-scrollbar border border-white/5 rounded p-2 mb-4 bg-[#191919]">
                 <div id="versionsList" class="flex flex-col gap-2">
                     <div class="text-center text-gray-500 py-10">Loading versions...</div>
                 </div>
             </div>
             <div class="flex justify-end gap-2">
-                <button onclick="$('#versionsModal').addClass('hidden')" class="text-xs bg-[#333] hover:bg-[#444] text-white px-4 py-2 rounded">Close</button>
+                <button onclick="$('#versionsModal').addClass('hidden')"
+                    class="text-xs bg-[#333] hover:bg-[#444] text-white px-4 py-2 rounded">Close</button>
             </div>
         </div>
     </div>
 
-    <div id="genericModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[5000] hidden flex items-center justify-center">
+    <div id="genericModal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[5000] hidden flex items-center justify-center">
         <div class="win-modal p-6 rounded-lg w-full max-w-sm mx-4">
             <h3 id="modalTitle" class="text-sm font-bold text-white mb-4">Title</h3>
             <div id="modalContent" class="text-sm text-gray-300 mb-6"></div>
             <div class="flex justify-end gap-2">
-                <button id="modalCancel" class="px-4 py-2 rounded text-xs bg-[#333] hover:bg-[#444] text-white border border-[#444]">Cancel</button>
-                <button id="modalConfirm" class="px-4 py-2 rounded text-xs bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/30">Confirm</button>
+                <button id="modalCancel"
+                    class="px-4 py-2 rounded text-xs bg-[#333] hover:bg-[#444] text-white border border-[#444]">Cancel</button>
+                <button id="modalConfirm"
+                    class="px-4 py-2 rounded text-xs bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/30">Confirm</button>
             </div>
         </div>
     </div>
 
-    <div id="progressModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[6000] hidden flex flex-col items-center justify-center">
+    <div id="progressModal"
+        class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[6000] hidden flex flex-col items-center justify-center">
         <div class="win-modal p-6 rounded-lg w-full max-w-sm mx-4">
             <h3 id="progressTitle" class="text-sm font-bold text-white mb-4">Processing...</h3>
             <div class="w-full bg-[#333] rounded-full h-1 mb-3">
-                <div id="progressBar" class="bg-blue-600 h-1 rounded-full transition-all duration-200" style="width: 0%"></div>
+                <div id="progressBar" class="bg-blue-600 h-1 rounded-full transition-all duration-200"
+                    style="width: 0%"></div>
             </div>
             <div class="flex justify-between text-[11px] text-gray-400">
                 <span id="progressStatus">Initializing...</span>
@@ -1129,52 +1306,68 @@
             socket: null,
             reconnectAttempts: 0,
             maxReconnectAttempts: 5,
-            
-            init: function() {
+
+            init: function () {
                 if (!token) return;
                 this.connect();
             },
 
-            connect: function() {
-                // FIX: Derive URL from serverLink to ensure domain consistency
-                const wsBase = serverLink.replace('http', 'ws'); // handles https->wss and http->ws
-                const wsUrl = `${wsBase}/ws?token=${token}`;
-                
-                // Safety check: close existing if open
-                if (this.socket && (this.socket.readyState === WebSocket.OPEN || this.socket.readyState === WebSocket.CONNECTING)) {
-                    this.socket.close();
-                }
+            connect: function () {
+                try {
+                    // Robust URL construction
+                    // NOTE: serverLink must be defined globally before this runs
+                    const url = new URL('/ws', serverLink);
 
-                // console.log("Connecting to WS:", wsUrl);
-                this.socket = new WebSocket(wsUrl);
+                    // Fix Protocol: https: -> wss:, http: -> ws:
+                    if (url.protocol === 'https:') url.protocol = 'wss:';
+                    else url.protocol = 'ws:';
 
-                this.socket.onopen = () => {
-                    // console.log("WebSocket Connected");
-                    this.reconnectAttempts = 0;
-                    document.getElementById('network-activity-status').innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500"></span> Online (Real-time)';
-                };
+                    // Add token param
+                    url.searchParams.set('token', token);
 
-                this.socket.onmessage = (event) => {
-                    try {
-                        const message = JSON.parse(event.data);
-                        this.handleEvent(message);
-                    } catch (e) {
-                        console.error("WS Parse Error", e);
+                    const wsUrl = url.toString();
+
+                    // Safety check: close existing if open
+                    if (this.socket && (this.socket.readyState === WebSocket.OPEN || this.socket.readyState === WebSocket.CONNECTING)) {
+                        this.socket.close();
                     }
-                };
 
-                this.socket.onclose = () => {
-                    // console.log("WebSocket Disconnected");
-                    document.getElementById('network-activity-status').innerHTML = '<span class="w-2 h-2 rounded-full bg-yellow-500"></span> Offline';
-                    this.attemptReconnect();
-                };
+                    this.socket = new WebSocket(wsUrl);
 
-                this.socket.onerror = (error) => {
-                    // console.error("WebSocket Error", error);
-                };
+                    this.socket.onopen = () => {
+                        this.reconnectAttempts = 0;
+                        const el = document.getElementById('network-activity-status');
+                        if (el) el.innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500"></span> Online (Real-time)';
+                    };
+
+                    this.socket.onmessage = (event) => {
+                        try {
+                            const message = JSON.parse(event.data);
+                            this.handleEvent(message);
+                        } catch (e) {
+                            console.error("WS Parse Error", e);
+                        }
+                    };
+
+                    this.socket.onclose = (event) => {
+                        const el = document.getElementById('network-activity-status');
+                        if (el) el.innerHTML = '<span class="w-2 h-2 rounded-full bg-yellow-500"></span> Offline';
+
+                        // Only reconnect if not a clean close (code 1000)
+                        if (event.code !== 1000) {
+                            this.attemptReconnect();
+                        }
+                    };
+
+                    this.socket.onerror = (error) => {
+                        // console.error("WebSocket Error", error);
+                    };
+                } catch (e) {
+                    console.error("Failed to construct WebSocket URL", e);
+                }
             },
 
-            attemptReconnect: function() {
+            attemptReconnect: function () {
                 if (this.reconnectAttempts < this.maxReconnectAttempts) {
                     const timeout = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
                     this.reconnectAttempts++;
@@ -1182,12 +1375,11 @@
                 }
             },
 
-            handleEvent: function(event) {
+            handleEvent: function (event) {
                 const { type, data } = event;
 
                 if (type === 'FILE_UPLOADED') {
                     if (data.fragment === activeFragment) {
-                        // Update Main List
                         const existingIdx = currentObjectList.findIndex(o => o.key === data.object_key);
                         const mappedItem = {
                             ...data,
@@ -1198,22 +1390,18 @@
 
                         if (existingIdx > -1) currentObjectList[existingIdx] = mappedItem;
                         else currentObjectList.push(mappedItem);
-                        
-                        // If user is in the folder, render update
+
                         if (data.object_key.startsWith(currentPath)) this.triggerRender();
-                        
+
                         updateStorageStats();
                         updateCapacityDisplay();
 
-                        // Update Trash if visible
                         this.triggerTrashRefresh();
                     }
-                } 
+                }
                 else if (type === 'FILE_DELETED') {
-                    // data: { fragment, object_key, version_id }
                     if (data.fragment === activeFragment) {
                         if (!data.version_id) {
-                            // Standard Delete (or Delete Marker Creation) -> Remove from Main View
                             const idx = currentObjectList.findIndex(o => o.key === data.object_key);
                             if (idx > -1) {
                                 currentObjectList.splice(idx, 1);
@@ -1222,15 +1410,12 @@
                                 updateCapacityDisplay();
                             }
                         } else {
-                            // Specific Version Delete (Likely a Restore action deleting the delete-marker)
-                            // We need to check if the file has reappeared (Undelete)
                             const parent = data.object_key.substring(0, data.object_key.lastIndexOf('/') + 1);
-                            if(currentPath === parent) {
+                            if (currentPath === parent) {
                                 this.checkRestore(data.fragment, data.object_key);
                             }
                         }
 
-                        // Refresh trash to show the new delete marker or remove restored item
                         this.triggerTrashRefresh();
                     }
                 }
@@ -1245,11 +1430,9 @@
                     }
                 }
                 else if (type === 'FRAGMENT_DELETED') {
-                    // Remove from sidebar list if present
                     const el = document.getElementById(`frag-${data.fragment}`);
                     if (el) el.remove();
-                    
-                    // If we are currently viewing this fragment, switch to home
+
                     if (activeFragment === data.fragment) {
                         activeFragment = 'My Files';
                         AppNav.navigate('my-files');
@@ -1258,15 +1441,14 @@
                 }
             },
 
-            checkRestore: async function(fragment, key) {
-                // When a version is deleted, it might be a restore. Check if object exists now.
+            checkRestore: async function (fragment, key) {
                 try {
                     const res = await fetch(`${serverLink}/v4/fragment/object/get/metadata/${fragment}/${key}?t=${Date.now()}`, {
                         headers: { authorization: `Bearer ${token}` }
                     });
-                    if(res.ok) {
+                    if (res.ok) {
                         const item = await res.json();
-                        if(!item.is_delete_marker) {
+                        if (!item.is_delete_marker) {
                             const mappedItem = {
                                 ...item,
                                 key: item.object_key,
@@ -1281,11 +1463,11 @@
                             updateCapacityDisplay();
                         }
                     }
-                } catch(e) {}
+                } catch (e) { }
             },
-            
+
             renderTimeout: null,
-            triggerRender: function() {
+            triggerRender: function () {
                 if (this.renderTimeout) clearTimeout(this.renderTimeout);
                 this.renderTimeout = setTimeout(() => {
                     if ($('#nav-my-files').hasClass('active')) {
@@ -1295,21 +1477,20 @@
             },
 
             trashTimeout: null,
-            triggerTrashRefresh: function() {
+            triggerTrashRefresh: function () {
                 if (this.trashTimeout) clearTimeout(this.trashTimeout);
                 this.trashTimeout = setTimeout(() => {
-                     // Check if visible using standard jQuery check
-                     if ($('#win-recycle-bin').is(':visible') && typeof showTrash === 'function') {
-                         showTrash();
-                     }
-                }, 200); // Debounce to prevent API spam and ensure consistency
+                    if ($('#win-recycle-bin').is(':visible') && typeof showTrash === 'function') {
+                        showTrash();
+                    }
+                }, 200);
             }
         };
 
         function toggleSidebar() {
             const sb = $('#fe-sidebar');
             const overlay = $('#sidebar-overlay');
-            if(sb.hasClass('-translate-x-full')) {
+            if (sb.hasClass('-translate-x-full')) {
                 sb.removeClass('-translate-x-full');
                 overlay.removeClass('hidden');
             } else {
@@ -1319,19 +1500,19 @@
         }
 
         const App = {
-            logout: function() {
-                localStorage.removeItem('current-token'); 
-                localStorage.removeItem('current-account-email'); 
-                localStorage.removeItem('current-account-uid'); 
-                localStorage.removeItem('current-account-name'); 
+            logout: function () {
+                localStorage.removeItem('current-token');
+                localStorage.removeItem('current-account-email');
+                localStorage.removeItem('current-account-uid');
+                localStorage.removeItem('current-account-name');
                 localStorage.removeItem('current-capacity');
                 window.location.reload();
-                window.location.href='../';
+                window.location.href = '../';
             }
         };
 
         const StartMenu = {
-            toggle: function() {
+            toggle: function () {
                 const menu = document.getElementById('start-menu');
                 const btn = document.getElementById('start-btn');
                 if (menu.classList.contains('hidden')) {
@@ -1342,14 +1523,14 @@
                     btn.classList.remove('active');
                 }
             },
-            close: function() {
+            close: function () {
                 document.getElementById('start-menu').classList.add('hidden');
                 document.getElementById('start-btn').classList.remove('active');
             }
         };
 
         const Notepad = {
-            init: function() {
+            init: function () {
                 const saved = localStorage.getItem('notepad-content');
                 if (saved) {
                     document.getElementById('notepad-area').value = saved;
@@ -1360,21 +1541,21 @@
                     setTimeout(() => document.getElementById('notepad-status').innerText = '', 2000);
                 });
             },
-            save: function() {
+            save: function () {
                 const content = document.getElementById('notepad-area').value;
                 localStorage.setItem('notepad-content', content);
                 showToast('Note saved to local storage', 'success');
             },
-            download: function() {
+            download: function () {
                 const content = document.getElementById('notepad-area').value;
                 const blob = new Blob([content], { type: 'text/plain' });
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
-                a.download = `note_${new Date().toISOString().slice(0,10)}.txt`;
+                a.download = `note_${new Date().toISOString().slice(0, 10)}.txt`;
                 a.click();
             },
-            clear: function() {
-                if(confirm('Clear notepad?')) {
+            clear: function () {
+                if (confirm('Clear notepad?')) {
                     document.getElementById('notepad-area').value = '';
                     localStorage.removeItem('notepad-content');
                 }
@@ -1383,10 +1564,10 @@
 
         const CalendarApp = {
             date: new Date(),
-            init: function() {
+            init: function () {
                 this.render();
             },
-            render: function() {
+            render: function () {
                 const year = this.date.getFullYear();
                 const month = this.date.getMonth();
                 const today = new Date();
@@ -1405,11 +1586,11 @@
                     grid.innerHTML += `<div class="${cls}">${i}</div>`;
                 }
             },
-            changeMonth: function(delta) {
+            changeMonth: function (delta) {
                 this.date.setMonth(this.date.getMonth() + delta);
                 this.render();
             },
-            resetToToday: function() {
+            resetToToday: function () {
                 this.date = new Date();
                 this.render();
             }
@@ -1509,7 +1690,7 @@
                 if (this.processing.size >= this.maxConcurrent || this.queue.length === 0) return;
                 const item = this.queue.shift();
                 const { imgElement, fragment, key, timestamp } = item;
-                
+
                 if (!imgElement.isConnected) {
                     this.process();
                     return;
@@ -1518,7 +1699,7 @@
                 try {
                     // FIX 1: Append timestamp AND use cache: 'reload' to bypass browser cache
                     const directUrl = `${serverLink}/v4/fragment/object/get/${fragment}/${key}?t=${timestamp || Date.now()}`;
-                    
+
                     const res = await fetch(directUrl, {
                         headers: { 'Authorization': `Bearer ${token}` },
                         cache: 'reload' // Critical: Forces browser to ignore HTTP cache and hit the network
@@ -1558,7 +1739,7 @@
                 const key = img.getAttribute('data-key');
                 const fragment = img.getAttribute('data-fragment');
                 const timestamp = img.getAttribute('data-timestamp'); // Get timestamp
-                
+
                 if (entry.isIntersecting) {
                     ThumbnailLoader.enqueue(img, fragment, key, timestamp);
                     imageObserver.unobserve(img);
@@ -1580,9 +1761,9 @@
                     this.focus(appId);
                     return;
                 }
-                
+
                 const isMobile = window.innerWidth < 768;
-                
+
                 if (isMobile) {
                     // Mobile: Full screen
                     win.css({
@@ -1605,7 +1786,7 @@
 
                     // Get size or default to 800x550
                     const size = standardSizes[appId] || { w: 800, h: 550 };
-                    
+
                     // Ensure it fits on screen
                     const finalW = Math.min(size.w, window.innerWidth - 40);
                     const finalH = Math.min(size.h, window.innerHeight - 80);
@@ -1613,14 +1794,14 @@
                     // CALCULATE CENTER (Screen Height - Window Height) / 2
                     const topPos = (window.innerHeight - finalH) / 2;
                     const leftPos = (window.innerWidth - finalW) / 2;
-                    
+
                     // Apply styles
-                    win.css({ 
-                        width: finalW, 
-                        height: finalH, 
-                        top: topPos, 
-                        left: leftPos, 
-                        borderRadius: '8px' 
+                    win.css({
+                        width: finalW,
+                        height: finalH,
+                        top: topPos,
+                        left: leftPos,
+                        borderRadius: '8px'
                     }).removeClass('maximized');
                 }
 
@@ -1628,7 +1809,7 @@
                 setTimeout(() => win.addClass('visible'), 10);
                 this.focus(appId);
                 this.addTaskbarItem(appId, meta);
-                
+
                 // Initialize specific apps
                 if (appId === 'dashboard') setTimeout(() => ResMonitor.init(), 100);
                 if (appId === 'recycle-bin') showTrash();
@@ -1688,13 +1869,13 @@
                     // Calculate true center
                     const t = (window.innerHeight - targetH) / 2;
                     const l = (window.innerWidth - targetW) / 2;
-                    
-                    win.css({ 
-                        width: targetW, 
-                        height: targetH, 
-                        top: t, 
-                        left: l, 
-                        borderRadius: '8px' 
+
+                    win.css({
+                        width: targetW,
+                        height: targetH,
+                        top: t,
+                        left: l,
+                        borderRadius: '8px'
                     }).removeClass('maximized');
                 }
 
@@ -1705,7 +1886,7 @@
                 $(`#win-${appId}`).css('z-index', this.zIndex);
                 $('.task-item').removeClass('active');
                 $(`#task-item-${appId}`).addClass('active');
-                if(appId !== 'start-menu') StartMenu.close();
+                if (appId !== 'start-menu') StartMenu.close();
             },
             addTaskbarItem: function (appId, meta = {}) {
                 if ($(`#task-item-${appId}`).length === 0) {
@@ -1731,7 +1912,7 @@
                 }
             }
         };
-        
+
         // --- Resource Monitor ---
         const ResMonitor = {
             charts: {},
@@ -1946,7 +2127,7 @@
                 this.viewType = viewType;
                 if (this.container && !keepScroll) this.container.scrollTop = 0;
                 this.forceRender();
-                if(!keepScroll) SelectionManager.clear();
+                if (!keepScroll) SelectionManager.clear();
             },
             forceRender: function () {
                 this.lastStartIndex = -1;
@@ -2105,7 +2286,7 @@
             const ext = name.split('.').pop().toLowerCase();
             const isImage = type === 'file' && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'tiff'].includes(ext);
             const iconHtml = type === 'folder' ? '<i class="fas fa-folder text-6xl text-yellow-400 mb-2 drop-shadow-md"></i>' : getFileIconHTML(name);
-            
+
             // Get timestamp for cache busting
             const timestamp = type === 'file' && item.last_modified ? item.last_modified.$date.$numberLong : Date.now();
 
@@ -2134,13 +2315,13 @@
             const ext = name.split('.').pop().toLowerCase();
             const isImage = type === 'file' && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'tiff'].includes(ext);
             const iconHtml = type === 'folder' ? '<i class="fas fa-folder text-yellow-400 w-6 text-center mr-3"></i>' : getFileIconHTML(name, true);
-            
+
             // Get timestamp for cache busting
             const timestamp = type === 'file' && item.last_modified ? item.last_modified.$date.$numberLong : Date.now();
 
             // FIX: Added data-timestamp attribute
             let iconSection = isImage && !isPending ? `<div class="relative w-6 h-6 mr-3 flex-shrink-0 flex items-center justify-center"><div class="icon-placeholder absolute inset-0 flex items-center justify-center ${thumbnailCache.has(item.key) ? 'opacity-0' : ''}">${iconHtml}</div><img class="img-preview absolute inset-0 w-full h-full object-cover rounded transition-opacity duration-300 ${thumbnailCache.has(item.key) ? '' : 'opacity-0'}" alt="${name}" src="${thumbnailCache.get(item.key) || ''}" data-key="${item.key}" data-fragment="${item.fragment}" data-timestamp="${timestamp}" loading="lazy"></div>` : iconHtml;
-            
+
             div.innerHTML = `
                 <div class="flex-1 min-w-0 flex items-center">
                     ${iconSection}
@@ -2175,20 +2356,20 @@
                 if (type === 'folder') navigateTo(currentPath + item + '/');
                 else openFileViewer(item.fragment, item.key);
             };
-            
+
             // Touch support for context menu (Long press)
             let pressTimer;
             div.addEventListener('touchstart', (e) => {
                 pressTimer = setTimeout(() => {
-                   if (!SelectionManager.selectedItems.has(id)) {
+                    if (!SelectionManager.selectedItems.has(id)) {
                         SelectionManager.selectSingle(id, VirtualScroller.items);
                     }
-                    showCtx(e.touches[0], { type, data: item, id }); 
+                    showCtx(e.touches[0], { type, data: item, id });
                 }, 600);
             });
             div.addEventListener('touchend', () => clearTimeout(pressTimer));
             div.addEventListener('touchmove', () => clearTimeout(pressTimer));
-            
+
             div.oncontextmenu = (e) => {
                 if (!SelectionManager.selectedItems.has(id)) {
                     SelectionManager.selectSingle(id, VirtualScroller.items);
@@ -2300,8 +2481,8 @@
                     thumbnailCache.map.delete(key);
                 }
 
-                const url = await getShareableUrl(fragment, key);
-                
+                const url = await getShareableUrl(fragment, key, "stream");
+
                 const contentDiv = winContext.find('.viewer-content');
                 if (isImage) {
                     const imgId = `img-${viewerId}`;
@@ -2372,18 +2553,18 @@
             if (fetchController) fetchController.abort();
             fetchController = new AbortController();
             const signal = fetchController.signal;
-            
+
             // Clear list at start of fetch
             currentObjectList = [];
-            
+
             // Initialize running stats for O(Batch) performance instead of O(Total)
-            let runningStats = { 
-                images: { count: 0, size: 0 }, 
-                videos: { count: 0, size: 0 }, 
-                audio: { count: 0, size: 0 }, 
-                docs: { count: 0, size: 0 }, 
-                archives: { count: 0, size: 0 }, 
-                others: { count: 0, size: 0 } 
+            let runningStats = {
+                images: { count: 0, size: 0 },
+                videos: { count: 0, size: 0 },
+                audio: { count: 0, size: 0 },
+                docs: { count: 0, size: 0 },
+                archives: { count: 0, size: 0 },
+                others: { count: 0, size: 0 }
             };
 
             if (options.render && !options.includeDeleted) {
@@ -2393,55 +2574,55 @@
             try {
                 let marker = null;
                 let pages = 0;
-                let lastUiUpdate = 0; 
-                
+                let lastUiUpdate = 0;
+
                 // Reduced batch limit to prevent "stop-the-world" JSON processing on slower devices
                 const BATCH_LIMIT = 500;
-                
+
                 while (pages < 4000) { // Limit increased to account for smaller batch size
                     if (signal.aborted) throw new Error("Aborted");
                     pages++;
-                    
+
                     let url = `${serverLink}/v4/fragment/object/metadata/${fragment}?show_all=true&limit=${BATCH_LIMIT}&include_deleted=true`;
                     if (marker) url += `&marker=${encodeURIComponent(marker)}`;
-                    
-                    const res = await fetch(url, { 
+
+                    const res = await fetch(url, {
                         headers: { authorization: `Bearer ${token}` },
                         signal: signal
                     });
                     if (!res.ok) break;
-                    
+
                     const page = await res.json();
                     if (!page || page.length === 0) break;
-                    
+
                     const mappedPage = [];
-                    
+
                     // Process batch
                     for (const item of page) {
                         const size = item.total_size_bytes;
                         const mappedItem = {
                             ...item,
-                            key: item.object_key, 
-                            size_bytes: size, 
-                            last_modified: { $date: { $numberLong: item.created_at * 1000 } } 
+                            key: item.object_key,
+                            size_bytes: size,
+                            last_modified: { $date: { $numberLong: item.created_at * 1000 } }
                         };
                         mappedPage.push(mappedItem);
 
                         // Incremental Stat Update
                         if (!item.is_delete_marker) {
                             const ext = item.object_key.split('.').pop().toLowerCase();
-                            if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'tiff'].includes(ext)) { runningStats.images.count++; runningStats.images.size += size; } 
-                            else if (['mp4', 'mkv', 'avi', 'mov', 'webm', 'm3u8'].includes(ext)) { runningStats.videos.count++; runningStats.videos.size += size; } 
-                            else if (['mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac'].includes(ext)) { runningStats.audio.count++; runningStats.audio.size += size; } 
-                            else if (['pdf', 'doc', 'docx', 'txt', 'md', 'rtf', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) { runningStats.docs.count++; runningStats.docs.size += size; } 
-                            else if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) { runningStats.archives.count++; runningStats.archives.size += size; } 
+                            if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'tiff'].includes(ext)) { runningStats.images.count++; runningStats.images.size += size; }
+                            else if (['mp4', 'mkv', 'avi', 'mov', 'webm', 'm3u8'].includes(ext)) { runningStats.videos.count++; runningStats.videos.size += size; }
+                            else if (['mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac'].includes(ext)) { runningStats.audio.count++; runningStats.audio.size += size; }
+                            else if (['pdf', 'doc', 'docx', 'txt', 'md', 'rtf', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) { runningStats.docs.count++; runningStats.docs.size += size; }
+                            else if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) { runningStats.archives.count++; runningStats.archives.size += size; }
                             else { runningStats.others.count++; runningStats.others.size += size; }
                         }
                     }
 
                     currentObjectList.push(...mappedPage);
-                    marker = mappedPage[mappedPage.length - 1].key; 
-                    
+                    marker = mappedPage[mappedPage.length - 1].key;
+
                     // CRITICAL FIX: Yield to main thread.
                     // This allows the browser to handle events (scrolling, clicking) and render frames
                     // preventing the "hang" sensation even while processing data in background.
@@ -2453,13 +2634,13 @@
 
                     if (options.render && !options.includeDeleted && shouldUpdateUi) {
                         lastUiUpdate = now;
-                        
+
                         $('#stat-images').text(`${formatBytes(runningStats.images.size)}`);
                         $('#stat-videos').text(`${formatBytes(runningStats.videos.size)}`);
                         $('#stat-audio').text(`${formatBytes(runningStats.audio.size)}`);
                         $('#stat-docs').text(`${formatBytes(runningStats.docs.size)}`);
                         ResMonitor.updatePieChart(runningStats);
-                        
+
                         if (pages === 1) {
                             if ($('#nav-my-files').hasClass('active')) {
                                 renderObjects(getActiveObjectList(), false);
@@ -2468,18 +2649,18 @@
                             else if ($('#nav-starred').hasClass('active')) showStarredFiles();
                         }
                     }
-                    
+
                     if (page.length === 0) break;
                 }
-                
+
                 trashedItems = currentObjectList.filter(o => o.is_delete_marker);
 
                 if (options.includeDeleted) {
                     showTrash();
                 } else {
-                    updateStorageStats(); 
+                    updateStorageStats();
                     updateCapacityDisplay();
-                    
+
                     if (options.render && !options.includeDeleted) {
                         if ($('#nav-my-files').hasClass('active')) renderObjects(getActiveObjectList(), true);
                         else if ($('#nav-recent').hasClass('active')) showRecentFiles();
@@ -2501,11 +2682,11 @@
                 const size = Number(obj.size_bytes);
                 totalBytes += size;
                 const ext = obj.key.split('.').pop().toLowerCase();
-                if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'tiff'].includes(ext)) { stats.images.count++; stats.images.size += size; } 
-                else if (['mp4', 'mkv', 'avi', 'mov', 'webm', 'm3u8'].includes(ext)) { stats.videos.count++; stats.videos.size += size; } 
-                else if (['mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac'].includes(ext)) { stats.audio.count++; stats.audio.size += size; } 
-                else if (['pdf', 'doc', 'docx', 'txt', 'md', 'rtf', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) { stats.docs.count++; stats.docs.size += size; } 
-                else if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) { stats.archives.count++; stats.archives.size += size; } 
+                if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'tiff'].includes(ext)) { stats.images.count++; stats.images.size += size; }
+                else if (['mp4', 'mkv', 'avi', 'mov', 'webm', 'm3u8'].includes(ext)) { stats.videos.count++; stats.videos.size += size; }
+                else if (['mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac'].includes(ext)) { stats.audio.count++; stats.audio.size += size; }
+                else if (['pdf', 'doc', 'docx', 'txt', 'md', 'rtf', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) { stats.docs.count++; stats.docs.size += size; }
+                else if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) { stats.archives.count++; stats.archives.size += size; }
                 else { stats.others.count++; stats.others.size += size; }
             });
             $('#stat-images').text(`${formatBytes(stats.images.size)}`);
@@ -2592,11 +2773,29 @@
                 'mp3': ['fa-file-audio', 'text-yellow-500'],
                 'wav': ['fa-file-audio', 'text-yellow-500'],
                 'zip': ['fa-file-zipper', 'text-orange-500'],
-                'rar': ['fa-file-zipper', 'text-orange-500']
+                'rar': ['fa-file-zipper', 'text-orange-500'],
+                'mkv': ['fa-file-video', 'text-pink-500'],
             };
             const [icon, color] = map[ext] || ['fa-file', 'text-gray-400'];
             const cls = isList ? `far ${icon} ${color} w-6 text-center mr-3` : `far ${icon} text-5xl ${color} mb-2 drop-shadow-md`;
             return `<i class="${cls}"></i>`;
+        }
+
+        async function processWithConcurrency(items, iteratorFn, concurrency = 5) {
+            const results = [];
+            const executing = [];
+            for (const item of items) {
+                const p = Promise.resolve().then(() => iteratorFn(item));
+                results.push(p);
+                if (concurrency <= items.length) {
+                    const e = p.then(() => executing.splice(executing.indexOf(e), 1));
+                    executing.push(e);
+                    if (executing.length >= concurrency) {
+                        await Promise.race(executing);
+                    }
+                }
+            }
+            return Promise.all(results);
         }
 
         function formatBytes(bytes, decimals = 2) {
@@ -2693,7 +2892,7 @@
             }
 
             const zip = new JSZip();
-            const folderName = folderPath; 
+            const folderName = folderPath;
 
             $('#contextMenu').addClass('hidden');
             showProgressModal(`Zipping ${folderName}`, filesToZip.length);
@@ -2702,22 +2901,22 @@
             let failed = 0;
             const MAX_CONCURRENT_DOWNLOADS = 5;
             const queue = [...filesToZip];
-            
+
             async function processItem(item) {
                 try {
                     updateProgress(processed, filesToZip.length, `Downloading ${item.key.split('/').pop()}...`);
-                    
+
                     const response = await fetch(`${serverLink}/v4/fragment/object/download/${item.fragment}?object_key=${encodeURIComponent(item.key)}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
 
                     if (!response.ok) throw new Error('Download failed');
-                    
+
                     const blob = await response.blob();
-                    const relativePath = item.key.substring(currentPath.length); 
-                    
+                    const relativePath = item.key.substring(currentPath.length);
+
                     zip.file(relativePath, blob);
-                    
+
                 } catch (e) {
                     console.error(e);
                     failed++;
@@ -2735,7 +2934,7 @@
                     }
                 });
             }
-            
+
             await Promise.all(workers.map(w => w()));
 
             if (processed === 0) {
@@ -2745,7 +2944,7 @@
             }
 
             updateProgress(filesToZip.length, filesToZip.length, 'Compressing...');
-            
+
             try {
                 const content = await zip.generateAsync({ type: "blob" });
                 const a = document.createElement('a');
@@ -2769,16 +2968,16 @@
             const menu = $('#contextMenu');
             let x = e.clientX,
                 y = e.clientY;
-            
+
             // Adjust for touch coordinates if available
             if (e.touches && e.touches.length > 0) {
-                 x = e.touches[0].clientX;
-                 y = e.touches[0].clientY;
+                x = e.touches[0].clientX;
+                y = e.touches[0].clientY;
             } else if (e.changedTouches && e.changedTouches.length > 0) {
-                 x = e.changedTouches[0].clientX;
-                 y = e.changedTouches[0].clientY;
+                x = e.changedTouches[0].clientX;
+                y = e.changedTouches[0].clientY;
             }
-                
+
             if (x + 200 > window.innerWidth) x -= 200;
             if (y + 200 > window.innerHeight) y -= 200;
             let html = '';
@@ -2813,18 +3012,18 @@
         // --- New Features Impl ---
         async function deleteFragment(name) {
             $('#contextMenu').addClass('hidden');
-            if(!confirm(`Are you sure you want to delete mount '${name}'? This will delete ALL files inside it permanently!`)) return;
+            if (!confirm(`Are you sure you want to delete mount '${name}'? This will delete ALL files inside it permanently!`)) return;
             try {
                 const res = await fetch(`${serverLink}/v4/fragment/delete/${name}`, {
                     method: 'DELETE',
                     headers: { authorization: `Bearer ${token}` }
                 });
-                if(res.ok) {
+                if (res.ok) {
                     showToast('Mount deleted', 'success');
-                    if(activeFragment === name) activeFragment = 'My Files';
+                    if (activeFragment === name) activeFragment = 'My Files';
                     loadFragments();
                 } else throw new Error();
-            } catch(e) {
+            } catch (e) {
                 showToast('Failed to delete mount', 'error');
             }
         }
@@ -2834,16 +3033,16 @@
             $('#versionsModal').removeClass('hidden').addClass('flex');
             const list = $('#versionsList');
             list.html('<div class="text-center text-gray-500 py-10"><i class="fas fa-circle-notch fa-spin text-2xl"></i></div>');
-            
+
             try {
                 const res = await fetch(`${serverLink}/v4/fragment/object/versions/${fragment}/${key}`, {
                     headers: { authorization: `Bearer ${token}` }
                 });
-                if(!res.ok) throw new Error();
+                if (!res.ok) throw new Error();
                 const versions = await res.json();
                 list.empty();
-                
-                if(versions.length === 0) {
+
+                if (versions.length === 0) {
                     list.html('<div class="text-center text-gray-500 py-4">No versions found.</div>');
                     return;
                 }
@@ -2853,7 +3052,7 @@
                     const size = formatBytes(v.total_size_bytes);
                     const isLatest = idx === 0;
                     const isDeleted = v.is_delete_marker;
-                    
+
                     const el = $(`
                         <div class="bg-[#252525] p-3 rounded border ${isLatest ? 'border-blue-500/50' : 'border-white/5'} flex justify-between items-center">
                             <div>
@@ -2872,41 +3071,112 @@
                     `);
                     list.append(el);
                 });
-            } catch(e) {
+            } catch (e) {
                 list.html('<div class="text-center text-red-400 py-4">Failed to load versions.</div>');
             }
         }
 
         async function deleteVersion(fragment, key, versionId) {
-            if(!confirm("Delete this version? If it's the latest version, this will roll back to the previous one.")) return;
+            if (!confirm("Delete this version? If it's the latest version, this will roll back to the previous one.")) return;
             try {
                 // Correct path based on routes: /version/{fragment}/{version_id}/{*object_key}
                 const res = await fetch(`${serverLink}/v4/fragment/object/delete/version/${fragment}/${versionId}/${key}`, {
                     method: 'DELETE',
                     headers: { authorization: `Bearer ${token}` }
                 });
-                if(res.ok) {
+                if (res.ok) {
                     showToast('Version deleted (Rollback successful)', 'success');
                     showVersionsModal(fragment, key); // Refresh list
                     listObjects(fragment); // Refresh file list background
                 } else throw new Error();
-            } catch(e) {
+            } catch (e) {
                 showToast('Failed to delete version', 'error');
             }
         }
 
         // --- Batch Actions ---
         function batchDelete() {
-            const items = SelectionManager.getSelection();
-            showGenericModal('Batch Delete', `Are you sure you want to delete ${items.length} items?`, () => {
-                items.forEach(item => {
-                    if (item.type === 'file') moveToTrash(item.key, 'file');
-                    else if (item.type === 'folder') moveToTrash(currentPath + item.key + '/', 'folder');
-                });
-                SelectionManager.clear();
-            });
             $('#contextMenu').addClass('hidden');
+            const items = SelectionManager.getSelection();
+            if (items.length === 0) return;
+
+            showGenericModal('Batch Delete', `Are you sure you want to delete ${items.length} items?`, async () => {
+
+                // 1. Identify all files to delete (expand folders)
+                // Using Set to prevent duplicate delete requests if folder AND file inside are selected
+                const filesToDelete = new Set();
+                const foldersToDelete = [];
+
+                items.forEach(item => {
+                    if (item.type === 'file') {
+                        filesToDelete.add(item.key);
+                    } else if (item.type === 'folder') {
+                        const folderPath = currentPath + item.key + '/';
+                        foldersToDelete.push(folderPath);
+
+                        // Find subfiles currently loaded in the view
+                        const subFiles = currentObjectList.filter(o => o.key.startsWith(folderPath));
+                        subFiles.forEach(sub => filesToDelete.add(sub.key));
+                    }
+                });
+
+                const uniqueFilesList = Array.from(filesToDelete);
+
+                // 2. Handle Empty Folders (Client-side only cleanup)
+                clientSideFolders = clientSideFolders.filter(f => {
+                    const fullPath = f.path + f.name + '/';
+                    return !foldersToDelete.includes(fullPath);
+                });
+
+                if (uniqueFilesList.length === 0) {
+                    renderObjects(getActiveObjectList(), true);
+                    SelectionManager.clear();
+                    showToast('Empty folders removed', 'success');
+                    return;
+                }
+
+                // 3. Optimistic UI Update: Hide files immediately
+                currentObjectList = currentObjectList.filter(o => !filesToDelete.has(o.key));
+                renderObjects(getActiveObjectList(), true);
+                SelectionManager.clear();
+
+                // 4. Process Deletions (Batched Chunking Strategy)
+                showProgressModal('Moving to Recycle Bin...', uniqueFilesList.length);
+
+                let processed = 0;
+                let failed = 0;
+
+                // Helper to split array into chunks of 5
+                const chunk = (arr, size) => Array.from({ length: Math.ceil(arr.length / size) }, (v, i) => arr.slice(i * size, i * size + size));
+                const batches = chunk(uniqueFilesList, 5);
+
+                // Process one batch at a time
+                for (const batch of batches) {
+                    await Promise.all(batch.map(key =>
+                        // Using Soft Delete Endpoint
+                        fetch(`${serverLink}/v4/fragment/object/delete/${activeFragment}/${key}`, {
+                            method: 'DELETE',
+                            headers: { authorization: `Bearer ${token}` }
+                        }).then(res => {
+                            if (!res.ok) failed++;
+                        }).catch(e => {
+                            console.error(e);
+                            failed++;
+                        })
+                    ));
+
+                    processed += batch.length;
+                    updateProgress(processed, uniqueFilesList.length, `Processed ${processed}/${uniqueFilesList.length}`);
+                }
+
+                hideProgressModal();
+                updateStorageStats();
+
+                if (failed > 0) showToast(`Completed with ${failed} errors`, 'warning');
+                else showToast('All items moved to Recycle Bin', 'success');
+            });
         }
+
 
         function batchDownload() {
             const items = SelectionManager.getSelection();
@@ -2975,40 +3245,119 @@
 
         function showShareModal(fragment, key) {
             const modal = document.getElementById('shareModal');
-            const urlInput = document.getElementById('shareUrl');
-            urlInput.value = '';
+            const modalBody = modal.querySelector('.win-modal');
+            const shareInputId = 'shareLinkInput';
+            
+            // Simplified UI: Single Link
+            modalBody.innerHTML = `
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-semibold text-lg flex items-center gap-2"><i class="fas fa-share-nodes text-blue-400"></i> Share File</h3>
+                    <button id="closeShareBtnCustom" class="text-gray-400 hover:text-white transition-colors"><i class="fas fa-times"></i></button>
+                </div>
+                
+                <div class="space-y-6">
+                    <div id="shareLoading" class="flex flex-col items-center justify-center py-8">
+                         <i class="fas fa-circle-notch fa-spin text-3xl text-blue-500 mb-3"></i>
+                         <span class="text-xs text-gray-400">Generating secure link...</span>
+                    </div>
+
+                    <div id="shareLinkContainer" class="hidden">
+                        <label class="block text-xs text-gray-400 uppercase font-semibold mb-1.5 flex justify-between">
+                            <span>🔗 Shareable Link</span>
+                            <span class="text-[10px] text-gray-500 font-normal">Expires in 7 days</span>
+                        </label>
+                        <div class="flex gap-0">
+                            <input id="${shareInputId}" class="flex-1 bg-[#151515] border border-[#444] border-r-0 p-2.5 rounded-l text-xs text-blue-400 font-mono focus:outline-none" readonly>
+                            <button onclick="copyToClipboard('${shareInputId}')" class="bg-[#333] hover:bg-[#444] px-4 rounded-r border border-[#444] border-l-0 text-white transition-colors flex items-center justify-center min-w-[40px]" title="Copy Link">
+                                <i class="far fa-copy"></i>
+                            </button>
+                        </div>
+                        <p class="text-[10px] text-gray-500 mt-2">
+                            This link allows recipients to both <strong>view</strong> and <strong>download</strong> the file.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-end">
+                    <button id="doneShareBtn" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded transition-colors shadow-lg shadow-blue-900/20">Done</button>
+                </div>
+            `;
+
             modal.classList.remove('hidden');
             modal.classList.add('flex');
-            document.getElementById('generateShareBtn').onclick = async () => {
-                const disposition = document.getElementById('shareDisposition').value;
-                const expires_in = parseInt(document.getElementById('shareExpiry').value, 10) || 3600;
+
+            // Find file metadata
+            const fileObj = currentObjectList.find(o => o.key === key);
+            const fileSize = fileObj ? fileObj.size_bytes : 0;
+            const fileName = key.split('/').pop();
+
+            // Auto-generate links
+            (async () => {
                 try {
-                    const url = await getShareableUrl(fragment, key, disposition, expires_in);
-                    if (url) urlInput.value = url;
+                    const expires_in = 604800; // 7 Days default
+
+                    // Parallel requests: Get BOTH view and download tokens
+                    const [viewUrlRaw, downloadUrlRaw] = await Promise.all([
+                        getShareableUrl(fragment, key, 'view', expires_in),
+                        getShareableUrl(fragment, key, 'download', expires_in)
+                    ]);
+                    
+                    if (viewUrlRaw && downloadUrlRaw) {
+                        // Construct Custom View Page URL
+                        const sharePageUrl = new URL('../share', window.location.href);
+                        
+                        // Pass Metadata
+                        sharePageUrl.searchParams.set('name', fileName);
+                        sharePageUrl.searchParams.set('size', fileSize);
+                        
+                        // Pass BOTH Signed URLs
+                        sharePageUrl.searchParams.set('view', viewUrlRaw);
+                        sharePageUrl.searchParams.set('dl', downloadUrlRaw);
+                        
+                        // Set values
+                        document.getElementById(shareInputId).value = sharePageUrl.toString();
+
+                        // Show UI
+                        document.getElementById('shareLoading').classList.add('hidden');
+                        document.getElementById('shareLinkContainer').classList.remove('hidden');
+                        
+                        // Auto-select
+                        document.getElementById(shareInputId).select();
+                    } else {
+                        throw new Error("Failed to retrieve URLs");
+                    }
                 } catch (err) {
-                    // Toast handled in getShareableUrl
+                    console.error(err);
+                    document.getElementById('shareLoading').innerHTML = `<div class="text-red-400 text-center py-4"><i class="fas fa-exclamation-circle text-2xl mb-2"></i><p>Error generating link</p></div>`;
+                    showToast('Failed to generate link', 'error');
+                }
+            })();
+
+            window.copyToClipboard = (elementId) => {
+                const el = document.getElementById(elementId);
+                if (el && el.value) {
+                    el.select();
+                    navigator.clipboard.writeText(el.value);
+                    showToast('Link copied to clipboard', 'success');
                 }
             };
-            document.getElementById('copyShareUrlBtn').onclick = () => {
-                if (urlInput.value) {
-                    navigator.clipboard.writeText(urlInput.value);
-                    showToast('URL copied!', 'success');
-                }
-            };
-            document.getElementById('closeShareBtn').onclick = () => modal.classList.add('hidden');
+
+            const closeAction = () => modal.classList.add('hidden');
+            document.getElementById('closeShareBtnCustom').onclick = closeAction;
+            document.getElementById('doneShareBtn').onclick = closeAction;
         }
 
         // --- Trash & Actions ---
         function moveToTrash(key, type) {
             $('#contextMenu').addClass('hidden');
-            
-            const fragment = activeFragment; 
-            
+
+            const fragment = activeFragment;
+
             // Handle folder deletion recursively client-side
             if (type === 'folder') {
                 const prefix = key; // key for folder already ends in / from context menu
                 const filesToDelete = currentObjectList.filter(o => o.key.startsWith(prefix));
-                
+
                 if (filesToDelete.length === 0) {
                     // Try to delete just the folder logic in clientSideFolders
                     clientSideFolders = clientSideFolders.filter(f => !(f.path + f.name + '/' === prefix));
@@ -3018,16 +3367,16 @@
                 }
 
                 showToast(`Deleting ${filesToDelete.length} items...`, 'info');
-                
+
                 // Optimistically update UI immediately
                 filesToDelete.forEach(item => {
                     const idx = currentObjectList.findIndex(o => o.key === item.key);
                     if (idx > -1) currentObjectList.splice(idx, 1);
                 });
                 clientSideFolders = clientSideFolders.filter(f => !(f.path + f.name + '/' === prefix));
-                
+
                 // Render immediately without waiting for server or refetching
-                renderObjects(getActiveObjectList(), true); 
+                renderObjects(getActiveObjectList(), true);
 
                 // Process deletions in background
                 let processed = 0;
@@ -3038,8 +3387,8 @@
                     }).then(res => {
                         processed++;
                         if (processed === filesToDelete.length) {
-                             showToast('Folder moved to Recycle Bin', 'success');
-                             updateStorageStats();
+                            showToast('Folder moved to Recycle Bin', 'success');
+                            updateStorageStats();
                         }
                     });
                 });
@@ -3047,13 +3396,13 @@
             }
 
             // Single File Deletion
-            
+
             // 1. Optimistic UI Update: Remove from local list instantly
             const idx = currentObjectList.findIndex(o => o.key === key);
             if (idx > -1) {
                 currentObjectList.splice(idx, 1);
             }
-            
+
             // 2. Re-render instantly (Keep scroll position)
             renderObjects(getActiveObjectList(), true);
 
@@ -3062,95 +3411,148 @@
                 method: 'DELETE',
                 headers: { authorization: `Bearer ${token}` }
             }).then(res => {
-                if(res.ok) {
+                if (res.ok) {
                     showToast('Moved to Recycle Bin', 'success');
                     // No need to call listObjects() here, we already updated UI
                     updateStorageStats();
                 } else {
-                     showToast('Failed to move to trash', 'error');
-                     // Revert optimistic update if failed (optional, but good practice)
-                     listObjects(fragment);
+                    showToast('Failed to move to trash', 'error');
+                    // Revert optimistic update if failed (optional, but good practice)
+                    listObjects(fragment);
                 }
             });
         }
-        
+
         async function emptyTrash() {
-            // Fetch trash items first
-            // Note: This is potentially expensive if trash is huge.
-            // Ideally server has "Empty Trash" endpoint.
-            // We will iterate known trash items.
-            
             showGenericModal('Empty Recycle Bin', `Permanently delete all items in Recycle Bin?`, async () => {
-               // We need to fetch the deleted items to know what to delete permanently
-               try {
-                   const res = await fetch(`${serverLink}/v4/fragment/object/metadata/${activeFragment}?show_all=true&include_deleted=true`, {
-                        headers: { authorization: `Bearer ${token}` }
-                   });
-                   if(res.ok) {
-                       const all = await res.json();
-                       const trash = all.filter(i => i.is_delete_marker);
-                       
-                       const total = trash.length;
-                       if(total === 0) {
-                           showToast('Recycle Bin is already empty', 'info');
-                           return;
-                       }
-                       
-                       showProgressModal('Emptying Recycle Bin', total);
-                       
-                       let count = 0;
-                       for (const item of trash) {
-                           count++;
-                           updateProgress(count, total, `Deleting ${item.object_key}...`);
-                           await fetch(`${serverLink}/v4/fragment/object/delete/permanent/${item.fragment}/${item.object_key}`, {
-                               method: 'DELETE',
-                               headers: { authorization: `Bearer ${token}` }
-                           });
-                       }
-                       hideProgressModal();
-                       showToast('Recycle Bin emptied', 'success');
-                       showTrash();
-                       updateCapacityDisplay();
-                   }
-               } catch(e) {
-                   console.error(e);
-               }
+                try {
+                    // 1. Fetch ALL trash items with pagination
+                    let allItems = [];
+                    let marker = null;
+                    let fetching = true;
+
+                    while (fetching) {
+                        let url = `${serverLink}/v4/fragment/object/metadata/${activeFragment}?show_all=true&include_deleted=true&limit=1000`;
+                        if (marker) url += `&marker=${encodeURIComponent(marker)}`;
+
+                        const res = await fetch(url, { headers: { authorization: `Bearer ${token}` } });
+                        if (!res.ok) throw new Error("Fetch failed");
+                        const page = await res.json();
+
+                        if (!page || page.length === 0) fetching = false;
+                        else {
+                            allItems.push(...page);
+                            marker = page[page.length - 1].object_key;
+                            if (page.length < 1000) fetching = false;
+                        }
+                    }
+
+                    const trash = allItems.filter(i => i.is_delete_marker);
+
+                    if (trash.length === 0) {
+                        showToast('Recycle Bin is already empty', 'info');
+                        return;
+                    }
+
+                    // 2. Process Deletions in Batches
+                    showProgressModal('Emptying Recycle Bin', trash.length);
+                    let processed = 0;
+                    let failed = 0;
+
+                    // Helper to split array
+                    const chunk = (arr, size) => Array.from({ length: Math.ceil(arr.length / size) }, (v, i) => arr.slice(i * size, i * size + size));
+                    const batches = chunk(trash, 5); // Batch size 5
+
+                    for (const batch of batches) {
+                        await Promise.all(batch.map(item =>
+                            fetch(`${serverLink}/v4/fragment/object/delete/permanent/${item.fragment}/${item.object_key}`, {
+                                method: 'DELETE',
+                                headers: { authorization: `Bearer ${token}` }
+                            }).then(res => { if (!res.ok) failed++; }).catch(() => failed++)
+                        ));
+                        processed += batch.length;
+                        updateProgress(processed, trash.length, `Deleting ${processed}/${trash.length}`);
+                    }
+
+                    hideProgressModal();
+                    showToast(failed > 0 ? `Completed with ${failed} errors` : 'Recycle Bin emptied', failed > 0 ? 'warning' : 'success');
+                    showTrash();
+                    updateCapacityDisplay();
+
+                } catch (e) {
+                    console.error(e);
+                    showToast('Failed to empty trash', 'error');
+                    hideProgressModal();
+                }
             });
         }
 
         function restoreAll() {
-             showGenericModal('Restore All', `Restore all items?`, async () => {
-               try {
-                   const res = await fetch(`${serverLink}/v4/fragment/object/metadata/${activeFragment}?show_all=true&include_deleted=true`, {
-                        headers: { authorization: `Bearer ${token}` }
-                   });
-                   if(res.ok) {
-                       const all = await res.json();
-                       const trash = all.filter(i => i.is_delete_marker);
-                       const total = trash.length;
-                       
-                       showProgressModal('Restoring', total);
-                       
-                       let count = 0;
-                       for (const item of trash) {
-                           count++;
-                           updateProgress(count, total, `Restoring ${item.object_key}...`);
-                           // Delete the DELETE MARKER (which is a version)
-                           await fetch(`${serverLink}/v4/fragment/object/delete/version/${item.fragment}/${item.version_id}/${item.object_key}`, {
-                               method: 'DELETE',
-                               headers: { authorization: `Bearer ${token}` }
-                           });
-                       }
-                       hideProgressModal();
-                       showToast('All items restored', 'success');
-                       showTrash();
-                       // Refresh main view if visible
-                       if($('#nav-my-files').hasClass('active')) listObjects(activeFragment);
-                   }
-               } catch(e) { console.error(e); }
+            showGenericModal('Restore All', `Restore all items?`, async () => {
+                try {
+                    // 1. Fetch ALL trash items with pagination
+                    let allItems = [];
+                    let marker = null;
+                    let fetching = true;
+
+                    while (fetching) {
+                        let url = `${serverLink}/v4/fragment/object/metadata/${activeFragment}?show_all=true&include_deleted=true&limit=1000`;
+                        if (marker) url += `&marker=${encodeURIComponent(marker)}`;
+
+                        const res = await fetch(url, { headers: { authorization: `Bearer ${token}` } });
+                        if (!res.ok) throw new Error("Fetch failed");
+                        const page = await res.json();
+
+                        if (!page || page.length === 0) fetching = false;
+                        else {
+                            allItems.push(...page);
+                            marker = page[page.length - 1].object_key;
+                            if (page.length < 1000) fetching = false;
+                        }
+                    }
+
+                    const trash = allItems.filter(i => i.is_delete_marker);
+
+                    if (trash.length === 0) {
+                        showToast('Nothing to restore', 'info');
+                        return;
+                    }
+
+                    showProgressModal('Restoring', trash.length);
+
+                    let processed = 0;
+                    let failed = 0;
+
+                    // Helper to split array
+                    const chunk = (arr, size) => Array.from({ length: Math.ceil(arr.length / size) }, (v, i) => arr.slice(i * size, i * size + size));
+                    const batches = chunk(trash, 5); // Batch size 5
+
+                    for (const batch of batches) {
+                        await Promise.all(batch.map(item =>
+                            // Delete the DELETE MARKER (which restores the file)
+                            fetch(`${serverLink}/v4/fragment/object/delete/version/${item.fragment}/${item.version_id}/${item.object_key}`, {
+                                method: 'DELETE',
+                                headers: { authorization: `Bearer ${token}` }
+                            }).then(res => { if (!res.ok) failed++; }).catch(() => failed++)
+                        ));
+                        processed += batch.length;
+                        updateProgress(processed, trash.length, `Restoring ${processed}/${trash.length}`);
+                    }
+
+                    hideProgressModal();
+                    showToast(failed > 0 ? `Completed with ${failed} errors` : 'All items restored', failed > 0 ? 'warning' : 'success');
+                    showTrash();
+
+                    // Refresh main view if visible
+                    if ($('#nav-my-files').hasClass('active')) listObjects(activeFragment);
+                } catch (e) {
+                    console.error(e);
+                    showToast('Failed to restore items', 'error');
+                    hideProgressModal();
+                }
             });
         }
-        
+
         async function deletePermanently(fragment, key, type) {
             $('#contextMenu').addClass('hidden');
             showGenericModal('Delete Permanently', 'Cannot be undone. Sure?', async () => {
@@ -3178,12 +3580,12 @@
                     method: 'DELETE',
                     headers: { authorization: `Bearer ${token}` }
                 });
-                if(res.ok) {
+                if (res.ok) {
                     showToast('File restored.', 'success');
                     showTrash(); // Refresh trash list
                     if ($('#nav-my-files').hasClass('active')) listObjects(fragment);
                 } else throw new Error();
-            } catch(e) {
+            } catch (e) {
                 showToast('Failed to restore', 'error');
             }
         }
@@ -3206,56 +3608,74 @@
         }
 
         async function showTrash() {
-            if(!activeFragment) return;
+            if (!activeFragment) return;
             const container = document.getElementById('recycle-bin-content');
             container.innerHTML = '<div class="text-center text-gray-500 py-20"><i class="fas fa-circle-notch fa-spin text-3xl"></i></div>';
-            
-            try {
-                // Fetch ALL objects including deleted
-                const res = await fetch(`${serverLink}/v4/fragment/object/metadata/${activeFragment}?show_all=true&include_deleted=true`, {
-                    headers: { authorization: `Bearer ${token}` }
-                });
-                
-                if(res.ok) {
-                    const rawData = await res.json();
-                    
-                    // FIX: Map backend fields to frontend expected fields
-                    const all = rawData.map(item => ({
-                        ...item,
-                        key: item.object_key, // Critical fix: renderTrashItems expects .key
-                        size_bytes: item.total_size_bytes
-                    }));
 
-                    // Filter for items where latest version is a delete marker
-                    const trash = all.filter(i => i.is_delete_marker);
-                    trashedItems = trash; 
-                    
-                    renderTrashItems(trash, container);
+            try {
+                // Fetch ALL objects using pagination
+                let allItems = [];
+                let marker = null;
+                let fetching = true;
+
+                while (fetching) {
+                    // Fetch in batches of 1000 to minimize requests
+                    let url = `${serverLink}/v4/fragment/object/metadata/${activeFragment}?show_all=true&include_deleted=true&limit=1000`;
+                    if (marker) url += `&marker=${encodeURIComponent(marker)}`;
+
+                    const res = await fetch(url, {
+                        headers: { authorization: `Bearer ${token}` }
+                    });
+
+                    if (!res.ok) throw new Error("Fetch failed");
+
+                    const page = await res.json();
+                    if (!page || page.length === 0) {
+                        fetching = false;
+                    } else {
+                        allItems.push(...page);
+                        marker = page[page.length - 1].object_key;
+                        // If page is not full, we reached the end
+                        if (page.length < 1000) fetching = false;
+                    }
                 }
-            } catch(e) {
+
+                // Map backend fields
+                const all = allItems.map(item => ({
+                    ...item,
+                    key: item.object_key,
+                    size_bytes: item.total_size_bytes
+                }));
+
+                // Filter for Delete Markers (Trash Items)
+                const trash = all.filter(i => i.is_delete_marker);
+                trashedItems = trash;
+
+                renderTrashItems(trash, container);
+            } catch (e) {
                 console.error(e);
                 container.innerHTML = '<div class="text-center text-red-400 py-20">Failed to load recycle bin</div>';
             }
         }
-        
+
         function renderTrashItems(items, container) {
             container.innerHTML = '';
-            
+
             if (currentTrashView === 'tiles') {
                 container.className = 'grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4 custom-scrollbar flex-1 overflow-y-auto content-start';
             } else {
                 container.className = 'flex flex-col gap-0 custom-scrollbar flex-1 overflow-y-auto';
             }
-            
+
             if (items.length === 0) {
                 container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-500 flex flex-col items-center justify-center h-full"><i class="fas fa-trash-can text-5xl mb-4 opacity-50"></i><p>Recycle Bin is empty</p></div>`;
                 return;
             }
-            
+
             items.forEach(item => {
                 const name = item.key.split('/').pop();
-                const date = new Date(item.created_at * 1000).toLocaleDateString(); 
-                
+                const date = new Date(item.created_at * 1000).toLocaleDateString();
+
                 if (currentTrashView === 'tiles') {
                     const div = document.createElement('div');
                     div.className = 'file-item p-3 flex flex-col items-center group relative border border-transparent rounded hover:bg-[#2a2a2a] transition-all h-max';
@@ -3412,7 +3832,7 @@
             const statusText = ui.querySelector('.status-text');
             const progBar = ui.querySelector('.progress-bar');
             const detailsText = ui.querySelector('.details-text');
-            
+
             // Check capacity client side first as rough guard
             // (Note: This is an estimation, server also enforces it)
             const currentUsage = currentObjectList.reduce((acc, obj) => acc + Number(obj.size_bytes), 0);
@@ -3457,7 +3877,7 @@
                         } else {
                             localStorage.removeItem(sessionKey);
                         }
-                    } catch(e) { localStorage.removeItem(sessionKey); }
+                    } catch (e) { localStorage.removeItem(sessionKey); }
                 }
 
                 if (!version_id) {
@@ -3477,7 +3897,7 @@
                     const res = await init.json();
                     version_id = res.version_id;
                     session_id = res.session_id;
-                    
+
                     localStorage.setItem(sessionKey, JSON.stringify({
                         version_id, session_id, name: item.file.name, size: fileSize,
                         lastModified: item.file.lastModified, objectKey: item.objectKey, fragment: item.fragment
@@ -3491,7 +3911,7 @@
                 const producer = async () => {
                     for (const idx of chunkQueue) {
                         while (buffer.length >= maxBuffer) await new Promise(r => setTimeout(r, 50));
-                        if(item.controller.signal.aborted) break;
+                        if (item.controller.signal.aborted) break;
                         const blob = item.file.slice(idx * chunkSize, Math.min((idx + 1) * chunkSize, fileSize));
                         buffer.push({ index: idx, blob });
                     }
@@ -3500,7 +3920,7 @@
 
                 const worker = async () => {
                     while (true) {
-                        if(item.controller.signal.aborted) break;
+                        if (item.controller.signal.aborted) break;
                         const chunk = buffer.shift();
                         if (!chunk) {
                             if (hashingDone) break;
@@ -3518,7 +3938,7 @@
                                 signal: item.controller.signal
                             });
                             if (!res.ok) throw new Error(`Status ${res.status}`);
-                            
+
                             uploadedBytes += chunk.blob.size;
                             const now = Date.now();
                             if (now - lastUpdate > 500) {
@@ -3532,7 +3952,7 @@
                                 lastUploadedBytes = uploadedBytes;
                             }
                         } catch (e) {
-                            if(item.controller.signal.aborted) break;
+                            if (item.controller.signal.aborted) break;
                             buffer.unshift(chunk);
                             await new Promise(r => setTimeout(r, 1000 + Math.random() * 500));
                         }
@@ -3546,7 +3966,7 @@
                     Promise.all(workers).then(resolve).catch(reject);
                 });
 
-                if(item.controller.signal.aborted) return;
+                if (item.controller.signal.aborted) return;
 
                 statusText.textContent = "Finalizing...";
                 await fetch(`${serverLink}/v4/fragment/object/upload/finalize/${item.fragment}/${version_id}/${session_id}?object_key=${encodeURIComponent(item.objectKey)}`, {
@@ -3568,18 +3988,11 @@
                 item.completed = true;
                 item.currentSpeed = 0;
                 localStorage.removeItem(sessionKey);
-                
-                // --- FIX: Race Condition Prevention ---
-                // Removed the redundant listObjects() call here.
-                // The WebSocket 'FILE_UPLOADED' event will automatically update the UI.
-                // If we call listObjects() here AND receive the WS event simultaneously, 
-                // the file gets added twice.
-                // if ($('#nav-my-files').hasClass('active')) listObjects(activeFragment);
-                
+
                 updateCapacityDisplay();
 
             } catch (e) {
-                if(item.controller.signal.aborted) {
+                if (item.controller.signal.aborted) {
                     statusText.textContent = "Cancelled";
                     return;
                 }
@@ -3591,16 +4004,16 @@
                 detailsText.innerHTML = `<button class="text-blue-400 mr-2" onclick="retryUpload('${item.id}')">Retry</button><button class="text-red-400" onclick="cancelUpload('${item.id}')">Cancel</button>`;
             }
         }
-        
+
         window.retryUpload = (id) => {
             const item = uploadQueue.find(u => u.id === id);
             if (item) {
                 item.failed = false;
                 item.completed = false;
                 item.started = false;
-                
+
                 const ui = document.getElementById(id);
-                if(ui) {
+                if (ui) {
                     ui.querySelector('.status-text').className = "text-blue-400 status-text";
                     ui.querySelector('.status-text').textContent = "Queued...";
                     ui.querySelector('.details-text').innerHTML = "<span>Waiting...</span>";
@@ -3614,10 +4027,10 @@
             const item = uploadQueue.find(u => u.id === id);
             if (item) {
                 item.controller.abort();
-                if(item.sessionKey) localStorage.removeItem(item.sessionKey);
+                if (item.sessionKey) localStorage.removeItem(item.sessionKey);
                 uploadQueue = uploadQueue.filter(u => u.id !== id);
                 document.getElementById(id)?.remove();
-                if(item.started) activeUploads--;
+                if (item.started) activeUploads--;
                 processUploadQueue();
             }
         };
@@ -3639,7 +4052,7 @@
                                 objectKey: d.objectKey
                             }, true);
                         }
-                    } catch(e) {}
+                    } catch (e) { }
                 }
             }
             if (document.querySelectorAll('#upload-items-container > div').length > 0) WindowManager.addTaskbarItem('uploads');
@@ -3652,11 +4065,11 @@
 
             VirtualScroller.init('browser', 'objectList');
             $('#start-menu-username').text(userName);
-            
+
             // --- Drag & Drop Logic ---
             const dz = document.getElementById('browser');
             let dc = 0;
-            
+
             // Prevent default behavior on window to prevent browser from opening dropped files
             window.addEventListener('dragover', e => e.preventDefault(), false);
             window.addEventListener('drop', e => e.preventDefault(), false);
@@ -3665,7 +4078,7 @@
                 e.preventDefault();
                 e.stopPropagation();
             });
-            
+
             dz.addEventListener('dragenter', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -3746,23 +4159,23 @@
                     for (let i = 0; i < cd.items.length; i++) {
                         const item = cd.items[i];
                         if (item.kind !== 'file') continue;
-                        
+
                         // Chrome specific folder check
                         const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
                         if (entry && entry.isDirectory) {
                             potentialFolders++;
                             continue;
                         }
-                        
+
                         const f = item.getAsFile();
                         if (f) {
-                             // Check for 0 byte files which sometimes indicate folders on some OS clipboard implementations
+                            // Check for 0 byte files which sometimes indicate folders on some OS clipboard implementations
                             if (f.size === 0 && !f.type) potentialFolders++;
                             else addFile(f);
                         }
                     }
                 } else if (cd.files) {
-                     for (let i = 0; i < cd.files.length; i++) {
+                    for (let i = 0; i < cd.files.length; i++) {
                         const f = cd.files[i];
                         addFile(f);
                     }
@@ -3775,7 +4188,7 @@
                     showToast('Pasting folders is not supported. Please use Drag & Drop.', 'error');
                 }
             });
-            
+
             $(".window").draggable({
                 handle: ".window-header",
                 containment: "#windows-container",
@@ -4038,11 +4451,12 @@
                 showToast('Added to Favorites');
             }
             localStorage.setItem('starredItems', JSON.stringify(starredItems));
-            
+
             if ($('#nav-starred').hasClass('active')) {
                 showStarredFiles();
             }
         }
     </script>
 </body>
+
 </html>

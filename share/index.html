@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Litiaina N1</title>
+    <link rel="icon" type="image/png" href="../images/litiaina_icon_48x48.png">
+    <script src="../storage/lib/tailwindcss.js"></script>
+    <link href="../storage/css/font-family.css" rel="stylesheet">
+    <link rel="stylesheet" href="../storage/css/font-awesome/css/all.min.css">
+    <!-- Libraries for Preview -->
+    <script src="../storage/lib/hls.js"></script>
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0f0f0f; 
+            color: #eee;
+            /* Safe area padding for mobile notches/home bars */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+
+        .preview-container {
+            width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+            background: #1a1a1a; border-radius: 12px; overflow: hidden; position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            border: 1px solid #333;
+        }
+        
+        .btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn:active { transform: scale(0.96); }
+        
+        /* Loading Animation */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(1.2); opacity: 0; }
+        }
+        .loading-ring::before {
+            content: '';
+            position: absolute;
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            border: 2px solid #3b82f6;
+            animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+    </style>
+</head>
+<body class="h-[100dvh] w-screen flex flex-col overflow-hidden bg-[#0f0f0f]">
+
+    <!-- Header -->
+    <header class="h-16 flex-shrink-0 border-b border-[#2a2a2a] bg-[#141414]/95 backdrop-blur-md flex items-center justify-between px-4 md:px-8 z-50">
+        <div class="flex items-center gap-3 md:gap-4 overflow-hidden">
+            <div class="w-10 h-10 bg-[#252525] rounded-xl flex items-center justify-center flex-shrink-0 border border-[#333]">
+                <img src="../images/litiaina_icon_48x48.png" class="w-6 h-6 object-contain">
+            </div>
+            <div class="flex flex-col min-w-0">
+                <h1 id="fileName" class="text-sm md:text-base font-semibold text-gray-100 truncate pr-2">Loading...</h1>
+                <p id="fileSize" class="text-[10px] md:text-xs text-gray-500 font-mono">...</p>
+            </div>
+        </div>
+        <button id="downloadBtn" class="bg-blue-600 hover:bg-blue-500 text-white px-4 md:px-6 py-2 rounded-lg text-xs md:text-sm font-medium flex items-center gap-2 btn disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-900/20 whitespace-nowrap">
+            <i class="fas fa-download"></i> <span class="hidden md:inline">Download</span>
+        </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-3 md:p-6 flex items-center justify-center relative w-full overflow-hidden">
+        <div id="previewArea" class="w-full h-full max-w-6xl max-h-[85vh] flex items-center justify-center preview-container">
+            <!-- Loading State -->
+            <div id="loader" class="flex flex-col items-center justify-center relative p-8">
+                <div class="w-12 h-12 relative flex items-center justify-center loading-ring mb-4">
+                    <i class="fas fa-circle-notch fa-spin text-2xl text-blue-500"></i>
+                </div>
+                <span class="text-xs text-gray-500 font-medium tracking-wide animate-pulse">PREPARING PREVIEW</span>
+            </div>
+            <!-- Content injected here -->
+        </div>
+    </main>
+
+    <!-- Mobile Footer (Optional info) -->
+    <footer class="h-auto pb-safe md:h-10 bg-[#141414] border-t border-[#2a2a2a] text-center text-[10px] text-gray-600 flex flex-col md:flex-row items-center justify-center gap-1 md:gap-4 py-2 md:py-0 px-4">
+        <span>&copy; 2025 Litiaina N1</span>
+        <span class="hidden md:inline">•</span>
+        <span class="flex items-center gap-1"><i class="fas fa-shield-alt text-gray-700"></i> Secure Transfer</span>
+    </footer>
+
+    <script>
+        const API_BASE = "https://storage.litiaina.com";
+
+        // Parse Query Params
+        const params = new URLSearchParams(window.location.search);
+        
+        // RETRIEVE BOTH URLS
+        const viewUrl = params.get('view');
+        const downloadUrl = params.get('dl');
+        
+        // Fallback for legacy links (if 'url' was used)
+        const legacyUrl = params.get('url');
+        const activeUrl = viewUrl || legacyUrl; 
+        const activeDownloadUrl = downloadUrl || legacyUrl;
+
+        const metaName = params.get('name') || 'Shared File';
+        const metaSize = params.get('size');
+        const metaType = params.get('type') || '';
+
+        const fileNameEl = document.getElementById('fileName');
+        const fileSizeEl = document.getElementById('fileSize');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const previewArea = document.getElementById('previewArea');
+        const loader = document.getElementById('loader');
+
+        function formatBytes(bytes, decimals = 2) {
+            if (!bytes || bytes === 'null') return '';
+            if (bytes == 0) return '0 B';
+            const k = 1024, dm = decimals < 0 ? 0 : decimals, sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        async function init() {
+            if (!activeUrl) {
+                showError("Link Expired or Invalid", "This shared link is no longer available.");
+                return;
+            }
+
+            fileNameEl.textContent = metaName;
+            document.title = `${metaName}`;
+            fileSizeEl.textContent = formatBytes(metaSize);
+
+            // USE DOWNLOAD URL for button
+            downloadBtn.onclick = () => {
+                const a = document.createElement('a');
+                a.href = activeDownloadUrl; 
+                a.download = metaName; 
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            };
+
+            // Detect Type for Preview
+            const ext = metaName.split('.').pop().toLowerCase();
+            const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'tiff'].includes(ext);
+            const isVideo = ['mp4', 'webm', 'ogg', 'mov', 'mkv', 'm3u8'].includes(ext);
+            const isAudio = ['mp3', 'wav', 'aac', 'flac', 'm4a', 'ogg'].includes(ext);
+            const isPdf = ext === 'pdf';
+
+            // Simulate slight delay for smooth UI transition (optional)
+            setTimeout(() => loader.remove(), 300);
+
+            // USE VIEW URL for Preview
+            if (isImage) {
+                previewArea.innerHTML = `<img src="${activeUrl}" class="max-w-full max-h-full object-contain shadow-lg" alt="Preview">`;
+            } else if (isVideo) {
+                // For HLS support in share view
+                if (ext === 'm3u8' && Hls.isSupported()) {
+                     previewArea.innerHTML = `<video id="videoPlayer" controls autoplay class="w-full h-full bg-black outline-none"></video>`;
+                     const video = document.getElementById('videoPlayer');
+                     const hls = new Hls();
+                     hls.loadSource(activeUrl);
+                     hls.attachMedia(video);
+                } else {
+                     previewArea.innerHTML = `<video src="${activeUrl}" controls autoplay class="max-w-full max-h-full rounded bg-black outline-none shadow-lg"></video>`;
+                }
+            } else if (isAudio) {
+                previewArea.innerHTML = `
+                    <div class="flex flex-col items-center justify-center w-full h-full bg-gradient-to-b from-[#1a1a1a] to-[#111]">
+                        <div class="w-32 h-32 md:w-48 md:h-48 bg-[#252525] rounded-full flex items-center justify-center mb-8 shadow-2xl border border-[#333] relative">
+                            <div class="absolute inset-0 rounded-full border-4 border-blue-500/20 animate-pulse"></div>
+                            <i class="fas fa-music text-5xl md:text-7xl text-blue-500 drop-shadow-lg"></i>
+                        </div>
+                        <h3 class="text-lg md:text-2xl text-white font-light tracking-wide mb-8 px-4 text-center truncate max-w-md">${metaName}</h3>
+                        <audio src="${activeUrl}" controls class="w-full max-w-md mx-4"></audio>
+                    </div>`;
+            } else if (isPdf) {
+                // Use Google Viewer or Native Embed for better mobile support? 
+                // Native embed is cleaner for self-hosted.
+                previewArea.innerHTML = `<iframe src="${activeUrl}" class="w-full h-full border-none bg-white"></iframe>`;
+            } else {
+                previewArea.innerHTML = `
+                    <div class="text-center p-6">
+                        <div class="w-24 h-24 bg-[#252525] rounded-full flex items-center justify-center mx-auto mb-6 border border-[#333] shadow-xl">
+                            <i class="fas fa-file text-4xl text-gray-400"></i>
+                        </div>
+                        <p class="text-gray-300 text-lg font-medium mb-2">Preview not available</p>
+                        <p class="text-gray-500 text-sm mb-6 max-w-xs mx-auto">This file type (${ext.toUpperCase()}) cannot be viewed directly in the browser.</p>
+                        <button onclick="downloadBtn.click()" class="text-blue-400 hover:text-blue-300 hover:underline text-sm font-medium flex items-center justify-center gap-2">
+                            <i class="fas fa-download"></i> Download to view
+                        </button>
+                    </div>`;
+            }
+        }
+
+        function showError(title, msg) {
+            if(loader) loader.remove();
+            previewArea.innerHTML = `
+                <div class="text-center p-8 max-w-sm mx-auto">
+                    <div class="w-20 h-20 bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-link-slash text-3xl text-red-500"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-white mb-2">${title}</h2>
+                    <p class="text-sm text-gray-400 leading-relaxed">${msg}</p>
+                    <a href="#" onclick="location.reload()" class="inline-block mt-6 text-xs text-gray-500 hover:text-white transition-colors">Reload Page</a>
+                </div>`;
+            downloadBtn.disabled = true;
+            downloadBtn.classList.add('opacity-50', 'cursor-not-allowed', 'grayscale');
+        }
+
+        init();
+    </script>
+</body>
+</html>
